@@ -5,11 +5,15 @@
 Pasos concretos para validar el generador estático de Phase 1:
 
 - [ ] `python generator/generate_service_menu.py` corre sin errores y reporta
-      "Generadas 3/3 paginas".
-- [ ] Se crean `public/demos/{bella-spa,glow-nails,wellness-studio}/index.html`.
+      "Generadas 6/6 paginas".
+- [ ] Se crean `public/demos/{bella-spa,studio-blush,north-barber,glow-nails,`
+      `aqua-wellness,sage-studio}/index.html`.
 - [ ] Un payload al que le falta un campo requerido falla con mensaje claro y exit code
       distinto de 0 (no genera página incompleta).
-- [ ] Los tres estilos (`clean`, `warm`, `premium`) renderizan y se distinguen visualmente.
+- [ ] Un `brand_style` fuera de los 6 estilos cerrados es rechazado con mensaje claro.
+- [ ] Los 6 estilos cerrados (`black-gold`, `soft-blush`, `charcoal-clean`, `warm-sand`,
+      `aqua-clean`, `sage-calm`) renderizan y se distinguen visualmente (paleta/acento
+      distinto por estilo; el `<body>` lleva la clase `style-<brand_style>`).
 - [ ] En una demo sin `logo_url` / `primary_image_url`, aparece el placeholder visual
       (nunca una imagen rota).
 - [ ] En una demo sin `featured_package` / `instagram` / `google_reviews_url`, esas

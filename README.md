@@ -46,7 +46,9 @@ incluida vía un link de un solo uso.
 
 Phase 0 (documentación y arquitectura) está aprobada. Phase 1 agrega un generador estático
 que convierte un payload `service_menu_payload_public` (JSON dummy) en una página pública
-mobile-first, en tres estilos cerrados: `clean`, `warm`, `premium`.
+mobile-first, en **6 estilos visuales cerrados**: `black-gold`, `soft-blush`,
+`charcoal-clean`, `warm-sand`, `aqua-clean`, `sage-calm`. Sin colores libres; la
+personalización es siempre por estilo cerrado.
 
 Todavía **no** hay Stripe, Tally, Cloudflare Worker/KV, GitHub Actions ni emails reales
 (esas son fases posteriores). El QR se muestra como **placeholder**; el QR real se genera
@@ -60,7 +62,7 @@ Ver [docs/ROADMAP.md](docs/ROADMAP.md) para las fases siguientes.
 Requiere solo Python 3 (sin dependencias externas).
 
 ```bash
-# Generar las 3 demos incluidas (data/demos/*.json) en public/demos/{slug}/index.html
+# Generar las 6 demos incluidas (data/demos/*.json) en public/demos/{slug}/index.html
 python generator/generate_service_menu.py
 
 # O generar payloads específicos
@@ -80,8 +82,10 @@ Estructura de Phase 1:
 ```
 generator/
   generate_service_menu.py   # generador (stdlib, valida + escapa HTML)
-  templates/                 # clean.html, warm.html, premium.html
-data/demos/                  # payloads dummy (bella-spa, glow-nails, wellness-studio)
+  templates/base.html        # template estructural único (mobile-first)
+  styles/                    # 1 paleta CSS por estilo cerrado (6 archivos)
+data/demos/                  # payloads dummy (1 por estilo: bella-spa, studio-blush,
+                             #   north-barber, glow-nails, aqua-wellness, sage-studio)
 public/demos/                # salida generada (index.html por slug)
 ```
 

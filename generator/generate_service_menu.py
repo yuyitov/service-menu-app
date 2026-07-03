@@ -3,7 +3,12 @@
 
 Reads a dummy `service_menu_payload_public` JSON, validates the minimum
 required fields, escapes all dynamic content, and renders a mobile-first
-static page using one of three closed brand styles: clean / warm / premium.
+static page using one of six closed brand styles:
+black-gold / soft-blush / charcoal-clean / warm-sand / aqua-clean / sage-calm.
+
+Rendering uses a single shared structural template (templates/base.html) plus a
+per-style palette file (styles/<brand_style>.css). Colors are never free-form:
+only the six approved closed styles are accepted.
 
 Phase 1 scope only. This script:
   - does NOT talk to Stripe, Tally, Cloudflare Worker/KV, GitHub Actions or email.
@@ -27,10 +32,20 @@ from pathlib import Path
 # Repo layout (this file lives in <repo>/generator/).
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
+STYLES_DIR = Path(__file__).resolve().parent / "styles"
 DEMOS_DIR = REPO_ROOT / "data" / "demos"
 OUTPUT_DIR = REPO_ROOT / "public" / "demos"
 
-BRAND_STYLES = ("clean", "warm", "premium")
+# The six approved closed visual styles. Colors are NOT free-form; a payload
+# must pick exactly one of these. Each has a matching styles/<name>.css palette.
+BRAND_STYLES = (
+    "black-gold",
+    "soft-blush",
+    "charcoal-clean",
+    "warm-sand",
+    "aqua-clean",
+    "sage-calm",
+)
 
 # Fallback base URL used only if a demo payload omits `public_url`.
 # Intentionally a dummy/demo host - no private or real links in Phase 1.
@@ -157,7 +172,7 @@ def build_buttons(payload: dict) -> str:
     if wa:
         buttons.append(
             f'<a class="btn btn--wa" href="{esc(wa)}" target="_blank" '
-            'rel="noopener noreferrer">WhatsApp</a>'
+            'rel="noopener noreferrer">Reservar por WhatsApp</a>'
         )
 
     ig = safe_href(payload.get("instagram"))
@@ -343,15 +358,21 @@ def render(payload: dict) -> str:
     validate(payload)
 
     brand = payload["brand_style"]
-    template_path = TEMPLATES_DIR / f"{brand}.html"
+    template_path = TEMPLATES_DIR / "base.html"
     if not template_path.exists():
-        raise ValidationError(f"No existe template para brand_style={brand!r}: {template_path}")
+        raise ValidationError(f"No existe el template base: {template_path}")
+    style_path = STYLES_DIR / f"{brand}.css"
+    if not style_path.exists():
+        raise ValidationError(f"No existe el estilo para brand_style={brand!r}: {style_path}")
     template = template_path.read_text(encoding="utf-8")
+    style_css = style_path.read_text(encoding="utf-8")
 
     public_url = resolve_public_url(payload)
 
     tokens = {
         "{{LANG}}": "es",
+        "{{STYLE_NAME}}": esc(brand),
+        "{{STYLE_CSS}}": style_css,
         "{{PAGE_TITLE}}": esc(f'{payload.get("business_name")} - Servicios'),
         "{{BUSINESS_NAME}}": esc(payload.get("business_name")),
         "{{SHORT_DESCRIPTION}}": esc(payload.get("short_description")),

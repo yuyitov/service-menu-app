@@ -16,8 +16,10 @@ el usuario.
 ## Phase 1 — Generador HTML + demos dummy
 
 - Implementar el generador que transforma `service_menu_payload_public` en HTML estático.
-- Soportar las variantes de `brand_style` (`clean`, `warm`, `premium`).
-- Crear 2–3 páginas demo con datos ficticios para validar diseño y contenido.
+- Soportar los 6 estilos cerrados de `brand_style` (`black-gold`, `soft-blush`,
+  `charcoal-clean`, `warm-sand`, `aqua-clean`, `sage-calm`) mediante un template base
+  común + una paleta CSS por estilo. Sin colores libres.
+- Crear una página demo por estilo (6) con datos ficticios para validar diseño y contenido.
 - Validar contra [QA_CHECKLIST.md](QA_CHECKLIST.md) (secciones de generación, campos,
   mobile, caracteres especiales, links).
 - Sin integración con Stripe/Tally/Worker todavía; payloads de entrada son archivos

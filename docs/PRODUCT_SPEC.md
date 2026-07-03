@@ -46,6 +46,10 @@ La página pública debe soportar:
 - Link público visible.
 - QR descargable.
 - Una corrección incluida post-entrega.
+- Elección entre **6 estilos visuales cerrados** (`black-gold`, `soft-blush`,
+  `charcoal-clean`, `warm-sand`, `aqua-clean`, `sage-calm`). Sin colores libres ni
+  diseño custom; la personalización es siempre por estilo cerrado. Ver
+  [DATA_CONTRACT.md](DATA_CONTRACT.md#estilos-visuales-brand_style).
 
 ## Qué NO incluye el MVP
 

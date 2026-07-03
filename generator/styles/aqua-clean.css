@@ -1,0 +1,14 @@
+/* aqua-clean - limpio, fresco, moderno. Wellness / servicios neutrales / negocios modernos.
+   Paleta: blanco / gris muy claro + aqua / turquesa.
+   (Reemplaza la idea previa de "clean-blue".) */
+:root{
+  --bg:#f2f7f8; --card:#ffffff; --text:#1c3238; --muted:#5d7a80;
+  --line:#e0ebed; --accent:#12a6a6; --accent-ink:#ffffff; --accent-soft:#e2f4f4;
+  --radius:14px; --btn-radius:10px; --badge-radius:999px;
+  --shadow:0 4px 14px rgba(20,120,120,.08);
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; --heading-font:"Segoe UI",system-ui,sans-serif;
+  --heading-spacing:.01em; --tagline-style:normal;
+  --hero-grad:linear-gradient(135deg,#e2f4f4,#cdeaea); --hero-ink:#0f8f8f;
+  --logo-bg:#12a6a6; --logo-ink:#ffffff; --logo-border:transparent;
+  --featured-bg:#e6f5f5; --qr-bg:#f7fbfb;
+}

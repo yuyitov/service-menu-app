@@ -1,0 +1,49 @@
+{
+  "public_slug": "aqua-wellness",
+  "public_url": "https://demo.servicemenu.example/aqua-wellness",
+  "business_name": "Aqua Wellness Spa",
+  "short_description": "Bienestar fresco y moderno para cuerpo y mente",
+  "brand_style": "aqua-clean",
+  "primary_image_url": null,
+  "logo_url": null,
+  "service_categories": ["Hidroterapia", "Masajes", "Bienestar"],
+  "services": [
+    {
+      "category": "Hidroterapia",
+      "name": "Circuito de aguas",
+      "description": "Sauna, vapor & piscina de contraste",
+      "price_label": "$500 MXN"
+    },
+    {
+      "category": "Masajes",
+      "name": "Masaje descontracturante",
+      "price_label": "$780 MXN"
+    },
+    {
+      "category": "Masajes",
+      "name": "Masaje con aromaterapia",
+      "description": "60 min de relajación profunda",
+      "price_label": "$850 MXN"
+    },
+    {
+      "category": "Bienestar",
+      "name": "Sesión de respiración & mindfulness",
+      "price_label": "Consultar"
+    }
+  ],
+  "featured_package": {
+    "name": "Ritual Aqua Reset",
+    "description": "Circuito de aguas + masaje con aromaterapia",
+    "price_label": "$1,150 MXN"
+  },
+  "whatsapp": "+52 55 7788 9900",
+  "instagram": "https://instagram.com/aquawellness.demo",
+  "google_maps_url": "https://maps.google.com/?q=Aqua+Wellness+Spa+Demo",
+  "address": "Blvd. de los Lagos 55, Zona Río, Tijuana",
+  "opening_hours_text": "Lun–Dom 09:00–21:00",
+  "google_reviews_url": null,
+  "policies": [
+    "Reserva tu circuito de aguas con anticipación.",
+    "Trae traje de baño y sandalias."
+  ]
+}

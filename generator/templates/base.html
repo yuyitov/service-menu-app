@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{PAGE_TITLE}}</title>
+<style>
+/* ---- Per-style palette (injected: one of the 6 closed styles) ---- */
+{{STYLE_CSS}}
+
+/* ---- Shared mobile-first layout (identical across all 6 styles) ---- */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);
+  line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:480px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow)}
+.head{padding:24px 22px 10px;text-align:center}
+.logo{width:76px;height:76px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px}
+.logo--placeholder{display:flex;align-items:center;justify-content:center;
+  background:var(--logo-bg);color:var(--logo-ink);font-weight:700;font-size:26px;
+  border:1px solid var(--logo-border)}
+h1{font-family:var(--heading-font);font-size:23px;margin:6px 0 4px;letter-spacing:var(--heading-spacing)}
+.tagline{color:var(--muted);margin:0 0 8px;font-size:15px;font-style:var(--tagline-style)}
+.hero{margin:12px 0 0}
+.hero__img{width:100%;height:auto;display:block}
+.hero--placeholder{height:128px;display:flex;align-items:center;justify-content:center;
+  background:var(--hero-grad)}
+.hero__ph-text{color:var(--hero-ink);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.buttons{display:flex;flex-wrap:wrap;gap:10px;padding:18px 22px}
+.btn{flex:1 1 45%;min-height:48px;display:flex;align-items:center;justify-content:center;
+  text-decoration:none;border-radius:var(--btn-radius);font-weight:600;font-size:15px;
+  background:var(--accent-soft);color:var(--text);border:1px solid var(--line)}
+.btn--wa{flex:1 1 100%;background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:700}
+.section{padding:18px 22px;border-top:1px solid var(--line)}
+.section__title{font-family:var(--heading-font);font-size:12px;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--accent);margin:0 0 12px}
+.svc-cat{margin-bottom:18px}
+.svc-cat__title{font-family:var(--heading-font);font-size:17px;margin:0 0 8px;color:var(--text)}
+.svc-list{list-style:none;margin:0;padding:0}
+.svc{padding:9px 0;border-bottom:1px solid var(--line)}
+.svc:last-child{border-bottom:0}
+.svc__row{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.svc__name{font-weight:600}
+.svc__price{color:var(--accent);font-weight:700;white-space:nowrap}
+.svc__desc{margin:2px 0 0;color:var(--muted);font-size:14px;font-style:var(--tagline-style)}
+.featured{background:var(--featured-bg);border-top-color:var(--accent)}
+.featured__badge{display:inline-block;background:var(--accent);color:var(--accent-ink);font-size:12px;
+  font-weight:700;padding:3px 12px;border-radius:var(--badge-radius);text-transform:uppercase;letter-spacing:.06em}
+.featured__name{font-family:var(--heading-font);font-size:20px;margin:10px 0 4px}
+.featured__desc{margin:0 0 8px;color:var(--muted)}
+.featured__price{font-weight:700;color:var(--accent)}
+.hours,.address{margin:0}
+.address__map{display:inline-block;margin-top:8px;color:var(--accent);text-decoration:none;font-weight:700}
+.policies{margin:0;padding-left:18px;color:var(--muted)}
+.policies li{margin-bottom:5px}
+.qr__box{width:168px;height:168px;margin:0 auto;border:1px solid var(--accent);border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--qr-bg)}
+.qr__grid{width:100px;height:100px;border-radius:4px;opacity:.28;
+  background:
+    repeating-linear-gradient(0deg,var(--accent) 0 8px,transparent 8px 16px),
+    repeating-linear-gradient(90deg,var(--accent) 0 8px,transparent 8px 16px)}
+.qr__label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.qr__note{font-size:13px;color:var(--muted);text-align:center;margin:12px 0 0}
+.qr__url,.link__url{word-break:break-all;color:var(--accent);font-weight:700}
+.link__url{display:inline-block;text-decoration:none}
+.footer{padding:20px 22px;text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body class="style-{{STYLE_NAME}}">
+  <div class="wrap">
+    <main class="card">
+      <header class="head">
+        {{LOGO_BLOCK}}
+        <h1>{{BUSINESS_NAME}}</h1>
+        <p class="tagline">{{SHORT_DESCRIPTION}}</p>
+      </header>
+      {{HERO_BLOCK}}
+      {{BUTTONS_BLOCK}}
+      {{FEATURED_BLOCK}}
+      {{SERVICES_BLOCK}}
+      {{HOURS_BLOCK}}
+      {{ADDRESS_BLOCK}}
+      {{POLICIES_BLOCK}}
+      {{LINK_BLOCK}}
+      {{QR_BLOCK}}
+      {{FOOTER_BLOCK}}
+    </main>
+  </div>
+</body>
+</html>

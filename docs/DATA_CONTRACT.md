@@ -29,7 +29,7 @@ Respuesta del formulario Tally que el cliente llena post-pago.
 | `business_name` | string | |
 | `service_type` | string | Ej: "salon", "spa", "barbershop". |
 | `short_description` | string | |
-| `brand_style` | enum | `clean` \| `warm` \| `premium`. |
+| `brand_style` | enum | Uno de los 6 estilos cerrados. Ver [Estilos visuales](#estilos-visuales-brand_style). |
 | `primary_image_url` | string (URL) \| null | Opcional. Si ausente, el generador usa placeholder/template. |
 | `logo_url` | string (URL) \| null | Opcional. Si ausente, el generador usa placeholder/template. |
 | `service_categories` | array<string> | |
@@ -89,6 +89,24 @@ horario estructurado (ej. para integraciones futuras con Google Business Profile
 el generador de la página debe usar una imagen/placeholder de template por defecto, nunca
 dejar la sección rota o vacía.
 
+#### Estilos visuales (`brand_style`)
+
+`brand_style` acepta **exactamente uno** de estos 6 estilos cerrados y aprobados. No se
+permiten colores libres ni personalización fuera de esta lista: la personalización visual
+es siempre por estilo cerrado, para mantener el producto automatizable y consistente.
+
+| `brand_style` | Sensación | Ideal para | Paleta |
+|---|---|---|---|
+| `black-gold` | Premium, elegante, lujo | Spa premium, med spa, estética premium | Negro / azul-negro + crema cálido + dorado |
+| `soft-blush` | Femenino, estético, delicado | Estéticas, lashes, brows, nails, faciales | Blush / nude rosado + café profundo / gris cálido |
+| `charcoal-clean` | Sobrio, moderno, masculino, minimalista | Barberías, grooming, negocios masculinos | Gris carbón / negro suave + blanco hueso + gris claro |
+| `warm-sand` | Cálido, cercano, boutique | Nails, salones, wellness cálido | Arena / beige / crema + terracota |
+| `aqua-clean` | Limpio, fresco, moderno | Wellness, servicios neutrales, negocios modernos | Blanco / gris muy claro + aqua / turquesa |
+| `sage-calm` | Natural, relajante, orgánico | Wellness, yoga, masajes, terapias holísticas | Salvia / marfil / verde suave |
+
+`aqua-clean` reemplaza la idea previa de `clean-blue`. Los estilos base anteriores
+(`clean` / `warm` / `premium`) quedan **obsoletos** y ya no son valores válidos.
+
 ### 3. `service_menu_payload_public`
 
 Payload final, saneado, que consume el generador de la página pública (GitHub Actions →
@@ -100,7 +118,7 @@ interno (sin `payment_intent_id`, sin `customer_email` completo, etc.).
 | `public_slug` | string | Slug único usado en la URL pública. |
 | `business_name` | string | |
 | `short_description` | string | |
-| `brand_style` | enum | `clean` \| `warm` \| `premium`. |
+| `brand_style` | enum | Uno de los 6 estilos cerrados. Ver [Estilos visuales](#estilos-visuales-brand_style). |
 | `primary_image_url` | string (URL) \| null | Opcional. Ausente → placeholder/template. |
 | `logo_url` | string (URL) \| null | Opcional. Ausente → placeholder/template. |
 | `service_categories` | array<string> | |

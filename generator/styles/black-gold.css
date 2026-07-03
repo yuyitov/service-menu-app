@@ -1,0 +1,13 @@
+/* black-gold - premium, elegante, lujo. Spa premium / med spa / estetica premium.
+   Paleta: azul-negro + crema calido + dorado. */
+:root{
+  --bg:#101018; --card:#191922; --text:#efe7d6; --muted:#a89e88;
+  --line:#2b2c39; --accent:#c9a24b; --accent-ink:#14140f; --accent-soft:#221f16;
+  --radius:12px; --btn-radius:8px; --badge-radius:4px;
+  --shadow:0 12px 34px rgba(0,0,0,.45);
+  --font:"Georgia","Times New Roman",serif; --heading-font:"Georgia",serif;
+  --heading-spacing:.04em; --tagline-style:italic;
+  --hero-grad:linear-gradient(135deg,#23232f,#17171f); --hero-ink:#c9a24b;
+  --logo-bg:transparent; --logo-ink:#c9a24b; --logo-border:#c9a24b;
+  --featured-bg:#332a12; --qr-bg:#14141c;
+}

@@ -1,0 +1,13 @@
+/* warm-sand - calido, cercano, boutique. Nails / salones / wellness calido.
+   Paleta: arena / beige / crema + terracota. */
+:root{
+  --bg:#f6ede0; --card:#fffaf2; --text:#4a3a2a; --muted:#8a7358;
+  --line:#ece0cf; --accent:#c06a43; --accent-ink:#fffaf2; --accent-soft:#f3e4d3;
+  --radius:18px; --btn-radius:999px; --badge-radius:999px;
+  --shadow:0 6px 20px rgba(160,90,40,.10);
+  --font:"Georgia","Segoe UI",serif; --heading-font:"Georgia",serif;
+  --heading-spacing:.01em; --tagline-style:italic;
+  --hero-grad:linear-gradient(135deg,#f3e4d3,#eecfb4); --hero-ink:#9a6b47;
+  --logo-bg:#c06a43; --logo-ink:#fffaf2; --logo-border:transparent;
+  --featured-bg:#f3e4d3; --qr-bg:#fffdf8;
+}

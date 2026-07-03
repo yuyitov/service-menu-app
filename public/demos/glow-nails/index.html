@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Glow Nails Studio - Servicios</title>
+<style>
+  :root{
+    --bg:#fbf3ea; --card:#fffaf4; --text:#4a3628; --muted:#8a7360;
+    --line:#efe0d1; --accent:#c9662e; --accent-soft:#f6e6d8; --accent-ink:#fffaf4; --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Georgia","Segoe UI",serif;line-height:1.55;-webkit-text-size-adjust:100%}
+  .wrap{max-width:480px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;box-shadow:0 6px 20px rgba(160,90,40,.08)}
+  .head{padding:24px 22px 10px;text-align:center}
+  .logo{width:78px;height:78px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px}
+  .logo--placeholder{display:flex;align-items:center;justify-content:center;
+    background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:27px}
+  h1{font-size:24px;margin:6px 0 4px;letter-spacing:.01em}
+  .tagline{color:var(--muted);margin:0 0 8px;font-size:15px;font-style:italic}
+  .hero{margin:14px 0 0}
+  .hero__img{width:100%;height:auto;display:block}
+  .hero--placeholder{height:160px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#f6e6d8,#f0d3bd)}
+  .hero__ph-text{color:var(--muted);font-size:14px;letter-spacing:.05em;text-transform:uppercase}
+  .buttons{display:flex;flex-wrap:wrap;gap:10px;padding:18px 22px}
+  .btn{flex:1 1 45%;min-height:48px;display:flex;align-items:center;justify-content:center;
+    text-decoration:none;border-radius:999px;font-weight:700;font-size:15px;
+    background:var(--accent-soft);color:var(--text);border:1px solid var(--line)}
+  .btn--wa{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+  .section{padding:18px 22px;border-top:1px solid var(--line)}
+  .section__title{font-size:13px;text-transform:uppercase;letter-spacing:.09em;
+    color:var(--accent);margin:0 0 12px}
+  .svc-cat{margin-bottom:18px}
+  .svc-cat__title{font-size:17px;margin:0 0 8px}
+  .svc-list{list-style:none;margin:0;padding:0}
+  .svc{padding:9px 0;border-bottom:1px dotted var(--line)}
+  .svc:last-child{border-bottom:0}
+  .svc__row{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+  .svc__name{font-weight:700}
+  .svc__price{color:var(--accent);font-weight:700;white-space:nowrap}
+  .svc__desc{margin:2px 0 0;color:var(--muted);font-size:14px;font-style:italic}
+  .featured{background:var(--accent-soft)}
+  .featured__badge{display:inline-block;background:var(--accent);color:#fff;font-size:12px;
+    font-weight:700;padding:3px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+  .featured__name{font-size:20px;margin:10px 0 4px}
+  .featured__desc{margin:0 0 8px;color:var(--muted)}
+  .featured__price{font-weight:700;color:var(--accent)}
+  .hours,.address{margin:0}
+  .address__map{display:inline-block;margin-top:8px;color:var(--accent);text-decoration:none;font-weight:700}
+  .policies{margin:0;padding-left:18px;color:var(--muted)}
+  .policies li{margin-bottom:5px}
+  .qr__box{width:168px;height:168px;margin:0 auto;border:1px solid var(--line);border-radius:16px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#fffdfa}
+  .qr__grid{width:100px;height:100px;border-radius:6px;
+    background:
+      repeating-linear-gradient(0deg,var(--accent) 0 8px,transparent 8px 16px),
+      repeating-linear-gradient(90deg,var(--accent) 0 8px,transparent 8px 16px);
+    opacity:.22}
+  .qr__label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .qr__note{font-size:13px;color:var(--muted);text-align:center;margin:12px 0 0}
+  .qr__url,.link__url{word-break:break-all;color:var(--accent);font-weight:700}
+  .link__url{display:inline-block;text-decoration:none}
+  .footer{padding:20px 22px;text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <main class="card">
+      <header class="head">
+        <div class="logo logo--placeholder" aria-hidden="true">GN</div>
+        <h1>Glow Nails Studio</h1>
+        <p class="tagline">Uñas que brillan, manos que enamoran 💅</p>
+      </header>
+      <div class="hero hero--placeholder" role="img" aria-label="Glow Nails Studio"><span class="hero__ph-text">Imagen del negocio</span></div>
+      <nav class="buttons"><a class="btn btn--wa" href="https://wa.me/523398765432" target="_blank" rel="noopener noreferrer">WhatsApp</a><a class="btn btn--ig" href="https://instagram.com/glownails.demo" target="_blank" rel="noopener noreferrer">Instagram</a><a class="btn btn--maps" href="https://maps.google.com/?q=Glow+Nails+Studio+Demo" target="_blank" rel="noopener noreferrer">Google Maps</a></nav>
+      <section class="section featured"><div class="featured__badge">Destacado</div><h2 class="featured__name">Combo Manos &amp; Pies</h2><p class="featured__desc">Manicura gelish + pedicura spa en una sola visita</p><div class="featured__price">$590 MXN</div></section>
+      <section class="section" id="servicios"><h2 class="section__title">Servicios</h2><div class="svc-cat"><h3 class="svc-cat__title">Manicura</h3><ul class="svc-list"><li class="svc"><div class="svc__row"><span class="svc__name">Manicura express</span><span class="svc__price">$180 MXN</span></div><p class="svc__desc">Limado, cutícula &amp; esmalte tradicional</p></li><li class="svc"><div class="svc__row"><span class="svc__name">Gelish (esmalte semipermanente)</span><span class="svc__price">$320 MXN</span></div></li></ul></div><div class="svc-cat"><h3 class="svc-cat__title">Pedicura</h3><ul class="svc-list"><li class="svc"><div class="svc__row"><span class="svc__name">Pedicura spa</span><span class="svc__price">$350 MXN</span></div><p class="svc__desc">Exfoliación + masaje &amp; esmalte</p></li></ul></div><div class="svc-cat"><h3 class="svc-cat__title">Extras</h3><ul class="svc-list"><li class="svc"><div class="svc__row"><span class="svc__name">Diseño / nail art</span><span class="svc__price">Desde $30 MXN</span></div><p class="svc__desc">Por uña, desde diseños simples a 3D</p></li></ul></div></section>
+      <section class="section"><h2 class="section__title">Horarios</h2><p class="hours">Mar–Sáb 11:00–19:00 · Dom y Lun cerrado</p></section>
+      <section class="section"><h2 class="section__title">Donde estamos</h2><p class="address">Calle Morelos 45, Col. Americana, Guadalajara</p><a class="address__map" href="https://maps.google.com/?q=Glow+Nails+Studio+Demo" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a></section>
+      <section class="section"><h2 class="section__title">Politicas</h2><ul class="policies"><li>Se requiere anticipo para citas de nail art elaborado.</li><li>Reagenda sin costo avisando con 12 h de anticipación.</li></ul></section>
+      <section class="section link"><h2 class="section__title">Tu link</h2><a class="link__url" href="https://demo.servicemenu.example/glow-nails" target="_blank" rel="noopener noreferrer">https://demo.servicemenu.example/glow-nails</a></section>
+      <section class="section qr" id="qr-kit"><h2 class="section__title">QR Kit</h2><div class="qr__box" role="img" aria-label="Codigo QR (placeholder)"><div class="qr__grid" aria-hidden="true"></div><span class="qr__label">QR placeholder</span></div><p class="qr__note">El QR real (escaneable, descargable) se genera en Phase 2/2B. Apuntara a: <br><span class="qr__url">https://demo.servicemenu.example/glow-nails</span></p></section>
+      <footer class="footer">Pagina creada con Service Menu App - Demo (Phase 1)</footer>
+    </main>
+  </div>
+</body>
+</html>

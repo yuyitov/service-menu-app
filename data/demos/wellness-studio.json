@@ -1,0 +1,40 @@
+{
+  "public_slug": "wellness-studio",
+  "public_url": "https://demo.servicemenu.example/wellness-studio",
+  "business_name": "Renacer Wellness Studio",
+  "short_description": "Yoga, meditación y bienestar para tu día a día",
+  "brand_style": "clean",
+  "primary_image_url": null,
+  "logo_url": null,
+  "service_categories": ["Clases", "Terapias"],
+  "services": [
+    {
+      "category": "Clases",
+      "name": "Hatha Yoga",
+      "description": "Clase grupal para todos los niveles",
+      "price_label": "$150 MXN / clase"
+    },
+    {
+      "category": "Clases",
+      "name": "Vinyasa Flow",
+      "price_label": "$180 MXN / clase"
+    },
+    {
+      "category": "Terapias",
+      "name": "Sesión de meditación guiada",
+      "description": "Individual, 45 minutos",
+      "price_label": "Consultar"
+    }
+  ],
+  "featured_package": null,
+  "whatsapp": "+52 55 4455 6677",
+  "instagram": null,
+  "google_maps_url": "https://maps.google.com/?q=Renacer+Wellness+Studio+Demo",
+  "address": "Insurgentes Sur 800, Col. Del Valle, CDMX",
+  "opening_hours_text": "Lun–Vie 07:00–21:00 · Sáb 08:00–14:00 · Dom cerrado",
+  "google_reviews_url": null,
+  "policies": [
+    "Reserva tu lugar por WhatsApp antes de cada clase.",
+    "Trae tu propio tapete o renta uno en recepción."
+  ]
+}

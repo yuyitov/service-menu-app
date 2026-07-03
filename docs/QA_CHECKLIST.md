@@ -1,0 +1,114 @@
+# QA Checklist — Service Menu App
+
+## Phase 1 — Verificación del generador (local)
+
+Pasos concretos para validar el generador estático de Phase 1:
+
+- [ ] `python generator/generate_service_menu.py` corre sin errores y reporta
+      "Generadas 3/3 paginas".
+- [ ] Se crean `public/demos/{bella-spa,glow-nails,wellness-studio}/index.html`.
+- [ ] Un payload al que le falta un campo requerido falla con mensaje claro y exit code
+      distinto de 0 (no genera página incompleta).
+- [ ] Los tres estilos (`clean`, `warm`, `premium`) renderizan y se distinguen visualmente.
+- [ ] En una demo sin `logo_url` / `primary_image_url`, aparece el placeholder visual
+      (nunca una imagen rota).
+- [ ] En una demo sin `featured_package` / `instagram` / `google_reviews_url`, esas
+      secciones/botones se omiten limpiamente (sin huecos ni "undefined").
+- [ ] Caracteres especiales (tildes, ñ, `&`, comillas, emoji) se ven bien y aparecen
+      escapados en el HTML (`&amp;`, `&quot;`), sin romper la página.
+- [ ] Se ve correctamente en viewport mobile (~375px).
+- [ ] La sección "QR Kit" muestra el placeholder y el `public_url` al que apuntará.
+- [ ] El link visible apunta al `public_url` del payload.
+- [ ] No hay referencias a MyGuest ni secrets en `generator/`, `data/`, `public/`.
+
+## Generación de página dummy
+
+- [ ] Se puede generar una página completa a partir de un `service_menu_payload_public`
+      de ejemplo, sin depender de Stripe/Tally/Worker reales.
+- [ ] La página generada renderiza correctamente todos los campos presentes.
+- [ ] La página generada omite limpiamente los campos opcionales ausentes (sin mostrar
+      secciones vacías o "undefined").
+
+## Validación de campos requeridos
+
+- [ ] `business_name`, `short_description`, `services`, `whatsapp`, `address`,
+      `opening_hours_text`, `google_maps_url`, `public_slug`, `brand_style` presentes y
+      no vacíos.
+- [ ] Falla de forma clara (error legible) si falta un campo requerido, en vez de
+      generar una página incompleta silenciosamente.
+- [ ] `services[]` con al menos un servicio.
+
+## Mobile responsive
+
+- [ ] La página se ve correctamente en viewport mobile (375px de ancho aprox.).
+- [ ] Botones de WhatsApp/Instagram/Maps son tocables cómodamente en mobile (tamaño de
+      touch target adecuado).
+- [ ] El QR es visible y legible también en la versión mobile si se muestra inline.
+
+## Caracteres especiales
+
+- [ ] Nombres de negocio y servicios con tildes, ñ, emojis no rompen el render.
+- [ ] Comillas, ampersands (`&`) y otros caracteres HTML-sensibles se escapan
+      correctamente (sin romper el HTML ni permitir inyección).
+
+## Links
+
+- [ ] Link de WhatsApp abre correctamente con el número y formato esperado
+      (`https://wa.me/<numero>`).
+- [ ] Link de Instagram (si presente) apunta al perfil correcto.
+- [ ] Link de Google Maps abre la ubicación correcta.
+- [ ] Link de Google Reviews (si presente) funciona y apunta al negocio correcto.
+
+## QR
+
+- [ ] El QR generado apunta exactamente al `public_url` de la página.
+- [ ] El QR es descargable en un formato usable (PNG/SVG) y con resolución suficiente
+      para impresión.
+- [ ] El QR escanea correctamente desde un dispositivo real.
+
+## Link visible
+
+- [ ] El `public_url` es corto, legible y basado en el `public_slug` (sin IDs opacos
+      innecesarios).
+- [ ] El slug es único (sin colisiones entre negocios distintos).
+
+## Email de entrega
+
+- [ ] El email de entrega incluye `public_url`, el QR (adjunto o embebido) y el link de
+      corrección.
+- [ ] El email llega al `customer_email` correcto asociado al `order_id`.
+- [ ] El asunto y contenido del email son claros sobre qué hacer a continuación.
+
+## Correction link one-time
+
+- [ ] El link de corrección funciona una primera vez.
+- [ ] El mismo link, usado una segunda vez, es rechazado.
+- [ ] Un `correction_token` inválido o de otro pedido es rechazado.
+- [ ] Los cambios enviados vía corrección se reflejan correctamente en la página
+      republicada.
+
+## No tocar MyGuest
+
+- [ ] Ningún archivo del repo de MyGuest fue modificado durante el trabajo en este
+      proyecto.
+- [ ] Ningún Worker, KV namespace, workflow o secret de MyGuest fue tocado.
+- [ ] `git status`/diff en el repo de MyGuest (si aplica) no muestra cambios inesperados.
+
+## No secrets en repo
+
+- [ ] No hay archivos `.env`, credenciales ni claves API commiteadas en el repo de
+      Service Menu App.
+- [ ] `.gitignore` cubre archivos de configuración local con secrets antes de que exista
+      alguno.
+
+## Build limpio
+
+- [ ] El proceso de generación de la página corre sin errores ni warnings inesperados.
+- [ ] No quedan archivos temporales o de debug commiteados tras un build.
+
+## Prueba end-to-end futura (cuando exista integración real)
+
+- [ ] Flujo completo: pago dummy → intake dummy → generación → publicación → entrega →
+      corrección, verificado de punta a punta en un entorno de pruebas.
+- [ ] Verificar idempotencia: reenviar el mismo webhook de Stripe/Tally no duplica el
+      pedido ni la página.

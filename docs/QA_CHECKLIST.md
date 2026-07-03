@@ -43,6 +43,23 @@ Pasos concretos para validar el generador estático de Phase 1:
       demos y valida assets/tokens/secrets/MyGuest **sin** publicar a GitHub Pages ni usar
       secrets.
 
+## Phase 3B — Demos públicas en GitHub Pages
+
+- [ ] GitHub Pages está habilitado en el repo `yuyitov/service-menu-app` con build
+      "GitHub Actions" (no branch).
+- [ ] El workflow `.github/workflows/pages.yml` corre en push a `main`, regenera las 6
+      demos desde cero y repite las validaciones (outputs, tokens, secrets, MyGuest).
+- [ ] `pages.yml` publica **solo** la carpeta `public/` y usa permisos mínimos
+      (`contents: read`, `pages: write`, `id-token: write`), sin secrets configurados.
+- [ ] Los 6 `public_url` de `data/demos/*.json` apuntan a
+      `https://yuyitov.github.io/service-menu-app/demos/<slug>/` (no localhost, no
+      dominio dummy, no dominio custom).
+- [ ] Cada `qr.svg` regenerado codifica la URL pública real de su demo.
+- [ ] Las 6 URLs públicas abren en navegador (HTTP 200) y muestran la página correcta.
+- [ ] Al menos un `qr.svg` público responde HTTP 200 y es un SVG válido.
+- [ ] `generate-demos.yml` sigue existiendo y pasando como workflow de validación.
+- [ ] MyGuest no fue tocado; no hay Stripe/Tally/Worker/KV/emails implementados.
+
 ## Generación de página dummy
 
 - [ ] Se puede generar una página completa a partir de un `service_menu_payload_public`

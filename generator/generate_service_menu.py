@@ -56,8 +56,9 @@ BRAND_STYLES = (
 )
 
 # Fallback base URL used only if a demo payload omits `public_url`.
-# Intentionally a dummy/demo host - no private or real links in Phase 1.
-DEMO_BASE_URL = "https://demo.servicemenu.example"
+# Phase 3B: demos are published on GitHub Pages, so the fallback mirrors
+# the real public base (still no secrets and no private links).
+DEMO_BASE_URL = "https://yuyitov.github.io/service-menu-app/demos"
 
 # Required top-level fields for a minimally valid public payload.
 REQUIRED_FIELDS = (

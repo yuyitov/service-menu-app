@@ -1,0 +1,104 @@
+name: pages
+
+# Phase 3B: publica las 6 demos (carpeta public/) en GitHub Pages.
+# NO usa secrets, NO depende de MyGuest, NO publica nada fuera de public/.
+# generate-demos.yml sigue siendo el workflow de validacion en push/PR.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permisos minimos para publicar a GitHub Pages via Actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Solo un deploy de Pages a la vez; no cancelar deploys en curso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies (if requirements.txt exists)
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Generate the 6 demos from scratch
+        run: python generator/generate_service_menu.py
+
+      - name: Verify expected outputs exist (index.html + qr.svg per demo)
+        run: |
+          set -e
+          demos="bella-spa studio-blush north-barber glow-nails aqua-wellness sage-studio"
+          missing=0
+          for slug in $demos; do
+            for asset in index.html qr.svg; do
+              path="public/demos/$slug/$asset"
+              if [ ! -f "$path" ]; then
+                echo "FALTA: $path"
+                missing=1
+              fi
+            done
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Faltan archivos esperados."
+            exit 1
+          fi
+          echo "OK: las 6 demos tienen index.html y qr.svg."
+
+      - name: Verify no unreplaced {{...}} tokens in generated HTML
+        run: |
+          if grep -rl "{{" public/demos/ ; then
+            echo "Hay tokens {{...}} sin reemplazar en la salida."
+            exit 1
+          fi
+          echo "OK: sin tokens residuales."
+
+      - name: Verify no obvious secrets committed
+        run: |
+          if grep -rniE "api[_-]?key|secret_key|password|bearer |sk_live_|sk_test_|-----BEGIN" \
+               generator/ data/ public/ ; then
+            echo "Posible secreto detectado."
+            exit 1
+          fi
+          echo "OK: sin secrets obvios."
+
+      - name: Verify no MyGuest references in code/data/output
+        run: |
+          if grep -rnil "myguest" generator/ data/ public/ ; then
+            echo "Referencia a MyGuest encontrada en code/data/output."
+            exit 1
+          fi
+          echo "OK: sin referencias a MyGuest."
+
+      - name: Upload public/ as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

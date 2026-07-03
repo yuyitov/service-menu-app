@@ -42,7 +42,7 @@ incluida vía un link de un solo uso.
 
 ## Estado actual
 
-**Phase 2 — QR estático + GitHub Actions (validación).**
+**Phase 3B — Demos públicas en GitHub Pages.**
 
 Phase 0 (documentación) y Phase 1 (generador + 6 estilos) están aprobadas. El generador
 convierte un payload `service_menu_payload_public` (JSON dummy) en una página pública
@@ -54,11 +54,35 @@ Phase 2 agrega un **QR real estático** (`qr.svg`) por demo, apuntando al `publi
 una sección "Comparte esta página" (QR + link visible + botón "Abrir página"). Un workflow
 de GitHub Actions **valida** la generación de las 6 demos en cada push/PR.
 
-Todavía **no** hay Stripe, Tally, Cloudflare Worker/KV ni emails reales, y **no** se
-publica a GitHub Pages (fases posteriores). Los uploads de imágenes siguen fuera de
-alcance: si faltan `primary_image_url` / `logo_url`, el generador usa un placeholder visual.
+Phase 3A conectó el repo a GitHub (`yuyitov/service-menu-app`) y validó el workflow de CI.
+Phase 3B publica la carpeta `public/` en **GitHub Pages** vía un workflow dedicado
+(`pages.yml`), sin secrets. Los `public_url` de las demos y sus QR apuntan a las URLs
+públicas reales.
+
+Todavía **no** hay Stripe, Tally, Cloudflare Worker/KV, emails reales, dashboard, login ni
+dominio custom (fases posteriores). Los uploads de imágenes siguen fuera de alcance: si
+faltan `primary_image_url` / `logo_url`, el generador usa un placeholder visual.
 
 Ver [docs/ROADMAP.md](docs/ROADMAP.md) para las fases siguientes.
+
+## Demos públicas (GitHub Pages)
+
+Base: `https://yuyitov.github.io/service-menu-app/`
+
+| Demo | URL pública |
+|---|---|
+| Bella Spa | https://yuyitov.github.io/service-menu-app/demos/bella-spa/ |
+| Studio Blush | https://yuyitov.github.io/service-menu-app/demos/studio-blush/ |
+| North Barber | https://yuyitov.github.io/service-menu-app/demos/north-barber/ |
+| Glow Nails | https://yuyitov.github.io/service-menu-app/demos/glow-nails/ |
+| Aqua Wellness | https://yuyitov.github.io/service-menu-app/demos/aqua-wellness/ |
+| Sage Studio | https://yuyitov.github.io/service-menu-app/demos/sage-studio/ |
+
+El QR de cada demo está en `.../demos/<slug>/qr.svg` y codifica la URL pública de esa demo.
+
+Para probar Pages: haz push a `main`, espera a que el workflow `pages` termine en la
+pestaña Actions, y abre cualquiera de las URLs de la tabla (o escanea el QR desde la
+sección "Comparte esta página").
 
 ## Cómo correr el generador
 
@@ -96,7 +120,8 @@ data/demos/                  # payloads dummy (1 por estilo: bella-spa, studio-b
                              #   north-barber, glow-nails, aqua-wellness, sage-studio)
 public/demos/                # salida generada (index.html + qr.svg por slug)
 requirements.txt             # dependencia fijada (segno)
-.github/workflows/           # generate-demos.yml (valida la generación en push/PR)
+.github/workflows/           # generate-demos.yml (valida en push/PR)
+                             # pages.yml (publica public/ a GitHub Pages en push a main)
 ```
 
 ## Documentación

@@ -38,7 +38,24 @@ el usuario.
   aborda en una fase posterior. Convenciones de naming en
   [ARCHITECTURE.md](ARCHITECTURE.md#naming-sugerido).
 
-## Phase 3 — Worker + KV
+## Phase 3A — Repo en GitHub + CI validado ✅
+
+- Repo remoto `yuyitov/service-menu-app` creado, rama `main`, primer push hecho.
+- Workflow `generate-demos.yml` corrió y pasó en GitHub Actions.
+- Sin secrets, sin Pages, sin tocar MyGuest.
+
+## Phase 3B — Demos públicas en GitHub Pages ✅
+
+- GitHub Pages habilitado para este repo (build via GitHub Actions, sin secrets).
+- Workflow `pages.yml`: en push a `main` regenera las demos, repite las validaciones y
+  publica **solo `public/`** con permisos mínimos.
+- `public_url` de los 6 payloads demo actualizados a
+  `https://yuyitov.github.io/service-menu-app/demos/<slug>/`; QRs regenerados apuntando a
+  las URLs públicas reales.
+- `generate-demos.yml` se mantiene como validación separada.
+- Sin dominio custom, sin Stripe/Tally/Worker/KV/emails (fases posteriores).
+
+## Phase 3C — Worker + KV
 
 - Cloudflare Worker propio (`service-menu-worker`) con KV namespace propio
   (`SERVICE_MENU_KV`).

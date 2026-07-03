@@ -111,6 +111,22 @@ para aprobar el diseño antes de escribir código de integración.
   `index.html` + `qr.svg` sin errores, sin tokens residuales, sin secrets y sin
   referencias a MyGuest.
 
+## Demos públicas en GitHub Pages (Phase 3B)
+
+- Phase 3A conectó el repo a GitHub (`yuyitov/service-menu-app`, rama `main`) y validó
+  `generate-demos.yml` en Actions.
+- Phase 3B **publica las demos** en GitHub Pages mediante un workflow dedicado
+  (`.github/workflows/pages.yml`): en cada push a `main` regenera las 6 demos desde cero,
+  repite las verificaciones de validación (outputs, tokens, secrets, MyGuest) y despliega
+  **solo la carpeta `public/`** con `actions/upload-pages-artifact` + `actions/deploy-pages`.
+- El deploy usa el `GITHUB_TOKEN` efímero del propio workflow con permisos mínimos
+  (`contents: read`, `pages: write`, `id-token: write`). **No usa secrets configurados.**
+- URL base pública: `https://yuyitov.github.io/service-menu-app/`. Los `public_url` de los
+  6 payloads demo y sus QR apuntan a `.../demos/<slug>/`.
+- `generate-demos.yml` se mantiene como workflow de **validación** independiente en
+  push/PR; `pages.yml` es el único que despliega.
+- Sin dominio custom todavía (fase posterior).
+
 ## Separación total respecto a MyGuest
 
 - Repo propio, sin relación de historial git con el repo de MyGuest.

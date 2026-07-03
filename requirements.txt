@@ -1,0 +1,7 @@
+# Service Menu App - Phase 2 dependencies
+#
+# segno: generacion de codigos QR como SVG estatico.
+#   - Python puro, cero dependencias (no requiere Pillow ni libs de imagen pesadas).
+#   - Salida SVG nativa, ideal para un asset estatico escalable y ligero.
+# Se usa solo para generar public/demos/<slug>/qr.svg durante la generacion.
+segno==1.6.6

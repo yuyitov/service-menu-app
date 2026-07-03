@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Service Menu App - Phase 1 static HTML generator.
+"""Service Menu App - static HTML + QR generator (Phase 2).
 
 Reads a dummy `service_menu_payload_public` JSON, validates the minimum
 required fields, escapes all dynamic content, and renders a mobile-first
@@ -10,11 +10,13 @@ Rendering uses a single shared structural template (templates/base.html) plus a
 per-style palette file (styles/<brand_style>.css). Colors are never free-form:
 only the six approved closed styles are accepted.
 
-Phase 1 scope only. This script:
-  - does NOT talk to Stripe, Tally, Cloudflare Worker/KV, GitHub Actions or email.
-  - does NOT download or process images (there is no Worker in Phase 1).
-  - uses ONLY the Python standard library (no external dependencies).
-  - renders a clear QR placeholder; real QR generation is deferred to Phase 2/2B.
+For each demo it also writes a real, static, scannable QR code as SVG next to the
+page (public/demos/<slug>/qr.svg) pointing at the payload's public_url.
+
+Scope note. This script still does NOT talk to Stripe, Tally, Cloudflare
+Worker/KV or email, does NOT deploy to GitHub Pages, and does NOT download or
+process user images. The QR is a static asset (not dynamic, no tracking, no
+tokens). The only third-party dependency is `segno` (pure Python, QR -> SVG).
 
 Usage:
     python generator/generate_service_menu.py               # build all demos in data/demos/
@@ -24,10 +26,16 @@ Usage:
 from __future__ import annotations
 
 import html
+import io
 import json
 import re
 import sys
 from pathlib import Path
+
+try:
+    import segno
+except ImportError:  # pragma: no cover - clear guidance if dependency missing
+    segno = None
 
 # Repo layout (this file lives in <repo>/generator/).
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -302,43 +310,70 @@ def build_policies(payload: dict) -> str:
     )
 
 
-def build_qr(public_url: str) -> str:
-    """QR Kit block.
+QR_ASSET_NAME = "qr.svg"
 
-    Phase 1 renders a *placeholder* QR (no external dependency added just to
-    encode a QR). Real scannable QR generation is deferred to Phase 2 / 2B,
-    where it will be produced as a static asset by GitHub Actions.
+
+def make_qr_svg(public_url: str) -> str:
+    """Return a scannable QR code as a STANDALONE SVG document encoding `public_url`.
+
+    Uses segno (pure Python, no image libraries) via `save(kind="svg")`, which
+    emits a proper standalone SVG (XML declaration + `xmlns`). This is required
+    so the file works both when opened directly and when loaded as an external
+    image via `<img src="qr.svg">` (segno's `svg_inline` omits the namespace and
+    is only valid when embedded inline in HTML — that produced the broken image).
+
+    Dark modules on a solid white background for high contrast on every style,
+    including the dark black-gold theme.
     """
-    url = esc(public_url)
-    return (
-        '<section class="section qr" id="qr-kit">'
-        '<h2 class="section__title">QR Kit</h2>'
-        '<div class="qr__box" role="img" aria-label="Codigo QR (placeholder)">'
-        '<div class="qr__grid" aria-hidden="true"></div>'
-        '<span class="qr__label">QR placeholder</span></div>'
-        f'<p class="qr__note">El QR real (escaneable, descargable) se genera en Phase 2/2B. '
-        f'Apuntara a: <br><span class="qr__url">{url}</span></p>'
-        "</section>"
-    )
+    if segno is None:
+        raise ValidationError(
+            "Falta la dependencia 'segno' para generar el QR. "
+            "Instala con: pip install -r requirements.txt"
+        )
+    qr = segno.make(public_url, error="m")
+    buff = io.BytesIO()
+    # save(kind="svg") -> standalone SVG (xmldecl + svgns default True).
+    qr.save(buff, kind="svg", scale=4, border=2, dark="#111111", light="#ffffff")
+    return buff.getvalue().decode("utf-8")
 
 
-def build_link(public_url: str) -> str:
+def build_share(public_url: str) -> str:
+    """"Comparte esta pagina" section: QR image + visible link + open button.
+
+    The QR references the static asset written next to the page (qr.svg). No
+    JavaScript, no external scripts, no tracking.
+    """
     href = safe_href(public_url)
     shown = esc(public_url)
-    if href:
-        link = f'<a class="link__url" href="{href}" target="_blank" rel="noopener noreferrer">{shown}</a>'
-    else:
-        link = f'<span class="link__url">{shown}</span>'
+    alt = esc(f"Codigo QR de {public_url}")
+
+    link_line = (
+        f'<a class="link__url" href="{href}" target="_blank" rel="noopener noreferrer">{shown}</a>'
+        if href
+        else f'<span class="link__url">{shown}</span>'
+    )
+    open_btn = (
+        f'<a class="btn btn--wa qr__open" href="{href}" target="_blank" '
+        'rel="noopener noreferrer">Abrir pagina</a>'
+        if href
+        else ""
+    )
     return (
-        '<section class="section link"><h2 class="section__title">Tu link</h2>'
-        f'{link}</section>'
+        '<section class="section qr" id="compartir">'
+        '<h2 class="section__title">Comparte esta pagina</h2>'
+        '<p class="qr__lead">Usa este QR o comparte el link directo.</p>'
+        f'<div class="qr__box"><img class="qr__img" src="{esc(QR_ASSET_NAME)}" '
+        f'alt="{alt}" width="180" height="180"></div>'
+        f'<p class="qr__url-line">{link_line}</p>'
+        f'{open_btn}'
+        "</section>"
     )
 
 
 def build_footer() -> str:
     return (
         '<footer class="footer">'
-        'Pagina creada con Service Menu App - Demo (Phase 1)'
+        'Pagina creada con Service Menu App - Demo'
         "</footer>"
     )
 
@@ -384,8 +419,7 @@ def render(payload: dict) -> str:
         "{{HOURS_BLOCK}}": build_hours(payload),
         "{{ADDRESS_BLOCK}}": build_address(payload),
         "{{POLICIES_BLOCK}}": build_policies(payload),
-        "{{QR_BLOCK}}": build_qr(public_url),
-        "{{LINK_BLOCK}}": build_link(public_url),
+        "{{SHARE_BLOCK}}": build_share(public_url),
         "{{FOOTER_BLOCK}}": build_footer(),
     }
 
@@ -402,10 +436,13 @@ def build_one(json_path: Path) -> Path:
     payload = json.loads(json_path.read_text(encoding="utf-8"))
     slug = str(payload.get("public_slug", "")).strip() or json_path.stem
     html_out = render(payload)
+    qr_svg = make_qr_svg(resolve_public_url(payload))
+
     out_dir = OUTPUT_DIR / slug
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file = out_dir / "index.html"
     out_file.write_text(html_out, encoding="utf-8")
+    (out_dir / QR_ASSET_NAME).write_text(qr_svg, encoding="utf-8")
     return out_file
 
 

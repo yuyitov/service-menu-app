@@ -42,51 +42,61 @@ incluida vía un link de un solo uso.
 
 ## Estado actual
 
-**Phase 1 — Generador HTML estático + demos dummy.**
+**Phase 2 — QR estático + GitHub Actions (validación).**
 
-Phase 0 (documentación y arquitectura) está aprobada. Phase 1 agrega un generador estático
-que convierte un payload `service_menu_payload_public` (JSON dummy) en una página pública
+Phase 0 (documentación) y Phase 1 (generador + 6 estilos) están aprobadas. El generador
+convierte un payload `service_menu_payload_public` (JSON dummy) en una página pública
 mobile-first, en **6 estilos visuales cerrados**: `black-gold`, `soft-blush`,
 `charcoal-clean`, `warm-sand`, `aqua-clean`, `sage-calm`. Sin colores libres; la
 personalización es siempre por estilo cerrado.
 
-Todavía **no** hay Stripe, Tally, Cloudflare Worker/KV, GitHub Actions ni emails reales
-(esas son fases posteriores). El QR se muestra como **placeholder**; el QR real se genera
-en Phase 2/2B. Los uploads de imágenes están fuera de alcance de Phase 1: si faltan
-`primary_image_url` / `logo_url`, el generador usa un placeholder visual.
+Phase 2 agrega un **QR real estático** (`qr.svg`) por demo, apuntando al `public_url`, más
+una sección "Comparte esta página" (QR + link visible + botón "Abrir página"). Un workflow
+de GitHub Actions **valida** la generación de las 6 demos en cada push/PR.
+
+Todavía **no** hay Stripe, Tally, Cloudflare Worker/KV ni emails reales, y **no** se
+publica a GitHub Pages (fases posteriores). Los uploads de imágenes siguen fuera de
+alcance: si faltan `primary_image_url` / `logo_url`, el generador usa un placeholder visual.
 
 Ver [docs/ROADMAP.md](docs/ROADMAP.md) para las fases siguientes.
 
-## Cómo correr Phase 1
+## Cómo correr el generador
 
-Requiere solo Python 3 (sin dependencias externas).
+Requiere Python 3 y una dependencia ligera (`segno`, Python puro, para el QR SVG).
 
 ```bash
-# Generar las 6 demos incluidas (data/demos/*.json) en public/demos/{slug}/index.html
+# 1) Instalar dependencias
+pip install -r requirements.txt
+
+# 2) Generar las 6 demos (data/demos/*.json) en public/demos/{slug}/
 python generator/generate_service_menu.py
 
 # O generar payloads específicos
 python generator/generate_service_menu.py data/demos/bella-spa.json
 ```
 
-Salida: `public/demos/<slug>/index.html`. Abre cualquiera en el navegador (idealmente en
-vista mobile) para revisarla. También puedes servir la carpeta localmente:
+Por cada demo se generan `public/demos/<slug>/index.html` y `public/demos/<slug>/qr.svg`.
+Abre cualquier página en el navegador (idealmente en vista mobile); el QR aparece en la
+sección "Comparte esta página". También puedes servir la carpeta localmente:
 
 ```bash
 python -m http.server 8123 --directory public
 # luego abre http://localhost:8123/demos/bella-spa/index.html
+# el QR está en    http://localhost:8123/demos/bella-spa/qr.svg
 ```
 
-Estructura de Phase 1:
+Estructura del proyecto:
 
 ```
 generator/
-  generate_service_menu.py   # generador (stdlib, valida + escapa HTML)
+  generate_service_menu.py   # generador (valida + escapa HTML, escribe HTML y QR SVG)
   templates/base.html        # template estructural único (mobile-first)
   styles/                    # 1 paleta CSS por estilo cerrado (6 archivos)
 data/demos/                  # payloads dummy (1 por estilo: bella-spa, studio-blush,
                              #   north-barber, glow-nails, aqua-wellness, sage-studio)
-public/demos/                # salida generada (index.html por slug)
+public/demos/                # salida generada (index.html + qr.svg por slug)
+requirements.txt             # dependencia fijada (segno)
+.github/workflows/           # generate-demos.yml (valida la generación en push/PR)
 ```
 
 ## Documentación

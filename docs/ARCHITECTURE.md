@@ -97,6 +97,20 @@ para aprobar el diseño antes de escribir código de integración.
   fase posterior, cuando se conecte el intake real (Phase 4 en adelante); no es parte del
   generador HTML base ni de las demos de Phase 1.
 
+## QR estático (Phase 2)
+
+- El QR se genera como **asset estático** durante la generación de la página, junto al
+  `index.html` (`public/demos/<slug>/qr.svg`). En Phase 2 lo produce el propio generador
+  local; el diseño final lo ejecutará GitHub Actions (ver flujo normal, paso 7).
+- Se genera en el paso de build (nunca en el Worker: el Worker no descarga ni procesa
+  imágenes). Formato **SVG** vía `segno` (Python puro, sin libs de imagen pesadas).
+- El QR codifica el `public_url`, es **estático** (no dinámico), **sin tracking** y **sin
+  tokens** — solo datos públicos.
+- Phase 2 **no** publica a GitHub Pages ni usa secrets: un workflow
+  (`.github/workflows/generate-demos.yml`) solo **valida** que las 6 demos generan
+  `index.html` + `qr.svg` sin errores, sin tokens residuales, sin secrets y sin
+  referencias a MyGuest.
+
 ## Separación total respecto a MyGuest
 
 - Repo propio, sin relación de historial git con el repo de MyGuest.

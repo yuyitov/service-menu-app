@@ -25,12 +25,17 @@ el usuario.
 - Sin integración con Stripe/Tally/Worker todavía; payloads de entrada son archivos
   locales.
 
-## Phase 2 — GitHub Actions
+## Phase 2 — QR estático + GitHub Actions (validación)
 
-- Workflow que toma un `service_menu_payload_public` y ejecuta el generador de Phase 1
-  automáticamente.
-- Publicación automática a GitHub Pages.
-- Convenciones de naming para el repo/workflows ya definidas en
+- Generación de **QR real estático** (`qr.svg`) por demo, junto al `index.html`,
+  apuntando al `public_url`. Vía `segno` (Python puro, SVG). Sin tracking ni tokens.
+- Sección "Comparte esta página" en la página: QR + link visible + botón "Abrir página",
+  mobile-first y compatible con los 6 estilos.
+- Workflow `.github/workflows/generate-demos.yml` que en push/PR ejecuta el generador y
+  **valida** que las 6 demos producen `index.html` + `qr.svg`, sin tokens residuales, sin
+  secrets y sin referencias a MyGuest.
+- **Aún no** publica a GitHub Pages ni usa secrets: la publicación automática a Pages se
+  aborda en una fase posterior. Convenciones de naming en
   [ARCHITECTURE.md](ARCHITECTURE.md#naming-sugerido).
 
 ## Phase 3 — Worker + KV

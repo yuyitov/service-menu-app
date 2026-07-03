@@ -25,6 +25,24 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] El link visible apunta al `public_url` del payload.
 - [ ] No hay referencias a MyGuest ni secrets en `generator/`, `data/`, `public/`.
 
+## Phase 2 — QR estático + GitHub Actions (local/CI)
+
+- [ ] `python generator/generate_service_menu.py` genera, por cada demo, `index.html`
+      **y** `qr.svg` en `public/demos/<slug>/`.
+- [ ] Existen los 12 archivos esperados: `index.html` + `qr.svg` para las 6 demos
+      (bella-spa, studio-blush, north-barber, glow-nails, aqua-wellness, sage-studio).
+- [ ] Cada `qr.svg` es un SVG válido (empieza con `<svg`) y codifica el `public_url`
+      de su demo (no localhost, sin tokens, sin parámetros de tracking).
+- [ ] La sección "Comparte esta página" muestra el QR (`<img src="qr.svg">`), el link
+      visible y el botón "Abrir página"; se ve bien en mobile y en los 6 estilos.
+- [ ] El QR se ve escaneable sobre la caja blanca también en estilos oscuros (black-gold).
+- [ ] No hay tokens `{{...}}` sin reemplazar en la salida.
+- [ ] Si falta la dependencia `segno`, el generador falla con mensaje claro (instalar
+      `requirements.txt`), no con un stack trace opaco.
+- [ ] El workflow `.github/workflows/generate-demos.yml` corre en push/PR, genera las
+      demos y valida assets/tokens/secrets/MyGuest **sin** publicar a GitHub Pages ni usar
+      secrets.
+
 ## Generación de página dummy
 
 - [ ] Se puede generar una página completa a partir de un `service_menu_payload_public`

@@ -141,9 +141,22 @@ Registro de la entrega final al cliente.
 | `order_id` | string | |
 | `public_slug` | string | |
 | `public_url` | string (URL) | |
-| `qr_asset_url` | string (URL) | |
+| `qr_asset_url` | string (URL) | URL del QR estático. Ver [QR estático](#qr-estatico-phase-2). |
 | `delivered_at` | datetime (ISO 8601) | |
 | `correction_token` | string | Token de un solo uso para la corrección incluida. |
+
+#### QR estático (Phase 2)
+
+- El QR se genera como **asset estático** (`qr.svg`) durante la generación de la página,
+  junto al `index.html`: `public/demos/<slug>/qr.svg`. `qr_asset_url` apunta a ese archivo
+  (conceptualmente `public_url` + `/qr.svg`).
+- El QR codifica **exactamente el `public_url`** de la página. No es dinámico: se produce
+  una vez al generar y no cambia salvo que se regenere la página.
+- **Sin tracking**: el QR no pasa por ningún redireccionador ni añade parámetros de
+  seguimiento; apunta directo al `public_url`.
+- **Sin tokens privados**: el QR y la página pública nunca contienen `order_id`,
+  `correction_token` ni ningún dato interno. Todo lo codificado es público.
+- Formato **SVG** (vectorial, ligero, escalable e imprimible), generado con `segno`.
 
 ### 5. `service_menu_correction`
 

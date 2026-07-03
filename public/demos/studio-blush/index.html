@@ -68,16 +68,14 @@ h1{font-family:var(--heading-font);font-size:23px;margin:6px 0 4px;letter-spacin
 .address__map{display:inline-block;margin-top:8px;color:var(--accent);text-decoration:none;font-weight:700}
 .policies{margin:0;padding-left:18px;color:var(--muted)}
 .policies li{margin-bottom:5px}
-.qr__box{width:168px;height:168px;margin:0 auto;border:1px solid var(--accent);border-radius:12px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:var(--qr-bg)}
-.qr__grid{width:100px;height:100px;border-radius:4px;opacity:.28;
-  background:
-    repeating-linear-gradient(0deg,var(--accent) 0 8px,transparent 8px 16px),
-    repeating-linear-gradient(90deg,var(--accent) 0 8px,transparent 8px 16px)}
-.qr__label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.qr__note{font-size:13px;color:var(--muted);text-align:center;margin:12px 0 0}
+.qr__lead{margin:0 0 14px;color:var(--muted);font-size:14px}
+.qr__box{width:204px;margin:0 auto;padding:12px;border:1px solid var(--line);border-radius:12px;
+  background:#ffffff;display:flex;align-items:center;justify-content:center}
+.qr__img{width:180px;height:180px;display:block}
+.qr__url-line{text-align:center;margin:14px 0 0}
 .qr__url,.link__url{word-break:break-all;color:var(--accent);font-weight:700}
 .link__url{display:inline-block;text-decoration:none}
+.qr__open{margin-top:14px}
 .footer{padding:20px 22px;text-align:center;color:var(--muted);font-size:12px}
 </style>
 </head>
@@ -96,9 +94,8 @@ h1{font-family:var(--heading-font);font-size:23px;margin:6px 0 4px;letter-spacin
       <section class="section"><h2 class="section__title">Horarios</h2><p class="hours">Mar–Sáb 10:00–19:00 · Dom y Lun cerrado</p></section>
       <section class="section"><h2 class="section__title">Donde estamos</h2><p class="address">Av. Ámsterdam 210, Col. Condesa, CDMX</p><a class="address__map" href="https://maps.google.com/?q=Studio+Blush+Demo" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a></section>
       <section class="section"><h2 class="section__title">Politicas</h2><ul class="policies"><li>Llega sin maquillaje en el área de ojos para lashes.</li><li>Se requiere anticipo del 30% para reservar.</li></ul></section>
-      <section class="section link"><h2 class="section__title">Tu link</h2><a class="link__url" href="https://demo.servicemenu.example/studio-blush" target="_blank" rel="noopener noreferrer">https://demo.servicemenu.example/studio-blush</a></section>
-      <section class="section qr" id="qr-kit"><h2 class="section__title">QR Kit</h2><div class="qr__box" role="img" aria-label="Codigo QR (placeholder)"><div class="qr__grid" aria-hidden="true"></div><span class="qr__label">QR placeholder</span></div><p class="qr__note">El QR real (escaneable, descargable) se genera en Phase 2/2B. Apuntara a: <br><span class="qr__url">https://demo.servicemenu.example/studio-blush</span></p></section>
-      <footer class="footer">Pagina creada con Service Menu App - Demo (Phase 1)</footer>
+      <section class="section qr" id="compartir"><h2 class="section__title">Comparte esta pagina</h2><p class="qr__lead">Usa este QR o comparte el link directo.</p><div class="qr__box"><img class="qr__img" src="qr.svg" alt="Codigo QR de https://demo.servicemenu.example/studio-blush" width="180" height="180"></div><p class="qr__url-line"><a class="link__url" href="https://demo.servicemenu.example/studio-blush" target="_blank" rel="noopener noreferrer">https://demo.servicemenu.example/studio-blush</a></p><a class="btn btn--wa qr__open" href="https://demo.servicemenu.example/studio-blush" target="_blank" rel="noopener noreferrer">Abrir pagina</a></section>
+      <footer class="footer">Pagina creada con Service Menu App - Demo</footer>
     </main>
   </div>
 </body>

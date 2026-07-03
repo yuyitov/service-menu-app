@@ -1,0 +1,11 @@
+# Normalize line endings to LF for all text assets, so generated output is
+# byte-identical across OSes and the CI drift check (git diff --exit-code) is stable.
+*.py   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.html text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.svg  text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf

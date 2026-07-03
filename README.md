@@ -43,6 +43,15 @@ incluida vía un link de un solo uso.
 
 ## Estado actual
 
+**Phase 4D — Identidad visual HMU Link aplicada (pendiente de commit/revisión visual).**
+
+Las tres páginas públicas (`/`, `/mx/`, `/us/`) usan la identidad visual oficial de HMU
+Link: paleta Bubblegum `#f478b0` / Tangerine `#ffa934` / Ocean Blue `#00a0b5` / Banana
+`#ffef5a` / Avocado `#98c54e` / Bell Pepper `#14704f`, estilo playful + limpio +
+profesional, botones redondeados, blobs decorativos en CSS y logo textual temporal
+("HMU" en bubblegum + "Link" en ocean + pin tangerine). **Logo final pendiente de
+exportar/aplicar como asset.** Sigue siendo HTML/CSS puro, sin JS ni recursos externos.
+
 **Phase 4C — Marca HMU Link, landings por mercado y dominio custom en preparación.**
 
 La landing pública usa la marca provisional **HMU Link** y está dividida por mercado:

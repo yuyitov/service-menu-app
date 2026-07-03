@@ -91,6 +91,21 @@ el usuario.
   `yuyitov.github.io` hasta activarlo.
 - Checkout sigue inactivo; precios de lanzamiento tentativos por mercado.
 
+## Phase 4D — Identidad visual HMU Link
+
+- Paleta oficial aplicada a `/`, `/mx/` y `/us/`: Bubblegum `#f478b0` (principal
+  HMU/CTA), Ocean Blue `#00a0b5` (Link/confianza), Tangerine `#ffa934` (acentos/badges),
+  Banana `#ffef5a` (highlights/fondos suaves), Avocado `#98c54e` (acento secundario),
+  Bell Pepper `#14704f` (oscuro de soporte: pricing y footer).
+- Dirección: alegre, moderna, friendly, playful pero no infantil, limpia pero no
+  corporativa fría; neutral para salones, spas, barberías, tours, restaurantes, coaches
+  y servicios locales en general.
+- Logo textual temporal en CSS ("HMU" bubblegum + "Link" ocean + pin tangerine), sin
+  tagline dentro del logo. Slogans como copy de marketing: "Conecta tu negocio" (MX) /
+  "Connect your business" (US). **Logo final pendiente de exportar como asset.**
+- Solo visual/branding estático: sin JS, sin assets externos, sin cambios de copy
+  estratégico, precios ni arquitectura.
+
 ## Phase 5 — Stripe/Tally
 
 - Conectar Stripe Payment Link real y su webhook.

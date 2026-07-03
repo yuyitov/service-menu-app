@@ -10,20 +10,29 @@
 <link rel="alternate" hreflang="en-US" href="https://yuyitov.github.io/service-menu-app/us/">
 <link rel="alternate" hreflang="x-default" href="https://yuyitov.github.io/service-menu-app/">
 <style>
-/* -------------------------------------------------------------------- */
-/* US/Canada landing (Phase 4C) — static, no JS, no external assets.    */
-/* -------------------------------------------------------------------- */
+/* ------------------------------------------------------------------- */
+/* US/Canada landing (Phase 4D) — HMU Link visual identity.            */
+/* Official palette: Bubblegum #f478b0 · Tangerine #ffa934 · Ocean     */
+/* Blue #00a0b5 · Banana #ffef5a · Avocado #98c54e · Bell Pepper       */
+/* #14704f. Static, no JS, no external fonts/images.                   */
+/* ------------------------------------------------------------------- */
 :root {
-  --ink: #16181d;
-  --ink-soft: #23262e;
-  --paper: #f7f6f3;
+  --bubblegum: #f478b0;
+  --bubblegum-deep: #d9548f;
+  --bubblegum-ink: #57173a;
+  --tangerine: #ffa934;
+  --ocean: #00a0b5;
+  --ocean-deep: #007a8a;
+  --banana: #ffef5a;
+  --avocado: #98c54e;
+  --pepper: #14704f;
+  --pepper-deep: #0d5039;
+  --paper: #fffdf6;
   --card: #ffffff;
-  --text: #2b2e35;
-  --muted: #6b7078;
-  --accent: #b08d43;
-  --accent-dark: #8f7133;
-  --line: #e4e1da;
-  --radius: 14px;
+  --text: #26302c;
+  --muted: #5c6a64;
+  --line: #f0e8d8;
+  --radius: 20px;
   --maxw: 1080px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,107 +43,160 @@ body {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
-.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
-section { padding: 56px 0; }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; position: relative; }
+section { padding: 56px 0; position: relative; overflow: hidden; }
 h2 {
   font-size: 1.65rem;
   line-height: 1.25;
-  color: var(--ink);
+  color: var(--text);
   margin-bottom: 8px;
   letter-spacing: -0.01em;
 }
 .kicker {
   display: inline-block;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent-dark);
+  color: var(--ocean-deep);
   margin-bottom: 10px;
 }
 .lead { color: var(--muted); max-width: 62ch; margin-bottom: 28px; }
 
+/* Temporary CSS text logo (final logo asset pending) */
+.logo { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
+.logo .hmu { color: var(--bubblegum-deep); }
+.logo .lnk { color: var(--ocean-deep); }
+.logo .pin {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-left: 0.18em;
+  background: var(--tangerine);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg) translateY(-0.1em);
+}
+
 /* Header */
-.top { background: var(--ink); color: #f2efe8; padding: 14px 0; }
+.top { background: var(--paper); padding: 16px 0; border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.brand { font-weight: 800; letter-spacing: 0.02em; font-size: 1.05rem; text-decoration: none; color: #f2efe8; }
-.brand span { color: var(--accent); }
 .top-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .top-note {
   font-size: 0.75rem;
-  color: #b9b4a8;
-  border: 1px solid #3a3d45;
+  font-weight: 700;
+  color: #9a6510;
+  background: #fff3dd;
+  border: 1px solid #ffd695;
   border-radius: 999px;
   padding: 4px 12px;
   white-space: nowrap;
 }
-.lang-switch { font-size: 0.8rem; color: #b9b4a8; text-decoration: none; }
-.lang-switch:hover { color: var(--accent); }
+.lang-switch { font-size: 0.8rem; font-weight: 600; color: var(--ocean-deep); text-decoration: none; }
+.lang-switch:hover { text-decoration: underline; }
+
+/* Decorative CSS blobs */
+.blob { position: absolute; border-radius: 58% 42% 55% 45% / 50% 58% 42% 50%; pointer-events: none; z-index: 0; }
+.blob--banana { background: var(--banana); opacity: 0.5; }
+.blob--pink { background: var(--bubblegum); opacity: 0.22; }
+.blob--ocean { background: var(--ocean); opacity: 0.14; }
+.wrap > *:not(.blob) { position: relative; z-index: 1; }
 
 /* Hero */
-.hero {
-  background: linear-gradient(160deg, var(--ink) 0%, var(--ink-soft) 70%, #2c2620 100%);
-  color: #f2efe8;
-  padding: 72px 0 80px;
-}
+.hero { padding: 68px 0 76px; }
+.hero .blob--banana { width: 320px; height: 280px; top: -60px; right: -120px; }
+.hero .blob--ocean { width: 190px; height: 170px; bottom: -40px; left: -90px; }
 .hero h1 {
-  font-size: clamp(1.75rem, 5vw, 2.7rem);
-  line-height: 1.2;
-  letter-spacing: -0.015em;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
   max-width: 22ch;
-  margin: 14px 0 18px;
+  margin: 16px 0 10px;
 }
-.hero h1 em { font-style: normal; color: var(--accent); }
-.hero .sub { font-size: 1.05rem; color: #cfcabd; max-width: 54ch; margin-bottom: 32px; }
+.hl {
+  background: linear-gradient(transparent 58%, var(--banana) 58%);
+  border-radius: 4px;
+  padding: 0 2px;
+}
+.slogan { font-size: 1.02rem; font-weight: 700; color: var(--ocean-deep); margin-bottom: 10px; }
+.hero .sub { font-size: 1.05rem; color: var(--muted); max-width: 54ch; margin-bottom: 30px; }
 .cta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .btn {
   display: inline-block;
-  padding: 14px 28px;
+  padding: 15px 30px;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1rem;
   text-decoration: none;
   text-align: center;
 }
-.btn--primary { background: var(--accent); color: #1a1508; }
-.btn--primary:hover { background: #c49d4f; }
-.btn--outline { border: 1px solid #4a4d55; color: #cfcabd; }
-.btn--outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn--primary {
+  background: var(--bubblegum);
+  color: var(--bubblegum-ink);
+  box-shadow: 0 4px 0 var(--bubblegum-deep);
+}
+.btn--primary:hover { background: #f68cbb; }
+.btn--secondary {
+  background: var(--card);
+  border: 2px solid var(--ocean);
+  color: var(--ocean-deep);
+}
+.btn--secondary:hover { background: #e9f7f8; }
 .hero-badge {
   display: inline-block;
   font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid rgba(176, 141, 67, 0.45);
+  color: #7a4a00;
+  background: #ffe8c4;
+  border: 1px solid var(--tangerine);
   border-radius: 999px;
-  padding: 5px 14px;
+  padding: 6px 15px;
 }
 
 /* Cards / grids */
 .grid { display: grid; gap: 16px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
-.card h3 { color: var(--ink); font-size: 1.06rem; margin-bottom: 6px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 2px 10px rgba(20, 112, 79, 0.05);
+}
+.card h3 { color: var(--text); font-size: 1.06rem; margin-bottom: 6px; }
 .card p { color: var(--muted); font-size: 0.94rem; }
-.what { background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.what .grid { margin-top: 24px; }
-.what .card { background: var(--paper); }
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: #fffbd6;
+  border: 1px solid #f4e77a;
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+.alt { background: #fdf8ec; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.alt .grid { margin-top: 24px; }
 
-/* Includes / not-included lists */
+/* Included / not-included lists */
 .list { list-style: none; }
 .list li { padding: 10px 0 10px 30px; border-bottom: 1px solid var(--line); position: relative; font-size: 0.97rem; }
 .list li:last-child { border-bottom: none; }
 .list li::before { position: absolute; left: 2px; font-weight: 800; }
-.list--yes li::before { content: "✓"; color: var(--accent-dark); }
-.list--no li::before { content: "—"; color: #a0a4ab; }
+.list--yes li::before { content: "✓"; color: var(--pepper); }
+.list--no li::before { content: "—"; color: #b7b3a4; }
 .list--no li { color: var(--muted); }
 .two-col { display: grid; gap: 24px; margin-top: 24px; }
+.two-col .card--yes { border-top: 5px solid var(--avocado); }
+.two-col .card--no { border-top: 5px solid var(--line); }
 
-/* Visual styles */
+/* Visual styles (swatches represent the 6 closed styles) */
 .style-card { display: flex; flex-direction: column; gap: 10px; }
-.swatch { height: 10px; border-radius: 999px; }
+.swatch { height: 12px; border-radius: 999px; }
 .sw-black-gold     { background: linear-gradient(90deg, #17171a 60%, #c9a24b); }
 .sw-soft-blush     { background: linear-gradient(90deg, #f6dfe0 60%, #c96f7d); }
 .sw-charcoal-clean { background: linear-gradient(90deg, #33373d 60%, #9fb2bd); }
@@ -142,41 +204,43 @@ h2 {
 .sw-aqua-clean     { background: linear-gradient(90deg, #d4edee 60%, #2f8f96); }
 .sw-sage-calm      { background: linear-gradient(90deg, #dde5d8 60%, #6d8a63); }
 .style-card .ideal { font-size: 0.85rem; color: var(--muted); }
-.style-card .ideal strong { color: var(--ink); font-weight: 600; }
-.demo-link { color: var(--accent-dark); font-weight: 700; text-decoration: none; font-size: 0.95rem; }
+.style-card .ideal strong { color: var(--text); font-weight: 700; }
+.demo-link { color: var(--ocean-deep); font-weight: 800; text-decoration: none; font-size: 0.95rem; }
 .demo-link:hover { text-decoration: underline; }
 
 /* Pricing */
-.pricing { background: var(--ink); color: #f2efe8; }
-.pricing h2 { color: #f2efe8; }
-.pricing .lead { color: #b9b4a8; }
+.pricing { background: var(--pepper); color: #f0faf3; }
+.pricing .blob--banana { width: 260px; height: 230px; top: -50px; right: -110px; opacity: 0.16; }
+.pricing h2 { color: #ffffff; }
+.pricing .lead { color: #bfe0cd; }
 .price-note {
   display: inline-block;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid rgba(176, 141, 67, 0.45);
+  color: #5b3600;
+  background: var(--tangerine);
   border-radius: 999px;
-  padding: 5px 14px;
+  padding: 6px 15px;
   margin-bottom: 18px;
 }
 .price-card {
-  background: var(--ink-soft);
-  border: 1px solid #3a3d45;
+  background: var(--pepper-deep);
+  border: 1px solid #1d8a63;
   border-radius: var(--radius);
   padding: 26px 22px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-.price-card h3 { color: #f2efe8; font-size: 1.1rem; }
-.price-card .amount { font-size: 1.7rem; font-weight: 800; color: var(--accent); }
+.price-card h3 { color: #ffffff; font-size: 1.1rem; }
+.price-card .amount { font-size: 1.7rem; font-weight: 800; color: var(--banana); }
 .price-card ul { list-style: none; }
-.price-card li { padding: 6px 0 6px 24px; position: relative; font-size: 0.93rem; color: #cfcabd; }
-.price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 800; }
-.pricing .fine { margin-top: 24px; font-size: 0.88rem; color: #b9b4a8; max-width: 70ch; }
+.price-card li { padding: 6px 0 6px 24px; position: relative; font-size: 0.93rem; color: #cfe9da; }
+.price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--avocado); font-weight: 800; }
+.price-card--star { border: 2px solid var(--banana); }
+.pricing .fine { margin-top: 24px; font-size: 0.88rem; color: #bfe0cd; max-width: 70ch; }
 
 /* How it will work */
 .steps { counter-reset: step; list-style: none; display: grid; gap: 14px; margin-top: 24px; }
@@ -198,8 +262,8 @@ h2 {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--ink);
-  color: var(--accent);
+  background: var(--ocean);
+  color: #ffffff;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -209,20 +273,20 @@ h2 {
 
 /* Early access */
 .early {
-  background: linear-gradient(160deg, var(--ink) 0%, #2c2620 100%);
-  color: #f2efe8;
+  background: linear-gradient(135deg, #ffe3f0 0%, #fff3dd 100%);
   text-align: center;
 }
-.early h2 { color: #f2efe8; }
-.early p { color: #cfcabd; max-width: 56ch; margin: 12px auto 0; }
-.early .hero-badge { margin-bottom: 14px; }
+.early .blob--ocean { width: 210px; height: 180px; bottom: -50px; left: -90px; }
+.early h2 { color: var(--text); }
+.early p { color: var(--muted); max-width: 56ch; margin: 12px auto 0; }
+.early .hero-badge { margin-bottom: 14px; background: #ffffff; }
 
 /* FAQ */
 .faq details { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; padding: 0 18px; }
 .faq summary {
   cursor: pointer;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--text);
   padding: 15px 0;
   list-style: none;
   position: relative;
@@ -235,17 +299,19 @@ h2 {
   right: 2px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--accent-dark);
+  color: var(--tangerine);
   font-weight: 800;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 .faq details[open] summary::after { content: "–"; }
 .faq details p { color: var(--muted); font-size: 0.95rem; padding: 0 0 16px; }
 
 /* Footer */
-footer { background: var(--ink); color: #b9b4a8; padding: 36px 0; font-size: 0.88rem; }
-footer .brand { color: #f2efe8; display: block; margin-bottom: 8px; }
-footer a { color: #b9b4a8; }
+footer { background: var(--pepper-deep); color: #bfe0cd; padding: 36px 0; font-size: 0.88rem; }
+footer .logo { font-size: 1.2rem; display: inline-block; margin-bottom: 8px; }
+footer .logo .hmu { color: var(--bubblegum); }
+footer .logo .lnk { color: #6fd6e2; }
+footer a { color: #bfe0cd; }
 
 /* Desktop */
 @media (min-width: 720px) {
@@ -264,7 +330,7 @@ footer a { color: #b9b4a8; }
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="../">HMU <span>Link</span></a>
+    <a class="logo" href="../"><span class="hmu">HMU</span> <span class="lnk">Link</span><span class="pin" aria-hidden="true"></span></a>
     <div class="top-links">
       <a class="lang-switch" href="../mx/" hreflang="es-MX" lang="es-MX">Español (México)</a>
       <div class="top-note">Coming soon</div>
@@ -275,32 +341,38 @@ footer a { color: #b9b4a8; }
 <!-- Hero -->
 <section class="hero" id="top">
   <div class="wrap">
+    <span class="blob blob--banana" aria-hidden="true"></span>
+    <span class="blob blob--ocean" aria-hidden="true"></span>
     <span class="hero-badge">HMU Link · USA &amp; Canada</span>
-    <h1>A polished service page your clients can open from <em>Instagram, Google, WhatsApp, or a QR code</em>.</h1>
+    <h1>A polished service page your clients can open from <span class="hl">Instagram, Google, WhatsApp, or a QR code</span>.</h1>
+    <p class="slogan">Connect your business.</p>
     <p class="sub">HMU Link creates mobile-friendly service pages for local businesses to show services, prices, promotions, and booking/contact options from one simple link.</p>
     <div class="cta-row">
       <a class="btn btn--primary" href="#early-access">Get my HMU Link</a>
-      <a class="btn btn--outline" href="#styles">View examples</a>
+      <a class="btn btn--secondary" href="#styles">View examples</a>
     </div>
   </div>
 </section>
 
 <!-- What it is -->
-<section class="what" id="what">
+<section class="alt" id="what">
   <div class="wrap">
     <span class="kicker">What it is</span>
     <h2>Look professional without building a website</h2>
     <p class="lead">Not ready for a full website? HMU Link gives you a clean, mobile-first page with your services, prices, promotions, hours, location, and reviews — plus buttons so clients can book or reach you in one tap.</p>
     <div class="grid grid--3">
       <div class="card">
+        <span class="icon" aria-hidden="true">🔗</span>
         <h3>One link, everywhere</h3>
         <p>Drop it in your Instagram bio, Google Business profile, text messages, printed cards, or a QR code at your front desk.</p>
       </div>
       <div class="card">
+        <span class="icon" aria-hidden="true">📱</span>
         <h3>No app, no accounts</h3>
         <p>Your clients don't download anything or sign up. They open the link and see everything they need to book.</p>
       </div>
       <div class="card">
+        <span class="icon" aria-hidden="true">✨</span>
         <h3>No dashboard to manage</h3>
         <p>You don't learn or maintain any software either. Send us your info — we build and publish your page.</p>
       </div>
@@ -315,24 +387,24 @@ footer a { color: #b9b4a8; }
     <h2>Built for small local service businesses</h2>
     <p class="lead">If your business runs on Instagram DMs, walk-ins, and word of mouth, HMU Link gives you a professional home base without the website project.</p>
     <div class="grid grid--3">
-      <div class="card"><h3>Spas</h3><p>Massages, facials, rituals, and packages with clear pricing up front.</p></div>
-      <div class="card"><h3>Hair salons</h3><p>Cuts, color, treatments, and this month's promo in one place.</p></div>
-      <div class="card"><h3>Barbershops</h3><p>Cut, beard, and combo menus with one-tap booking via WhatsApp or your booking link.</p></div>
-      <div class="card"><h3>Nails · Lashes · Brows</h3><p>Service menus with time and price — perfect to answer DMs instantly.</p></div>
-      <div class="card"><h3>Wellness &amp; massage</h3><p>Sessions, therapies, and memberships presented professionally.</p></div>
-      <div class="card"><h3>Other local services</h3><p>Fitness studios, classes, pet grooming, tattoo studios, and independent pros.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">🧖</span><h3>Spas</h3><p>Massages, facials, rituals, and packages with clear pricing up front.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💇</span><h3>Hair salons</h3><p>Cuts, color, treatments, and this month's promo in one place.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💈</span><h3>Barbershops</h3><p>Cut, beard, and combo menus with one-tap booking via WhatsApp or your booking link.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💅</span><h3>Nails · Lashes · Brows</h3><p>Service menus with time and price — perfect to answer DMs instantly.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">🌿</span><h3>Wellness &amp; massage</h3><p>Sessions, therapies, and memberships presented professionally.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">📍</span><h3>Other local services</h3><p>Tours, fitness studios, classes, coaches, pet grooming, tattoo studios, and independent pros.</p></div>
     </div>
   </div>
 </section>
 
 <!-- What's included / not included -->
-<section class="what" id="included">
+<section class="alt" id="included">
   <div class="wrap">
     <span class="kicker">Clear scope</span>
     <h2>What's included (and what's not)</h2>
     <p class="lead">We'd rather be upfront: this is exactly what you get, no fine print.</p>
     <div class="two-col">
-      <div class="card">
+      <div class="card card--yes">
         <h3>Included</h3>
         <ul class="list list--yes">
           <li>A public service page for your business</li>
@@ -346,7 +418,7 @@ footer a { color: #b9b4a8; }
           <li>6 curated visual styles to choose from</li>
         </ul>
       </div>
-      <div class="card">
+      <div class="card card--no">
         <h3>Not included</h3>
         <ul class="list list--no">
           <li>Admin dashboard</li>
@@ -368,6 +440,7 @@ footer a { color: #b9b4a8; }
 <!-- Visual styles -->
 <section id="styles">
   <div class="wrap">
+    <span class="blob blob--pink" aria-hidden="true" style="width: 230px; height: 200px; top: -40px; right: -100px;"></span>
     <span class="kicker">Visual styles</span>
     <h2>6 curated styles, each with a live example</h2>
     <p class="lead">Pick one of these 6 styles and your page looks polished from day one. Open any example — they're real published pages with fictional data.</p>
@@ -421,6 +494,7 @@ footer a { color: #b9b4a8; }
 <!-- Pricing -->
 <section class="pricing" id="pricing">
   <div class="wrap">
+    <span class="blob blob--banana" aria-hidden="true"></span>
     <span class="price-note">Launch pricing · Subject to change</span>
     <h2>One-time payment, no subscriptions</h2>
     <p class="lead">This is the planned launch pricing for the US and Canada. Checkout is not live yet — the product is in preparation.</p>
@@ -436,7 +510,7 @@ footer a { color: #b9b4a8; }
           <li>1 revision included</li>
         </ul>
       </div>
-      <div class="price-card">
+      <div class="price-card price-card--star">
         <h3>Standard</h3>
         <div class="amount">USD $69</div>
         <ul>
@@ -481,6 +555,7 @@ footer a { color: #b9b4a8; }
 <!-- Early access -->
 <section class="early" id="early-access">
   <div class="wrap">
+    <span class="blob blob--ocean" aria-hidden="true"></span>
     <span class="hero-badge">Coming soon · Early access</span>
     <h2>HMU Link is in preparation</h2>
     <p>You can't purchase yet — we're finishing the ordering system. The examples are already real and public. Once checkout goes live, this page is where you'll order your HMU Link at launch pricing.</p>
@@ -492,7 +567,7 @@ footer a { color: #b9b4a8; }
 </section>
 
 <!-- FAQ -->
-<section class="what faq" id="faq">
+<section class="alt faq" id="faq">
   <div class="wrap">
     <span class="kicker">FAQ</span>
     <h2>Straight answers</h2>
@@ -531,7 +606,7 @@ footer a { color: #b9b4a8; }
     </details>
     <details>
       <summary>Does it work for businesses other than salons and spas?</summary>
-      <p>Yes. It works for any local service business: nails, lashes, massage, fitness studios, classes, pet grooming, tattoo studios, and independent professionals.</p>
+      <p>Yes. It works for any local service business: nails, lashes, massage, tours, fitness studios, classes, coaches, pet grooming, tattoo studios, and independent professionals.</p>
     </details>
     <details>
       <summary>When can I buy it?</summary>
@@ -543,8 +618,8 @@ footer a { color: #b9b4a8; }
 <!-- Footer -->
 <footer>
   <div class="wrap">
-    <span class="brand">HMU <span style="color: var(--accent);">Link</span></span>
-    <p>Product in progress. Public demos use fictional data.</p>
+    <span class="logo"><span class="hmu">HMU</span> <span class="lnk">Link</span><span class="pin" aria-hidden="true"></span></span>
+    <p>Connect your business. Product in progress; public demos use fictional data.</p>
     <p><a href="../">Home</a> · <a href="../mx/" hreflang="es-MX" lang="es-MX">Español (México)</a></p>
   </div>
 </footer>

@@ -11,31 +11,38 @@
 <link rel="alternate" hreflang="x-default" href="https://yuyitov.github.io/service-menu-app/">
 <style>
 /* ------------------------------------------------------------------- */
-/* Portada/selector de mercado HMU Link — estática, sin JS, sin assets */
-/* externos. El usuario elige su mercado; sin geolocalización.         */
+/* Portada/selector de mercado HMU Link (Phase 4D) — identidad visual  */
+/* oficial. Paleta: Bubblegum #f478b0 · Tangerine #ffa934 · Ocean Blue */
+/* #00a0b5 · Banana #ffef5a · Avocado #98c54e · Bell Pepper #14704f.   */
+/* Estática, sin JS, sin geolocalización, sin cookies.                 */
 /* ------------------------------------------------------------------- */
 :root {
-  --ink: #16181d;
-  --ink-soft: #23262e;
-  --paper: #f7f6f3;
-  --card: #ffffff;
-  --text: #2b2e35;
-  --muted: #6b7078;
-  --accent: #b08d43;
-  --accent-dark: #8f7133;
-  --line: #e4e1da;
-  --radius: 16px;
+  --bubblegum: #f478b0;
+  --bubblegum-deep: #d9548f;
+  --tangerine: #ffa934;
+  --ocean: #00a0b5;
+  --ocean-deep: #007a8a;
+  --banana: #ffef5a;
+  --avocado: #98c54e;
+  --pepper: #14704f;
+  --pepper-deep: #0d5039;
+  --paper: #fffdf6;
+  --text: #26302c;
+  --muted: #5c6a64;
+  --line: #f0e8d8;
+  --radius: 22px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: linear-gradient(160deg, var(--ink) 0%, var(--ink-soft) 70%, #2c2620 100%);
-  color: #f2efe8;
+  background: var(--paper);
+  color: var(--text);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 main {
   flex: 1;
@@ -43,57 +50,80 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 20px;
+  padding: 56px 20px 40px;
   text-align: center;
+  position: relative;
 }
-.brand { font-weight: 800; font-size: 2rem; letter-spacing: 0.01em; }
-.brand span { color: var(--accent); }
+.blob { position: absolute; border-radius: 58% 42% 55% 45% / 50% 58% 42% 50%; pointer-events: none; z-index: 0; }
+.blob--banana { background: var(--banana); opacity: 0.5; width: 300px; height: 260px; top: -80px; right: -110px; }
+.blob--pink { background: var(--bubblegum); opacity: 0.2; width: 220px; height: 190px; bottom: 40px; left: -100px; }
+.blob--ocean { background: var(--ocean); opacity: 0.13; width: 180px; height: 160px; top: 30%; left: -70px; }
+main > *:not(.blob) { position: relative; z-index: 1; }
+
+/* Logo textual temporal (logo final pendiente de exportar como asset) */
+.logo { font-weight: 800; font-size: clamp(2.4rem, 8vw, 3.4rem); letter-spacing: -0.02em; line-height: 1.1; }
+.logo .hmu { color: var(--bubblegum); }
+.logo .lnk { color: var(--ocean); }
+.logo .pin {
+  display: inline-block;
+  width: 0.4em;
+  height: 0.4em;
+  margin-left: 0.12em;
+  background: var(--tangerine);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg) translateY(-0.12em);
+}
 .badge {
   display: inline-block;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid rgba(176, 141, 67, 0.45);
+  color: #7a4a00;
+  background: #ffe8c4;
+  border: 1px solid var(--tangerine);
   border-radius: 999px;
-  padding: 5px 14px;
-  margin-top: 14px;
+  padding: 6px 15px;
+  margin-top: 18px;
 }
-.tag {
-  margin-top: 20px;
-  max-width: 46ch;
-  color: #cfcabd;
-  font-size: 1.05rem;
-}
-.tag + .tag { margin-top: 8px; font-size: 0.95rem; color: #a9a496; }
-.markets {
-  margin-top: 40px;
-  display: grid;
-  gap: 16px;
-  width: 100%;
-  max-width: 640px;
-}
+.tag { margin-top: 20px; max-width: 46ch; color: var(--text); font-size: 1.08rem; font-weight: 600; }
+.tag .hl { background: linear-gradient(transparent 58%, var(--banana) 58%); border-radius: 4px; padding: 0 2px; }
+.tag + .tag { margin-top: 8px; font-size: 0.95rem; color: var(--muted); font-weight: 400; }
+.pick { margin-top: 34px; font-size: 0.9rem; font-weight: 700; color: var(--ocean-deep); letter-spacing: 0.06em; text-transform: uppercase; }
+.markets { margin-top: 16px; display: grid; gap: 16px; width: 100%; max-width: 640px; }
 .market {
   display: block;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid #3a3d45;
+  background: #ffffff;
+  border: 2px solid var(--line);
   border-radius: var(--radius);
   padding: 26px 22px;
   text-decoration: none;
-  color: #f2efe8;
+  color: var(--text);
   text-align: center;
+  box-shadow: 0 2px 10px rgba(20, 112, 79, 0.05);
 }
-.market:hover { border-color: var(--accent); background: rgba(176, 141, 67, 0.08); }
-.market .flag { font-size: 1.6rem; display: block; margin-bottom: 8px; }
+.market:hover { transform: translateY(-2px); }
+.market--mx:hover { border-color: var(--bubblegum); }
+.market--us:hover { border-color: var(--ocean); }
+.market .flag { font-size: 1.7rem; display: block; margin-bottom: 8px; }
 .market h2 { font-size: 1.25rem; margin-bottom: 4px; }
-.market p { color: #b9b4a8; font-size: 0.92rem; }
-.market .go { display: inline-block; margin-top: 12px; color: var(--accent); font-weight: 700; }
+.market p { color: var(--muted); font-size: 0.92rem; }
+.market .go {
+  display: inline-block;
+  margin-top: 14px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 24px;
+  font-size: 0.95rem;
+}
+.market--mx .go { background: var(--bubblegum); color: #57173a; box-shadow: 0 3px 0 var(--bubblegum-deep); }
+.market--us .go { background: var(--ocean); color: #ffffff; box-shadow: 0 3px 0 var(--ocean-deep); }
 footer {
   text-align: center;
   padding: 22px 20px 30px;
   font-size: 0.82rem;
-  color: #8d8879;
+  color: #7d897f;
+  background: var(--paper);
 }
 @media (min-width: 640px) {
   .markets { grid-template-columns: 1fr 1fr; }
@@ -103,19 +133,23 @@ footer {
 <body>
 
 <main>
-  <h1 class="brand">HMU <span>Link</span></h1>
+  <span class="blob blob--banana" aria-hidden="true"></span>
+  <span class="blob blob--pink" aria-hidden="true"></span>
+  <span class="blob blob--ocean" aria-hidden="true"></span>
+  <h1 class="logo"><span class="hmu">HMU</span> <span class="lnk">Link</span><span class="pin" aria-hidden="true"></span></h1>
   <span class="badge">Producto en preparación · Coming soon</span>
-  <p class="tag">Tu página digital de servicios: precios, promociones y contacto en un solo link.</p>
+  <p class="tag">Tu página digital de servicios: precios, promociones y contacto <span class="hl">en un solo link</span>.</p>
   <p class="tag">Your service page in one link: services, prices, and booking options for local businesses.</p>
 
+  <p class="pick">Elige tu mercado · Choose your market</p>
   <nav class="markets" aria-label="Elige tu mercado / Choose your market">
-    <a class="market" href="mx/" hreflang="es-MX" lang="es-MX">
+    <a class="market market--mx" href="mx/" hreflang="es-MX" lang="es-MX">
       <span class="flag" aria-hidden="true">🇲🇽</span>
       <h2>México</h2>
       <p>Página en español, precios en MXN, pensada para WhatsApp.</p>
       <span class="go">Entrar →</span>
     </a>
-    <a class="market" href="us/" hreflang="en-US" lang="en-US">
+    <a class="market market--us" href="us/" hreflang="en-US" lang="en-US">
       <span class="flag" aria-hidden="true">🇺🇸 🇨🇦</span>
       <h2>USA / Canada</h2>
       <p>English page, USD pricing, built for Instagram and Google.</p>

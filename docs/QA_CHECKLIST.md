@@ -114,6 +114,28 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] Sin wildcard DNS; sin subdominios adicionales.
 - [ ] Las 6 demos y sus `qr.svg` siguen existiendo sin cambios funcionales.
 
+## Phase 4D — Identidad visual HMU Link
+
+- [ ] `/`, `/mx/` y `/us/` usan la paleta oficial (Bubblegum #f478b0, Tangerine #ffa934,
+      Ocean Blue #00a0b5, Banana #ffef5a, Avocado #98c54e, Bell Pepper #14704f) y no
+      queda el esquema oscuro/dorado anterior ni morado como color principal.
+- [ ] La jerarquía de color es ordenada: bubblegum en CTA principal, ocean en
+      links/acentos de confianza, tangerine en badges, banana como highlight/fondo,
+      avocado como acento secundario, bell pepper como oscuro de soporte.
+- [ ] Logo textual "HMU Link" visible en header y footer: HMU bubblegum, Link ocean,
+      pin tangerine; sin tagline dentro del logo.
+- [ ] Slogans "Conecta tu negocio" (/mx/) y "Connect your business" (/us/) aparecen como
+      copy, no como parte del logo.
+- [ ] El look es playful pero no infantil ni demasiado femenino; funciona para
+      barberías y tours igual que para spas.
+- [ ] Botones redondeados y legibles; contraste suficiente en CTA y pricing.
+- [ ] Blobs/decoraciones son CSS puro; sin imágenes externas, sin fonts externas, sin
+      JS, sin animaciones complejas.
+- [ ] Se ve bien en mobile (~375px) y desktop en las tres páginas.
+- [ ] El copy estratégico por mercado, los precios tentativos, los 6 estilos con sus
+      demos y los avisos de checkout inactivo se mantienen sin cambios.
+- [ ] Logo final como asset sigue pendiente y está documentado.
+
 ## Generación de página dummy
 
 - [ ] Se puede generar una página completa a partir de un `service_menu_payload_public`

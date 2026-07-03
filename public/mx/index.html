@@ -10,20 +10,29 @@
 <link rel="alternate" hreflang="en-US" href="https://yuyitov.github.io/service-menu-app/us/">
 <link rel="alternate" hreflang="x-default" href="https://yuyitov.github.io/service-menu-app/">
 <style>
-/* ------------------------------------------------------------------ */
-/* Landing México (Phase 4C) — estática, sin JS, sin assets externos. */
-/* ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------- */
+/* Landing México (Phase 4D) — identidad visual HMU Link.              */
+/* Paleta oficial: Bubblegum #f478b0 · Tangerine #ffa934 · Ocean Blue  */
+/* #00a0b5 · Banana #ffef5a · Avocado #98c54e · Bell Pepper #14704f.   */
+/* Estática, sin JS, sin fonts/imágenes externas.                      */
+/* ------------------------------------------------------------------- */
 :root {
-  --ink: #16181d;
-  --ink-soft: #23262e;
-  --paper: #f7f6f3;
+  --bubblegum: #f478b0;
+  --bubblegum-deep: #d9548f;
+  --bubblegum-ink: #57173a;
+  --tangerine: #ffa934;
+  --ocean: #00a0b5;
+  --ocean-deep: #007a8a;
+  --banana: #ffef5a;
+  --avocado: #98c54e;
+  --pepper: #14704f;
+  --pepper-deep: #0d5039;
+  --paper: #fffdf6;
   --card: #ffffff;
-  --text: #2b2e35;
-  --muted: #6b7078;
-  --accent: #b08d43;
-  --accent-dark: #8f7133;
-  --line: #e4e1da;
-  --radius: 14px;
+  --text: #26302c;
+  --muted: #5c6a64;
+  --line: #f0e8d8;
+  --radius: 20px;
   --maxw: 1080px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,107 +43,160 @@ body {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
-.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
-section { padding: 56px 0; }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; position: relative; }
+section { padding: 56px 0; position: relative; overflow: hidden; }
 h2 {
   font-size: 1.65rem;
   line-height: 1.25;
-  color: var(--ink);
+  color: var(--text);
   margin-bottom: 8px;
   letter-spacing: -0.01em;
 }
 .kicker {
   display: inline-block;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--accent-dark);
+  color: var(--ocean-deep);
   margin-bottom: 10px;
 }
 .lead { color: var(--muted); max-width: 62ch; margin-bottom: 28px; }
 
+/* Logo textual temporal (logo final pendiente de exportar como asset) */
+.logo { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; text-decoration: none; white-space: nowrap; }
+.logo .hmu { color: var(--bubblegum-deep); }
+.logo .lnk { color: var(--ocean-deep); }
+.logo .pin {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-left: 0.18em;
+  background: var(--tangerine);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg) translateY(-0.1em);
+}
+
 /* Header */
-.top { background: var(--ink); color: #f2efe8; padding: 14px 0; }
+.top { background: var(--paper); padding: 16px 0; border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.brand { font-weight: 800; letter-spacing: 0.02em; font-size: 1.05rem; text-decoration: none; color: #f2efe8; }
-.brand span { color: var(--accent); }
 .top-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .top-note {
   font-size: 0.75rem;
-  color: #b9b4a8;
-  border: 1px solid #3a3d45;
+  font-weight: 700;
+  color: #9a6510;
+  background: #fff3dd;
+  border: 1px solid #ffd695;
   border-radius: 999px;
   padding: 4px 12px;
   white-space: nowrap;
 }
-.lang-switch { font-size: 0.8rem; color: #b9b4a8; text-decoration: none; }
-.lang-switch:hover { color: var(--accent); }
+.lang-switch { font-size: 0.8rem; font-weight: 600; color: var(--ocean-deep); text-decoration: none; }
+.lang-switch:hover { text-decoration: underline; }
+
+/* Blobs decorativos (solo CSS) */
+.blob { position: absolute; border-radius: 58% 42% 55% 45% / 50% 58% 42% 50%; pointer-events: none; z-index: 0; }
+.blob--banana { background: var(--banana); opacity: 0.5; }
+.blob--pink { background: var(--bubblegum); opacity: 0.22; }
+.blob--ocean { background: var(--ocean); opacity: 0.14; }
+.wrap > *:not(.blob) { position: relative; z-index: 1; }
 
 /* Hero */
-.hero {
-  background: linear-gradient(160deg, var(--ink) 0%, var(--ink-soft) 70%, #2c2620 100%);
-  color: #f2efe8;
-  padding: 72px 0 80px;
-}
+.hero { padding: 68px 0 76px; }
+.hero .blob--banana { width: 320px; height: 280px; top: -60px; right: -120px; }
+.hero .blob--pink { width: 190px; height: 170px; bottom: -40px; left: -90px; }
 .hero h1 {
-  font-size: clamp(1.75rem, 5vw, 2.7rem);
-  line-height: 1.2;
-  letter-spacing: -0.015em;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
   max-width: 22ch;
-  margin: 14px 0 18px;
+  margin: 16px 0 10px;
 }
-.hero h1 em { font-style: normal; color: var(--accent); }
-.hero .sub { font-size: 1.05rem; color: #cfcabd; max-width: 54ch; margin-bottom: 32px; }
+.hl {
+  background: linear-gradient(transparent 58%, var(--banana) 58%);
+  border-radius: 4px;
+  padding: 0 2px;
+}
+.slogan { font-size: 1.02rem; font-weight: 700; color: var(--ocean-deep); margin-bottom: 10px; }
+.hero .sub { font-size: 1.05rem; color: var(--muted); max-width: 54ch; margin-bottom: 30px; }
 .cta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
 .btn {
   display: inline-block;
-  padding: 14px 28px;
+  padding: 15px 30px;
   border-radius: 999px;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1rem;
   text-decoration: none;
   text-align: center;
 }
-.btn--primary { background: var(--accent); color: #1a1508; }
-.btn--primary:hover { background: #c49d4f; }
-.btn--outline { border: 1px solid #4a4d55; color: #cfcabd; }
-.btn--outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn--primary {
+  background: var(--bubblegum);
+  color: var(--bubblegum-ink);
+  box-shadow: 0 4px 0 var(--bubblegum-deep);
+}
+.btn--primary:hover { background: #f68cbb; }
+.btn--secondary {
+  background: var(--card);
+  border: 2px solid var(--ocean);
+  color: var(--ocean-deep);
+}
+.btn--secondary:hover { background: #e9f7f8; }
 .hero-badge {
   display: inline-block;
   font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid rgba(176, 141, 67, 0.45);
+  color: #7a4a00;
+  background: #ffe8c4;
+  border: 1px solid var(--tangerine);
   border-radius: 999px;
-  padding: 5px 14px;
+  padding: 6px 15px;
 }
 
 /* Cards / grids */
 .grid { display: grid; gap: 16px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
-.card h3 { color: var(--ink); font-size: 1.06rem; margin-bottom: 6px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 2px 10px rgba(20, 112, 79, 0.05);
+}
+.card h3 { color: var(--text); font-size: 1.06rem; margin-bottom: 6px; }
 .card p { color: var(--muted); font-size: 0.94rem; }
-.what { background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.what .grid { margin-top: 24px; }
-.what .card { background: var(--paper); }
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: #fffbd6;
+  border: 1px solid #f4e77a;
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+.alt { background: #fdf8ec; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.alt .grid { margin-top: 24px; }
 
 /* Listas incluye / no incluye */
 .list { list-style: none; }
 .list li { padding: 10px 0 10px 30px; border-bottom: 1px solid var(--line); position: relative; font-size: 0.97rem; }
 .list li:last-child { border-bottom: none; }
 .list li::before { position: absolute; left: 2px; font-weight: 800; }
-.list--yes li::before { content: "✓"; color: var(--accent-dark); }
-.list--no li::before { content: "—"; color: #a0a4ab; }
+.list--yes li::before { content: "✓"; color: var(--pepper); }
+.list--no li::before { content: "—"; color: #b7b3a4; }
 .list--no li { color: var(--muted); }
 .two-col { display: grid; gap: 24px; margin-top: 24px; }
+.two-col .card--yes { border-top: 5px solid var(--avocado); }
+.two-col .card--no { border-top: 5px solid var(--line); }
 
-/* Estilos visuales */
+/* Estilos visuales (los swatches representan los 6 estilos cerrados) */
 .style-card { display: flex; flex-direction: column; gap: 10px; }
-.swatch { height: 10px; border-radius: 999px; }
+.swatch { height: 12px; border-radius: 999px; }
 .sw-black-gold     { background: linear-gradient(90deg, #17171a 60%, #c9a24b); }
 .sw-soft-blush     { background: linear-gradient(90deg, #f6dfe0 60%, #c96f7d); }
 .sw-charcoal-clean { background: linear-gradient(90deg, #33373d 60%, #9fb2bd); }
@@ -142,41 +204,43 @@ h2 {
 .sw-aqua-clean     { background: linear-gradient(90deg, #d4edee 60%, #2f8f96); }
 .sw-sage-calm      { background: linear-gradient(90deg, #dde5d8 60%, #6d8a63); }
 .style-card .ideal { font-size: 0.85rem; color: var(--muted); }
-.style-card .ideal strong { color: var(--ink); font-weight: 600; }
-.demo-link { color: var(--accent-dark); font-weight: 700; text-decoration: none; font-size: 0.95rem; }
+.style-card .ideal strong { color: var(--text); font-weight: 700; }
+.demo-link { color: var(--ocean-deep); font-weight: 800; text-decoration: none; font-size: 0.95rem; }
 .demo-link:hover { text-decoration: underline; }
 
 /* Pricing */
-.pricing { background: var(--ink); color: #f2efe8; }
-.pricing h2 { color: #f2efe8; }
-.pricing .lead { color: #b9b4a8; }
+.pricing { background: var(--pepper); color: #f0faf3; }
+.pricing .blob--banana { width: 260px; height: 230px; top: -50px; right: -110px; opacity: 0.16; }
+.pricing h2 { color: #ffffff; }
+.pricing .lead { color: #bfe0cd; }
 .price-note {
   display: inline-block;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid rgba(176, 141, 67, 0.45);
+  color: #5b3600;
+  background: var(--tangerine);
   border-radius: 999px;
-  padding: 5px 14px;
+  padding: 6px 15px;
   margin-bottom: 18px;
 }
 .price-card {
-  background: var(--ink-soft);
-  border: 1px solid #3a3d45;
+  background: var(--pepper-deep);
+  border: 1px solid #1d8a63;
   border-radius: var(--radius);
   padding: 26px 22px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-.price-card h3 { color: #f2efe8; font-size: 1.1rem; }
-.price-card .amount { font-size: 1.7rem; font-weight: 800; color: var(--accent); }
+.price-card h3 { color: #ffffff; font-size: 1.1rem; }
+.price-card .amount { font-size: 1.7rem; font-weight: 800; color: var(--banana); }
 .price-card ul { list-style: none; }
-.price-card li { padding: 6px 0 6px 24px; position: relative; font-size: 0.93rem; color: #cfcabd; }
-.price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 800; }
-.pricing .fine { margin-top: 24px; font-size: 0.88rem; color: #b9b4a8; max-width: 70ch; }
+.price-card li { padding: 6px 0 6px 24px; position: relative; font-size: 0.93rem; color: #cfe9da; }
+.price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--avocado); font-weight: 800; }
+.price-card--star { border: 2px solid var(--banana); }
+.pricing .fine { margin-top: 24px; font-size: 0.88rem; color: #bfe0cd; max-width: 70ch; }
 
 /* Cómo funcionará */
 .steps { counter-reset: step; list-style: none; display: grid; gap: 14px; margin-top: 24px; }
@@ -198,8 +262,8 @@ h2 {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--ink);
-  color: var(--accent);
+  background: var(--ocean);
+  color: #ffffff;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -209,20 +273,20 @@ h2 {
 
 /* Acceso anticipado */
 .early {
-  background: linear-gradient(160deg, var(--ink) 0%, #2c2620 100%);
-  color: #f2efe8;
+  background: linear-gradient(135deg, #ffe3f0 0%, #fff3dd 100%);
   text-align: center;
 }
-.early h2 { color: #f2efe8; }
-.early p { color: #cfcabd; max-width: 56ch; margin: 12px auto 0; }
-.early .hero-badge { margin-bottom: 14px; }
+.early .blob--ocean { width: 210px; height: 180px; bottom: -50px; left: -90px; }
+.early h2 { color: var(--text); }
+.early p { color: var(--muted); max-width: 56ch; margin: 12px auto 0; }
+.early .hero-badge { margin-bottom: 14px; background: #ffffff; }
 
 /* FAQ */
 .faq details { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; padding: 0 18px; }
 .faq summary {
   cursor: pointer;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--text);
   padding: 15px 0;
   list-style: none;
   position: relative;
@@ -235,17 +299,19 @@ h2 {
   right: 2px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--accent-dark);
+  color: var(--tangerine);
   font-weight: 800;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 .faq details[open] summary::after { content: "–"; }
 .faq details p { color: var(--muted); font-size: 0.95rem; padding: 0 0 16px; }
 
 /* Footer */
-footer { background: var(--ink); color: #b9b4a8; padding: 36px 0; font-size: 0.88rem; }
-footer .brand { color: #f2efe8; display: block; margin-bottom: 8px; }
-footer a { color: #b9b4a8; }
+footer { background: var(--pepper-deep); color: #bfe0cd; padding: 36px 0; font-size: 0.88rem; }
+footer .logo { font-size: 1.2rem; display: inline-block; margin-bottom: 8px; }
+footer .logo .hmu { color: var(--bubblegum); }
+footer .logo .lnk { color: #6fd6e2; }
+footer a { color: #bfe0cd; }
 
 /* Desktop */
 @media (min-width: 720px) {
@@ -264,7 +330,7 @@ footer a { color: #b9b4a8; }
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="../">HMU <span>Link</span></a>
+    <a class="logo" href="../"><span class="hmu">HMU</span> <span class="lnk">Link</span><span class="pin" aria-hidden="true"></span></a>
     <div class="top-links">
       <a class="lang-switch" href="../us/" hreflang="en-US" lang="en-US">English (USA/Canada)</a>
       <div class="top-note">Producto en preparación</div>
@@ -275,32 +341,38 @@ footer a { color: #b9b4a8; }
 <!-- Hero -->
 <section class="hero" id="inicio">
   <div class="wrap">
+    <span class="blob blob--banana" aria-hidden="true"></span>
+    <span class="blob blob--pink" aria-hidden="true"></span>
     <span class="hero-badge">HMU Link · México</span>
-    <h1>Todo lo que tus clientes te preguntan por WhatsApp, <em>organizado en un solo link</em>.</h1>
+    <h1>Todo lo que tus clientes te preguntan por WhatsApp, <span class="hl">organizado en un solo link</span>.</h1>
+    <p class="slogan">Conecta tu negocio.</p>
     <p class="sub">HMU Link crea una página digital para que tus clientes vean tus servicios, precios, promociones y te contacten o reserven desde un solo link.</p>
     <div class="cta-row">
       <a class="btn btn--primary" href="#acceso-anticipado">Quiero mi HMU Link</a>
-      <a class="btn btn--outline" href="#estilos">Ver demos</a>
+      <a class="btn btn--secondary" href="#estilos">Ver demos</a>
     </div>
   </div>
 </section>
 
 <!-- Qué es -->
-<section class="what" id="que-es">
+<section class="alt" id="que-es">
   <div class="wrap">
     <span class="kicker">Qué es</span>
     <h2>Deja de repetir precios por mensaje</h2>
     <p class="lead">¿"Hola, ¿me pasas la lista de precios?" otra vez? Con HMU Link respondes con un solo link: tu cliente ve servicios, precios, promociones, ubicación, horarios y reseñas, y te escribe o reserva al instante.</p>
     <div class="grid grid--3">
       <div class="card">
+        <span class="icon" aria-hidden="true">🔗</span>
         <h3>Un link para todo</h3>
         <p>Compártelo en WhatsApp, Instagram, Google Business, tarjetas, flyers o como código QR en tu local.</p>
       </div>
       <div class="card">
+        <span class="icon" aria-hidden="true">📱</span>
         <h3>Sin app, sin cuentas</h3>
         <p>Tus clientes no descargan nada ni crean cuenta. Abren el link y ven todo para decidir y escribirte.</p>
       </div>
       <div class="card">
+        <span class="icon" aria-hidden="true">✨</span>
         <h3>Sin dashboard que aprender</h3>
         <p>Tú tampoco administras ningún sistema. Nos das tu información y nosotros creamos y publicamos tu página.</p>
       </div>
@@ -315,24 +387,24 @@ footer a { color: #b9b4a8; }
     <h2>Para negocios que venden por WhatsApp e Instagram</h2>
     <p class="lead">Si todos los días respondes las mismas preguntas — precios, horarios, ubicación, "¿tienes promociones?" — HMU Link es para ti.</p>
     <div class="grid grid--3">
-      <div class="card"><h3>Spas</h3><p>Masajes, faciales, rituales y paquetes con precios claros antes de que te escriban.</p></div>
-      <div class="card"><h3>Salones de belleza</h3><p>Cortes, color, tratamientos y la promo del mes en un solo lugar.</p></div>
-      <div class="card"><h3>Barberías</h3><p>Menú de cortes, barba y combos, con reserva directa por WhatsApp.</p></div>
-      <div class="card"><h3>Uñas · Lashes · Brows</h3><p>Catálogo de servicios con duración y precio, listo para mandar por DM.</p></div>
-      <div class="card"><h3>Wellness y masajes</h3><p>Terapias, sesiones y paquetes presentados de forma profesional.</p></div>
-      <div class="card"><h3>Otros servicios locales</h3><p>Estudios fitness, clases, consultorios, grooming de mascotas y profesionales independientes.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">🧖</span><h3>Spas</h3><p>Masajes, faciales, rituales y paquetes con precios claros antes de que te escriban.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💇</span><h3>Salones de belleza</h3><p>Cortes, color, tratamientos y la promo del mes en un solo lugar.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💈</span><h3>Barberías</h3><p>Menú de cortes, barba y combos, con reserva directa por WhatsApp.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💅</span><h3>Uñas · Lashes · Brows</h3><p>Catálogo de servicios con duración y precio, listo para mandar por DM.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">🌿</span><h3>Wellness y masajes</h3><p>Terapias, sesiones y paquetes presentados de forma profesional.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">📍</span><h3>Otros servicios locales</h3><p>Tours, clases, consultorios, restaurantes, coaches, grooming de mascotas y profesionales independientes.</p></div>
     </div>
   </div>
 </section>
 
 <!-- Qué incluye / qué no incluye -->
-<section class="what" id="incluye">
+<section class="alt" id="incluye">
   <div class="wrap">
     <span class="kicker">Alcance claro</span>
     <h2>Qué incluye (y qué no)</h2>
     <p class="lead">Preferimos ser directos: esto es exactamente lo que recibes, sin letras chicas.</p>
     <div class="two-col">
-      <div class="card">
+      <div class="card card--yes">
         <h3>Incluye</h3>
         <ul class="list list--yes">
           <li>Página digital pública de tu negocio</li>
@@ -346,7 +418,7 @@ footer a { color: #b9b4a8; }
           <li>6 estilos visuales cerrados para elegir</li>
         </ul>
       </div>
-      <div class="card">
+      <div class="card card--no">
         <h3>No incluye</h3>
         <ul class="list list--no">
           <li>Dashboard de administración</li>
@@ -368,6 +440,7 @@ footer a { color: #b9b4a8; }
 <!-- Estilos visuales -->
 <section id="estilos">
   <div class="wrap">
+    <span class="blob blob--ocean" aria-hidden="true" style="width: 230px; height: 200px; top: -40px; right: -100px;"></span>
     <span class="kicker">Estilos visuales</span>
     <h2>6 estilos cerrados, cada uno con demo real</h2>
     <p class="lead">Eliges uno de estos 6 estilos y tu página se ve profesional desde el primer día. Abre cualquier demo: son páginas reales publicadas, con datos ficticios.</p>
@@ -421,6 +494,7 @@ footer a { color: #b9b4a8; }
 <!-- Pricing -->
 <section class="pricing" id="precios">
   <div class="wrap">
+    <span class="blob blob--banana" aria-hidden="true"></span>
     <span class="price-note">Precios de lanzamiento · Tentativos</span>
     <h2>Pago único, sin mensualidades</h2>
     <p class="lead">Estos son los precios de lanzamiento previstos para México. El checkout todavía no está activo: el producto está en preparación.</p>
@@ -436,7 +510,7 @@ footer a { color: #b9b4a8; }
           <li>1 corrección incluida</li>
         </ul>
       </div>
-      <div class="price-card">
+      <div class="price-card price-card--star">
         <h3>Standard</h3>
         <div class="amount">MXN $999</div>
         <ul>
@@ -481,6 +555,7 @@ footer a { color: #b9b4a8; }
 <!-- Acceso anticipado -->
 <section class="early" id="acceso-anticipado">
   <div class="wrap">
+    <span class="blob blob--ocean" aria-hidden="true"></span>
     <span class="hero-badge">Próximamente · Acceso anticipado</span>
     <h2>HMU Link está en preparación</h2>
     <p>Todavía no puedes comprar: estamos terminando el sistema de pedidos. Las demos ya son reales y públicas. Cuando el checkout esté activo, esta página será el lugar para pedir tu HMU Link con precio de lanzamiento.</p>
@@ -492,7 +567,7 @@ footer a { color: #b9b4a8; }
 </section>
 
 <!-- FAQ -->
-<section class="what faq" id="faq">
+<section class="alt faq" id="faq">
   <div class="wrap">
     <span class="kicker">Preguntas frecuentes</span>
     <h2>Respuestas directas</h2>
@@ -531,7 +606,7 @@ footer a { color: #b9b4a8; }
     </details>
     <details>
       <summary>¿Sirve para otros negocios además de spas y salones?</summary>
-      <p>Sí. Funciona para cualquier negocio local de servicios: uñas, lashes, masajes, estudios fitness, clases, consultorios, grooming de mascotas, tatuajes y profesionales independientes.</p>
+      <p>Sí. Funciona para cualquier negocio local de servicios: uñas, lashes, masajes, tours, clases, consultorios, restaurantes, coaches, grooming de mascotas, tatuajes y profesionales independientes.</p>
     </details>
     <details>
       <summary>¿Cuándo estará disponible para compra?</summary>
@@ -543,8 +618,8 @@ footer a { color: #b9b4a8; }
 <!-- Footer -->
 <footer>
   <div class="wrap">
-    <span class="brand">HMU <span style="color: var(--accent);">Link</span></span>
-    <p>Producto en construcción. Demos públicas con datos ficticios.</p>
+    <span class="logo"><span class="hmu">HMU</span> <span class="lnk">Link</span><span class="pin" aria-hidden="true"></span></span>
+    <p>Conecta tu negocio. Producto en construcción; demos públicas con datos ficticios.</p>
     <p><a href="../">Portada</a> · <a href="../us/" hreflang="en-US" lang="en-US">English (USA/Canada)</a></p>
   </div>
 </footer>

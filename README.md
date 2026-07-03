@@ -42,7 +42,14 @@ incluida vía un link de un solo uso.
 
 ## Estado actual
 
-**Phase 3B — Demos públicas en GitHub Pages.**
+**Phase 4 — Landing comercial pública.**
+
+Existe una landing comercial estática en `public/index.html`, publicada en la URL base de
+GitHub Pages: `https://yuyitov.github.io/service-menu-app/`. La landing presenta el
+producto con nombre provisional ("Service Pages" / "Service Menu App"), enlaza las 6
+demos públicas, muestra el pricing tentativo de lanzamiento y aclara que el checkout
+todavía no está activo. Es HTML/CSS puro, sin JavaScript, sin fonts ni imágenes externas,
+sin analytics y sin formularios reales.
 
 Phase 0 (documentación) y Phase 1 (generador + 6 estilos) están aprobadas. El generador
 convierte un payload `service_menu_payload_public` (JSON dummy) en una página pública
@@ -118,6 +125,7 @@ generator/
   styles/                    # 1 paleta CSS por estilo cerrado (6 archivos)
 data/demos/                  # payloads dummy (1 por estilo: bella-spa, studio-blush,
                              #   north-barber, glow-nails, aqua-wellness, sage-studio)
+public/index.html            # landing comercial estática (Phase 4, sin JS)
 public/demos/                # salida generada (index.html + qr.svg por slug)
 requirements.txt             # dependencia fijada (segno)
 .github/workflows/           # generate-demos.yml (valida en push/PR)

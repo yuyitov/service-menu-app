@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Service Pages — Páginas digitales para negocios locales</title>
+<meta name="description" content="Creamos páginas digitales para que negocios locales muestren sus servicios, precios, promociones y reservas desde un solo link.">
+<style>
+/* ------------------------------------------------------------------ */
+/* Landing comercial Phase 4 — estática, sin JS, sin assets externos. */
+/* Estética neutral/premium: tinta oscura + acento latón, base clara. */
+/* ------------------------------------------------------------------ */
+:root {
+  --ink: #16181d;
+  --ink-soft: #23262e;
+  --paper: #f7f6f3;
+  --card: #ffffff;
+  --text: #2b2e35;
+  --muted: #6b7078;
+  --accent: #b08d43;
+  --accent-dark: #8f7133;
+  --line: #e4e1da;
+  --radius: 14px;
+  --maxw: 1080px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--paper);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+section { padding: 56px 0; }
+h2 {
+  font-size: 1.65rem;
+  line-height: 1.25;
+  color: var(--ink);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.kicker {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  margin-bottom: 10px;
+}
+.lead { color: var(--muted); max-width: 62ch; margin-bottom: 28px; }
+
+/* Header */
+.top {
+  background: var(--ink);
+  color: #f2efe8;
+  padding: 14px 0;
+}
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { font-weight: 800; letter-spacing: 0.02em; font-size: 1.05rem; }
+.brand span { color: var(--accent); }
+.top-note {
+  font-size: 0.75rem;
+  color: #b9b4a8;
+  border: 1px solid #3a3d45;
+  border-radius: 999px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(160deg, var(--ink) 0%, var(--ink-soft) 70%, #2c2620 100%);
+  color: #f2efe8;
+  padding: 72px 0 80px;
+}
+.hero h1 {
+  font-size: clamp(1.75rem, 5vw, 2.7rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  max-width: 21ch;
+  margin: 14px 0 18px;
+}
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero .sub {
+  font-size: 1.05rem;
+  color: #cfcabd;
+  max-width: 52ch;
+  margin-bottom: 32px;
+}
+.cta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.btn {
+  display: inline-block;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  text-align: center;
+}
+.btn--primary { background: var(--accent); color: #1a1508; }
+.btn--primary:hover { background: #c49d4f; }
+.btn--ghost {
+  border: 1px solid #4a4d55;
+  color: #cfcabd;
+  cursor: default;
+}
+.hero-badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(176, 141, 67, 0.45);
+  border-radius: 999px;
+  padding: 5px 14px;
+}
+
+/* Cards / grids */
+.grid { display: grid; gap: 16px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+.card h3 { color: var(--ink); font-size: 1.06rem; margin-bottom: 6px; }
+.card p { color: var(--muted); font-size: 0.94rem; }
+
+/* Qué es */
+.what { background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.what .grid { margin-top: 24px; }
+.what .card { background: var(--paper); }
+
+/* Listas incluye / no incluye */
+.list { list-style: none; }
+.list li {
+  padding: 10px 0 10px 30px;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  font-size: 0.97rem;
+}
+.list li:last-child { border-bottom: none; }
+.list li::before { position: absolute; left: 2px; font-weight: 800; }
+.list--yes li::before { content: "✓"; color: var(--accent-dark); }
+.list--no li::before { content: "—"; color: #a0a4ab; }
+.list--no li { color: var(--muted); }
+.two-col { display: grid; gap: 24px; margin-top: 24px; }
+
+/* Estilos visuales */
+.style-card { display: flex; flex-direction: column; gap: 10px; }
+.swatch {
+  height: 10px;
+  border-radius: 999px;
+}
+.sw-black-gold     { background: linear-gradient(90deg, #17171a 60%, #c9a24b); }
+.sw-soft-blush     { background: linear-gradient(90deg, #f6dfe0 60%, #c96f7d); }
+.sw-charcoal-clean { background: linear-gradient(90deg, #33373d 60%, #9fb2bd); }
+.sw-warm-sand      { background: linear-gradient(90deg, #e8d9c3 60%, #a97b3f); }
+.sw-aqua-clean     { background: linear-gradient(90deg, #d4edee 60%, #2f8f96); }
+.sw-sage-calm      { background: linear-gradient(90deg, #dde5d8 60%, #6d8a63); }
+.style-card .ideal { font-size: 0.85rem; color: var(--muted); }
+.style-card .ideal strong { color: var(--ink); font-weight: 600; }
+.demo-link {
+  color: var(--accent-dark);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.demo-link:hover { text-decoration: underline; }
+
+/* Pricing */
+.pricing { background: var(--ink); color: #f2efe8; }
+.pricing h2 { color: #f2efe8; }
+.pricing .lead { color: #b9b4a8; }
+.price-note {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(176, 141, 67, 0.45);
+  border-radius: 999px;
+  padding: 5px 14px;
+  margin-bottom: 18px;
+}
+.price-card {
+  background: var(--ink-soft);
+  border: 1px solid #3a3d45;
+  border-radius: var(--radius);
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.price-card h3 { color: #f2efe8; font-size: 1.1rem; }
+.price-card .amount { font-size: 1.7rem; font-weight: 800; color: var(--accent); }
+.price-card .amount small { font-size: 0.95rem; color: #b9b4a8; font-weight: 600; }
+.price-card ul { list-style: none; }
+.price-card li { padding: 6px 0 6px 24px; position: relative; font-size: 0.93rem; color: #cfcabd; }
+.price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 800; }
+.pricing .fine {
+  margin-top: 24px;
+  font-size: 0.88rem;
+  color: #b9b4a8;
+  max-width: 70ch;
+}
+
+/* Cómo funcionará */
+.steps { counter-reset: step; list-style: none; display: grid; gap: 14px; margin-top: 24px; }
+.steps li {
+  counter-increment: step;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px 16px 62px;
+  position: relative;
+  font-size: 0.97rem;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--accent);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+/* FAQ */
+.faq details {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  padding: 0 18px;
+}
+.faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 15px 0;
+  list-style: none;
+  position: relative;
+  padding-right: 28px;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+";
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent-dark);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+.faq details[open] summary::after { content: "–"; }
+.faq details p { color: var(--muted); font-size: 0.95rem; padding: 0 0 16px; }
+
+/* Footer */
+footer {
+  background: var(--ink);
+  color: #b9b4a8;
+  padding: 36px 0;
+  font-size: 0.88rem;
+}
+footer .brand { color: #f2efe8; display: block; margin-bottom: 8px; }
+
+/* Desktop */
+@media (min-width: 720px) {
+  section { padding: 76px 0; }
+  h2 { font-size: 1.9rem; }
+  .grid--3 { grid-template-columns: repeat(3, 1fr); }
+  .grid--2 { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 480px) and (max-width: 719px) {
+  .grid--3 { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">Service <span>Pages</span></div>
+    <div class="top-note">Producto en preparación · Demos públicas</div>
+  </div>
+</header>
+
+<!-- A. Hero -->
+<section class="hero" id="inicio">
+  <div class="wrap">
+    <span class="hero-badge">Service Pages · Service Menu App</span>
+    <h1>Creamos páginas digitales para que negocios locales muestren sus <em>servicios, precios, promociones y reservas</em> desde un solo link.</h1>
+    <p class="sub">Todo lo que tus clientes necesitan para elegir, reservar y contactarte, en una sola página digital.</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="#estilos">Ver demos</a>
+      <span class="btn btn--ghost">Producto en preparación</span>
+    </div>
+  </div>
+</section>
+
+<!-- B. Qué es -->
+<section class="what" id="que-es">
+  <div class="wrap">
+    <span class="kicker">Qué es</span>
+    <h2>Tu negocio completo, en una página digital</h2>
+    <p class="lead">Una página digital donde tus clientes ven tus servicios, precios, promociones, ubicación, horarios y reseñas, y pueden reservar o contactarte al instante. Sin fricciones para ellos y sin sistemas complicados para ti.</p>
+    <div class="grid grid--3">
+      <div class="card">
+        <h3>Compartible en todas partes</h3>
+        <p>Un solo link que funciona en WhatsApp, Instagram, Google Business y también como código QR impreso en tu local.</p>
+      </div>
+      <div class="card">
+        <h3>Sin app, sin cuentas</h3>
+        <p>Tus clientes no descargan nada ni crean cuenta. Abren el link y ven todo lo que necesitan para decidir.</p>
+      </div>
+      <div class="card">
+        <h3>Sin dashboard que aprender</h3>
+        <p>Tú tampoco necesitas administrar un sistema. Nos das tu información, nosotros creamos y publicamos tu página.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- C. Para quién es -->
+<section id="para-quien">
+  <div class="wrap">
+    <span class="kicker">Para quién es</span>
+    <h2>Hecho para negocios de servicios locales</h2>
+    <p class="lead">Empezamos con el mundo de la belleza y el bienestar, y crecemos hacia más servicios locales.</p>
+    <div class="grid grid--3">
+      <div class="card"><h3>Spas</h3><p>Masajes, faciales, rituales y paquetes de relajación con precios claros.</p></div>
+      <div class="card"><h3>Salones de belleza</h3><p>Cortes, color, tratamientos y promociones del mes en un solo lugar.</p></div>
+      <div class="card"><h3>Barberías</h3><p>Menú de cortes, barba y combos, con reserva directa por WhatsApp.</p></div>
+      <div class="card"><h3>Uñas · Lashes · Brows</h3><p>Catálogo de diseños y servicios con duración y precio por servicio.</p></div>
+      <div class="card"><h3>Wellness y masajes</h3><p>Terapias, sesiones y membresías presentadas de forma profesional.</p></div>
+      <div class="card"><h3>Otros servicios locales</h3><p>Estudios fitness, grooming, clases, consultorios y profesionales independientes.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- D + E. Qué incluye / qué no incluye -->
+<section class="what" id="incluye">
+  <div class="wrap">
+    <span class="kicker">Alcance claro</span>
+    <h2>Qué incluye (y qué no)</h2>
+    <p class="lead">Preferimos ser directos: esto es exactamente lo que recibes, sin letras chicas.</p>
+    <div class="two-col">
+      <div class="card">
+        <h3>Incluye</h3>
+        <ul class="list list--yes">
+          <li>Página digital pública de tu negocio</li>
+          <li>Link visible, corto y compartible</li>
+          <li>Código QR real listo para imprimir</li>
+          <li>Botones de WhatsApp, Instagram, Google Maps y Google Reviews</li>
+          <li>Servicios y precios organizados por categoría</li>
+          <li>Promoción o paquete destacado</li>
+          <li>Horarios y ubicación</li>
+          <li>Una corrección incluida</li>
+          <li>6 estilos visuales cerrados para elegir</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>No incluye</h3>
+        <ul class="list list--no">
+          <li>Dashboard de administración</li>
+          <li>Login o cuentas de usuario</li>
+          <li>Sistema interno de reservas</li>
+          <li>Cobros a tus clientes finales</li>
+          <li>Control de inventario</li>
+          <li>Cambios ilimitados</li>
+          <li>Diseño custom ilimitado</li>
+          <li>App móvil</li>
+          <li>Marketplace</li>
+          <li>Funciones de IA</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- F. Estilos visuales -->
+<section id="estilos">
+  <div class="wrap">
+    <span class="kicker">Estilos visuales</span>
+    <h2>6 estilos cerrados, cada uno con demo real</h2>
+    <p class="lead">Eliges uno de estos 6 estilos y tu página se ve profesional desde el primer día. Abre cualquier demo: son páginas reales publicadas, con datos ficticios.</p>
+    <div class="grid grid--3">
+      <div class="card style-card">
+        <div class="swatch sw-black-gold"></div>
+        <h3>Black Gold</h3>
+        <p>Elegancia oscura con acentos dorados. Presencia premium y sofisticada.</p>
+        <p class="ideal"><strong>Ideal para:</strong> spas premium, barberías de alta gama, estudios exclusivos.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/bella-spa/">Ver demo: Bella Spa →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-soft-blush"></div>
+        <h3>Soft Blush</h3>
+        <p>Tonos rosados suaves y delicados. Cálido, acogedor y femenino.</p>
+        <p class="ideal"><strong>Ideal para:</strong> salones de belleza, estudios de lashes y brows, faciales.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/studio-blush/">Ver demo: Studio Blush →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-charcoal-clean"></div>
+        <h3>Charcoal Clean</h3>
+        <p>Gris carbón, sobrio y directo. Estética masculina y contemporánea.</p>
+        <p class="ideal"><strong>Ideal para:</strong> barberías, grooming masculino, estudios de tatuaje.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/north-barber/">Ver demo: North Barber →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-warm-sand"></div>
+        <h3>Warm Sand</h3>
+        <p>Tonos arena y tierra. Natural, cálido y artesanal.</p>
+        <p class="ideal"><strong>Ideal para:</strong> estudios de uñas, belleza natural, espacios boho.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/glow-nails/">Ver demo: Glow Nails →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-aqua-clean"></div>
+        <h3>Aqua Clean</h3>
+        <p>Azules aqua frescos y limpios. Transmite higiene, agua y calma.</p>
+        <p class="ideal"><strong>Ideal para:</strong> wellness, masajes, hidroterapia, clínicas estéticas.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/aqua-wellness/">Ver demo: Aqua Wellness →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-sage-calm"></div>
+        <h3>Sage Calm</h3>
+        <p>Verde salvia sereno y equilibrado. Minimalista y orgánico.</p>
+        <p class="ideal"><strong>Ideal para:</strong> yoga, terapias holísticas, meditación, wellness natural.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/sage-studio/">Ver demo: Sage Studio →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- G. Pricing tentativo -->
+<section class="pricing" id="precios">
+  <div class="wrap">
+    <span class="price-note">Precios de lanzamiento · Tentativos</span>
+    <h2>Pago único, sin mensualidades</h2>
+    <p class="lead">Estos son los precios de lanzamiento previstos. El checkout todavía no está activo: el producto está en preparación.</p>
+    <div class="grid grid--3">
+      <div class="price-card">
+        <h3>Founder</h3>
+        <div class="amount">MXN $599 <small>/ USD $39</small></div>
+        <ul>
+          <li>1 página digital publicada</li>
+          <li>1 estilo visual a elegir</li>
+          <li>Código QR real</li>
+          <li>Link compartible</li>
+          <li>1 corrección incluida</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Standard</h3>
+        <div class="amount">MXN $999 <small>/ USD $69</small></div>
+        <ul>
+          <li>Página completa</li>
+          <li>Paquete o promoción destacada</li>
+          <li>QR kit</li>
+          <li>Link compartible</li>
+          <li>1 corrección incluida</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Corrección extra</h3>
+        <div class="amount">MXN $250–$400 <small>/ USD $15–$25</small></div>
+        <ul>
+          <li>Cambios posteriores a la corrección incluida</li>
+          <li>Actualización de precios o servicios</li>
+          <li>Se cotiza según el alcance del cambio</li>
+        </ul>
+      </div>
+    </div>
+    <p class="fine">Pago único por la creación y publicación de tu página. Los cambios futuros se cobran aparte como correcciones extra. El checkout no está activo en esta fase: los precios pueden ajustarse antes del lanzamiento.</p>
+  </div>
+</section>
+
+<!-- H. Cómo funcionará -->
+<section id="como-funciona">
+  <div class="wrap">
+    <span class="kicker">Cómo funcionará</span>
+    <h2>Del pago a tu página publicada</h2>
+    <p class="lead">Así será el flujo cuando el producto esté disponible para compra. En esta fase el checkout todavía no está activo.</p>
+    <ol class="steps">
+      <li>Tu negocio compra el paquete.</li>
+      <li>Recibes un formulario de alta.</li>
+      <li>Llenas tus servicios, precios, horarios, links y eliges tu estilo.</li>
+      <li>El sistema genera tu página.</li>
+      <li>Recibes tu link y tu código QR listos para compartir.</li>
+      <li>Puedes usar tu corrección incluida cuando la necesites.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- I. FAQ -->
+<section class="what faq" id="faq">
+  <div class="wrap">
+    <span class="kicker">Preguntas frecuentes</span>
+    <h2>Respuestas directas</h2>
+    <p class="lead">Sin promesas infladas: esto es lo que el producto hace y lo que no.</p>
+    <details>
+      <summary>¿Es solo un QR?</summary>
+      <p>No. El QR es solo una de las formas de compartir tu página. Lo que recibes es una página digital completa con tus servicios, precios, promociones, horarios, ubicación y botones de contacto, más un link compartible y el QR.</p>
+    </details>
+    <details>
+      <summary>¿Necesito una app?</summary>
+      <p>No. Ni tú ni tus clientes necesitan descargar nada. Tu página funciona en cualquier navegador, desde cualquier celular o computadora.</p>
+    </details>
+    <details>
+      <summary>¿Puedo usarlo en Instagram?</summary>
+      <p>Sí. Tu link funciona perfecto como "link en bio" de Instagram, y también puedes compartirlo en historias o mensajes directos.</p>
+    </details>
+    <details>
+      <summary>¿Puedo usarlo en WhatsApp?</summary>
+      <p>Sí. Puedes enviar tu link por WhatsApp a cualquier cliente, ponerlo en tu estado o en tu perfil de WhatsApp Business. Además, tu página incluye un botón para que tus clientes te escriban directo por WhatsApp.</p>
+    </details>
+    <details>
+      <summary>¿Puedo cambiar precios después?</summary>
+      <p>Sí. Tu paquete incluye una corrección sin costo. Después de usarla, los cambios adicionales se cobran aparte como corrección extra.</p>
+    </details>
+    <details>
+      <summary>¿Incluye reservas?</summary>
+      <p>La reserva y el contacto se hacen por WhatsApp, Instagram, Google Maps o un link externo tuyo (por ejemplo, tu sistema de citas si ya tienes uno). No hay un sistema interno de reservas todavía.</p>
+    </details>
+    <details>
+      <summary>¿Puedo elegir colores?</summary>
+      <p>Eliges entre 6 estilos visuales cerrados, diseñados para verse profesionales en cualquier negocio. No hay selección libre de colores: así garantizamos que tu página siempre se vea bien.</p>
+    </details>
+    <details>
+      <summary>¿Sirve para barberías?</summary>
+      <p>Sí. Estilos como Charcoal Clean y Black Gold están pensados justo para barberías y grooming masculino. Mira la demo de North Barber.</p>
+    </details>
+    <details>
+      <summary>¿Sirve para otros negocios además de spas?</summary>
+      <p>Sí. Funciona para cualquier negocio local de servicios: salones, barberías, uñas, lashes, masajes, estudios fitness, clases, consultorios, grooming de mascotas, tatuajes y profesionales independientes.</p>
+    </details>
+    <details>
+      <summary>¿Cuándo estará disponible para compra?</summary>
+      <p>El producto está en preparación. Las demos ya son públicas y reales; el checkout se activará en una fase próxima. Los precios mostrados son tentativos de lanzamiento.</p>
+    </details>
+  </div>
+</section>
+
+<!-- J. Footer -->
+<footer>
+  <div class="wrap">
+    <span class="brand">Service <span style="color: var(--accent);">Pages</span> · Service Menu App</span>
+    <p>Producto en construcción. Demos públicas con datos ficticios.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -127,6 +127,17 @@ para aprobar el diseño antes de escribir código de integración.
   push/PR; `pages.yml` es el único que despliega.
 - Sin dominio custom todavía (fase posterior).
 
+## Landing comercial pública (Phase 4)
+
+- La landing comercial vive en `public/index.html` y se publica en la **raíz** de GitHub
+  Pages (`https://yuyitov.github.io/service-menu-app/`) por el mismo workflow `pages.yml`
+  que ya publica toda la carpeta `public/` — no requirió cambios de workflow.
+- Es **estática y pública**: HTML/CSS puro, sin JavaScript, sin fonts ni imágenes
+  externas, sin analytics y sin formularios reales. No se genera con el generador de
+  demos; es un archivo mantenido a mano.
+- Enlaza las 6 demos públicas y muestra pricing tentativo. **No** integra Stripe, Tally,
+  Worker, KV ni email: el checkout se activa en una fase posterior.
+
 ## Separación total respecto a MyGuest
 
 - Repo propio, sin relación de historial git con el repo de MyGuest.

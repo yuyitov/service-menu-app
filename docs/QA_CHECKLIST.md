@@ -60,6 +60,31 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] `generate-demos.yml` sigue existiendo y pasando como workflow de validación.
 - [ ] MyGuest no fue tocado; no hay Stripe/Tally/Worker/KV/emails implementados.
 
+## Phase 4 — Landing comercial pública
+
+- [ ] Existe `public/index.html` y abre en `https://yuyitov.github.io/service-menu-app/`.
+- [ ] La landing usa solo el nombre provisional ("Service Pages" / "Service Menu App");
+      no menciona MyGuest.
+- [ ] La landing es HTML/CSS estático: sin JavaScript, sin fonts externas, sin imágenes
+      externas, sin analytics/pixels, sin scripts de terceros.
+- [ ] Se ve bien en mobile (~375px) y en desktop.
+- [ ] Los 6 estilos aparecen con nombre, descripción, "ideal para" y link a su demo:
+      Black Gold → bella-spa, Soft Blush → studio-blush, Charcoal Clean → north-barber,
+      Warm Sand → glow-nails, Aqua Clean → aqua-wellness, Sage Calm → sage-studio.
+- [ ] Los 6 links de demos abren desde la landing (HTTP 200).
+- [ ] El pricing se muestra como tentativo de lanzamiento (Founder MXN $599 / USD $39,
+      Standard MXN $999 / USD $69, corrección extra MXN $250–$400 / USD $15–$25) y se
+      aclara pago único + cambios futuros aparte.
+- [ ] El CTA "Producto en preparación" NO abre Stripe ni ningún checkout real; no hay
+      Payment Link, Tally real ni formularios que envíen datos.
+- [ ] El FAQ es honesto: reservas por WhatsApp/Instagram/Maps/link externo (sin sistema
+      interno), colores solo por 6 estilos cerrados, cambios extra se cobran aparte,
+      producto en preparación.
+- [ ] El footer dice "Producto en construcción. Demos públicas con datos ficticios." y
+      no incluye email real.
+- [ ] No hay datos reales de clientes ni secrets en la landing.
+- [ ] Las 6 demos y sus `qr.svg` siguen existiendo sin cambios.
+
 ## Generación de página dummy
 
 - [ ] Se puede generar una página completa a partir de un `service_menu_payload_public`

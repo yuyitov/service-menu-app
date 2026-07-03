@@ -64,29 +64,41 @@ el usuario.
 - Lógica de idempotencia por `order_id` y `correction_token`.
 - Disparo de GitHub Actions vía `repository_dispatch`.
 
-## Phase 4 — Stripe/Tally
+## Phase 4 — Landing comercial pública ✅
+
+- Landing comercial estática en `public/index.html`, publicada en la raíz de GitHub
+  Pages (`https://yuyitov.github.io/service-menu-app/`).
+- Presenta el producto con nombre provisional ("Service Pages" / "Service Menu App"),
+  explica qué es, para quién es, qué incluye y qué no incluye.
+- Enlaza las 6 demos públicas como muestra de los 6 estilos cerrados.
+- Muestra el pricing tentativo de lanzamiento (Founder / Standard / corrección extra),
+  aclarando que el checkout **no** está activo todavía.
+- HTML/CSS puro: sin JavaScript, sin fonts/imágenes externas, sin analytics, sin
+  formularios reales, sin Stripe/Tally/Worker/KV/emails.
+
+## Phase 5 — Stripe/Tally
 
 - Conectar Stripe Payment Link real y su webhook.
 - Conectar formulario Tally real y su webhook.
 - Validación de firmas de ambos webhooks (ver [SECURITY.md](SECURITY.md)).
 - Checklist de secrets futuros completado antes de esta fase.
 
-## Phase 5 — Emails y correcciones
+## Phase 6 — Emails y correcciones
 
 - Integración con proveedor de email (Resend u otro) para email post-pago y email de
   entrega.
 - Implementación completa del flujo de corrección one-time.
 
-## Phase 6 — QA end-to-end
+## Phase 7 — QA end-to-end
 
 - Recorrer [QA_CHECKLIST.md](QA_CHECKLIST.md) completo con el pipeline real conectado.
 - Prueba end-to-end: pago dummy → intake dummy → generación → publicación → entrega →
   corrección.
 - Verificación de idempotencia con eventos duplicados reales de Stripe/Tally.
 
-## Phase 7 — Landing, pricing y primeras ventas
+## Phase 8 — Checkout activo, pricing final y primeras ventas
 
-- Página de venta del producto (landing propia, separada de MyGuest).
+- Activar el checkout real en la landing (hasta entonces el pricing es tentativo).
 - Confirmar paquetes/precios definidos en [PRODUCT_SPEC.md](PRODUCT_SPEC.md) contra
   mercado real.
 - Primeras ventas reales, documentadas siguiendo

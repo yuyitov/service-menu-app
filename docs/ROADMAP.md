@@ -76,6 +76,21 @@ el usuario.
 - HTML/CSS puro: sin JavaScript, sin fonts/imágenes externas, sin analytics, sin
   formularios reales, sin Stripe/Tally/Worker/KV/emails.
 
+## Phase 4C — Marca HMU Link, landings por mercado y dominio custom ✅
+
+- Marca pública provisional: **HMU Link** (reemplaza "Service Pages" en las páginas
+  públicas; el repo mantiene su nombre interno).
+- Landing reestructurada por mercado: `/` portada/selector, `/mx/` México (español,
+  WhatsApp-first, MXN), `/us/` USA/Canadá (inglés, USD). Copy adaptado por mercado, no
+  traducción literal. Sin geolocalización, sin cookies, sin JS.
+- Metadata estática por página: title/description, `lang`, canonical y `hreflang`
+  (es-MX / en-US / x-default).
+- Dominio `hmulink.com` comprado en Cloudflare; principal deseado `www.hmulink.com`.
+  DNS y custom domain en GitHub Pages **pendientes** (ver
+  [ARCHITECTURE.md](ARCHITECTURE.md#dominio-custom-hmulinkcom-phase-4c)); QRs siguen en
+  `yuyitov.github.io` hasta activarlo.
+- Checkout sigue inactivo; precios de lanzamiento tentativos por mercado.
+
 ## Phase 5 — Stripe/Tally
 
 - Conectar Stripe Payment Link real y su webhook.

@@ -1,8 +1,9 @@
-# Service Menu App
+# Service Menu App (marca pública: HMU Link)
 
 ## Qué es
 
-Service Menu App es un producto que genera **páginas digitales de servicios** para salones,
+Service Menu App (nombre interno del repo) — con marca pública provisional **HMU Link** —
+es un producto que genera **páginas digitales de servicios** para salones,
 spas, negocios de wellness y comercios locales. Cada página pública muestra servicios,
 precios, paquetes, horarios, ubicación, WhatsApp, Instagram, Google Maps, Google Reviews
 y políticas básicas del negocio, con un link visible y un QR descargable para compartir.
@@ -42,14 +43,26 @@ incluida vía un link de un solo uso.
 
 ## Estado actual
 
-**Phase 4 — Landing comercial pública.**
+**Phase 4C — Marca HMU Link, landings por mercado y dominio custom en preparación.**
 
-Existe una landing comercial estática en `public/index.html`, publicada en la URL base de
-GitHub Pages: `https://yuyitov.github.io/service-menu-app/`. La landing presenta el
-producto con nombre provisional ("Service Pages" / "Service Menu App"), enlaza las 6
-demos públicas, muestra el pricing tentativo de lanzamiento y aclara que el checkout
-todavía no está activo. Es HTML/CSS puro, sin JavaScript, sin fonts ni imágenes externas,
-sin analytics y sin formularios reales.
+La landing pública usa la marca provisional **HMU Link** y está dividida por mercado:
+
+| Ruta | Contenido |
+|---|---|
+| `/` (`public/index.html`) | Portada/selector de mercado (México / USA-Canadá), sin geolocalización ni JS |
+| `/mx/` (`public/mx/index.html`) | Página comercial para México, en español, WhatsApp-first, precios MXN |
+| `/us/` (`public/us/index.html`) | Página comercial para USA/Canadá, en inglés, precios USD |
+
+Las tres páginas son HTML/CSS puro: sin JavaScript, sin fonts ni imágenes externas, sin
+analytics y sin formularios reales. Los precios mostrados son **de lanzamiento y
+tentativos**; el checkout no está activo.
+
+**Dominio custom:** se compró `hmulink.com` en Cloudflare. El dominio principal será
+`www.hmulink.com` (apex redirigiendo a www). **Aún no está activo**: falta crear los
+registros DNS en Cloudflare y configurar el custom domain en GitHub Pages (ver
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#dominio-custom-hmulinkcom-phase-4c)). Mientras
+tanto todo se sirve desde `https://yuyitov.github.io/service-menu-app/` y los QR de las
+demos siguen apuntando a esas URLs.
 
 Phase 0 (documentación) y Phase 1 (generador + 6 estilos) están aprobadas. El generador
 convierte un payload `service_menu_payload_public` (JSON dummy) en una página pública
@@ -125,7 +138,9 @@ generator/
   styles/                    # 1 paleta CSS por estilo cerrado (6 archivos)
 data/demos/                  # payloads dummy (1 por estilo: bella-spa, studio-blush,
                              #   north-barber, glow-nails, aqua-wellness, sage-studio)
-public/index.html            # landing comercial estática (Phase 4, sin JS)
+public/index.html            # portada/selector de mercado HMU Link (sin JS)
+public/mx/index.html         # landing comercial México (español, MXN)
+public/us/index.html         # landing comercial USA/Canadá (inglés, USD)
 public/demos/                # salida generada (index.html + qr.svg por slug)
 requirements.txt             # dependencia fijada (segno)
 .github/workflows/           # generate-demos.yml (valida en push/PR)

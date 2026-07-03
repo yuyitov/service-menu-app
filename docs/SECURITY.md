@@ -1,5 +1,11 @@
 # Security — Service Menu App
 
+## Repo público
+
+- El repo `yuyitov/service-menu-app` es **público** (requisito de GitHub Pages en plan
+  Free). Nada sensible puede commitearse: ni secrets, ni tokens, ni emails/teléfonos/
+  direcciones reales de clientes. Todo dato visible en demos y landing es ficticio.
+
 ## Página pública sin datos sensibles
 
 - La página final (`service_menu_payload_public`) solo contiene datos que el negocio

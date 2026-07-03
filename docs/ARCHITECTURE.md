@@ -127,6 +127,37 @@ para aprobar el diseño antes de escribir código de integración.
   push/PR; `pages.yml` es el único que despliega.
 - Sin dominio custom todavía (fase posterior).
 
+## Landing multi-mercado HMU Link (Phase 4C)
+
+- La marca pública provisional es **HMU Link**. La landing se divide en tres páginas
+  estáticas mantenidas a mano (no generadas): `public/index.html` (portada/selector de
+  mercado), `public/mx/index.html` (México, español, MXN) y `public/us/index.html`
+  (USA/Canadá, inglés, USD).
+- El usuario elige su mercado manualmente: **sin geolocalización, sin cookies, sin
+  JavaScript de redirección**. Metadata estática por página (`lang`, canonical,
+  `hreflang` es-MX / en-US / x-default).
+- Sigue sin haber backend dinámico: todo es HTML/CSS estático publicado por `pages.yml`.
+
+## Dominio custom hmulink.com (Phase 4C)
+
+- Dominio comprado en Cloudflare: `hmulink.com`. Dominio principal deseado:
+  `www.hmulink.com` (apex redirige a www). Sin wildcard DNS y sin subdominios
+  adicionales por ahora.
+- **Estado: pendiente.** El DNS de la zona aún no tiene registros para `www` ni A records
+  en el apex. El custom domain **no** se configura en GitHub Pages hasta que el DNS
+  exista, porque al configurarlo GitHub redirige `yuyitov.github.io/service-menu-app/` al
+  dominio custom y las demos/QR quedarían rotas mientras el DNS no propague.
+- Orden de activación: (1) crear en Cloudflare el CNAME `www → yuyitov.github.io`
+  (DNS only) y los A records del apex de GitHub Pages; (2) configurar
+  `www.hmulink.com` como custom domain del repo (Settings → Pages o
+  `gh api -X PUT repos/yuyitov/service-menu-app/pages -f cname=www.hmulink.com`);
+  (3) esperar validación DNS + certificado HTTPS de GitHub; (4) activar "Enforce HTTPS";
+  (5) actualizar `public_url` de las 6 demos, `DEMO_BASE_URL`, canonicals/hreflang y
+  regenerar QRs.
+- Cuando el dominio esté activo, GitHub Pages redirige automáticamente las URLs
+  `yuyitov.github.io/service-menu-app/...` al dominio custom, así los QR viejos no se
+  rompen.
+
 ## Landing comercial pública (Phase 4)
 
 - La landing comercial vive en `public/index.html` y se publica en la **raíz** de GitHub

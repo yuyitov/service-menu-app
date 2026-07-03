@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HMU Link — A polished service page your clients can open from one link</title>
+<meta name="description" content="HMU Link creates mobile-friendly service pages for local businesses to show services, prices, promotions, and booking/contact options from one simple link. Built for salons, spas, barbershops, and independent pros in the US and Canada.">
+<link rel="canonical" href="https://yuyitov.github.io/service-menu-app/us/">
+<link rel="alternate" hreflang="es-MX" href="https://yuyitov.github.io/service-menu-app/mx/">
+<link rel="alternate" hreflang="en-US" href="https://yuyitov.github.io/service-menu-app/us/">
+<link rel="alternate" hreflang="x-default" href="https://yuyitov.github.io/service-menu-app/">
+<style>
+/* -------------------------------------------------------------------- */
+/* US/Canada landing (Phase 4C) — static, no JS, no external assets.    */
+/* -------------------------------------------------------------------- */
+:root {
+  --ink: #16181d;
+  --ink-soft: #23262e;
+  --paper: #f7f6f3;
+  --card: #ffffff;
+  --text: #2b2e35;
+  --muted: #6b7078;
+  --accent: #b08d43;
+  --accent-dark: #8f7133;
+  --line: #e4e1da;
+  --radius: 14px;
+  --maxw: 1080px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--paper);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+section { padding: 56px 0; }
+h2 {
+  font-size: 1.65rem;
+  line-height: 1.25;
+  color: var(--ink);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.kicker {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  margin-bottom: 10px;
+}
+.lead { color: var(--muted); max-width: 62ch; margin-bottom: 28px; }
+
+/* Header */
+.top { background: var(--ink); color: #f2efe8; padding: 14px 0; }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { font-weight: 800; letter-spacing: 0.02em; font-size: 1.05rem; text-decoration: none; color: #f2efe8; }
+.brand span { color: var(--accent); }
+.top-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.top-note {
+  font-size: 0.75rem;
+  color: #b9b4a8;
+  border: 1px solid #3a3d45;
+  border-radius: 999px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+.lang-switch { font-size: 0.8rem; color: #b9b4a8; text-decoration: none; }
+.lang-switch:hover { color: var(--accent); }
+
+/* Hero */
+.hero {
+  background: linear-gradient(160deg, var(--ink) 0%, var(--ink-soft) 70%, #2c2620 100%);
+  color: #f2efe8;
+  padding: 72px 0 80px;
+}
+.hero h1 {
+  font-size: clamp(1.75rem, 5vw, 2.7rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  max-width: 22ch;
+  margin: 14px 0 18px;
+}
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero .sub { font-size: 1.05rem; color: #cfcabd; max-width: 54ch; margin-bottom: 32px; }
+.cta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.btn {
+  display: inline-block;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  text-align: center;
+}
+.btn--primary { background: var(--accent); color: #1a1508; }
+.btn--primary:hover { background: #c49d4f; }
+.btn--outline { border: 1px solid #4a4d55; color: #cfcabd; }
+.btn--outline:hover { border-color: var(--accent); color: var(--accent); }
+.hero-badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(176, 141, 67, 0.45);
+  border-radius: 999px;
+  padding: 5px 14px;
+}
+
+/* Cards / grids */
+.grid { display: grid; gap: 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.card h3 { color: var(--ink); font-size: 1.06rem; margin-bottom: 6px; }
+.card p { color: var(--muted); font-size: 0.94rem; }
+.what { background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.what .grid { margin-top: 24px; }
+.what .card { background: var(--paper); }
+
+/* Includes / not-included lists */
+.list { list-style: none; }
+.list li { padding: 10px 0 10px 30px; border-bottom: 1px solid var(--line); position: relative; font-size: 0.97rem; }
+.list li:last-child { border-bottom: none; }
+.list li::before { position: absolute; left: 2px; font-weight: 800; }
+.list--yes li::before { content: "✓"; color: var(--accent-dark); }
+.list--no li::before { content: "—"; color: #a0a4ab; }
+.list--no li { color: var(--muted); }
+.two-col { display: grid; gap: 24px; margin-top: 24px; }
+
+/* Visual styles */
+.style-card { display: flex; flex-direction: column; gap: 10px; }
+.swatch { height: 10px; border-radius: 999px; }
+.sw-black-gold     { background: linear-gradient(90deg, #17171a 60%, #c9a24b); }
+.sw-soft-blush     { background: linear-gradient(90deg, #f6dfe0 60%, #c96f7d); }
+.sw-charcoal-clean { background: linear-gradient(90deg, #33373d 60%, #9fb2bd); }
+.sw-warm-sand      { background: linear-gradient(90deg, #e8d9c3 60%, #a97b3f); }
+.sw-aqua-clean     { background: linear-gradient(90deg, #d4edee 60%, #2f8f96); }
+.sw-sage-calm      { background: linear-gradient(90deg, #dde5d8 60%, #6d8a63); }
+.style-card .ideal { font-size: 0.85rem; color: var(--muted); }
+.style-card .ideal strong { color: var(--ink); font-weight: 600; }
+.demo-link { color: var(--accent-dark); font-weight: 700; text-decoration: none; font-size: 0.95rem; }
+.demo-link:hover { text-decoration: underline; }
+
+/* Pricing */
+.pricing { background: var(--ink); color: #f2efe8; }
+.pricing h2 { color: #f2efe8; }
+.pricing .lead { color: #b9b4a8; }
+.price-note {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(176, 141, 67, 0.45);
+  border-radius: 999px;
+  padding: 5px 14px;
+  margin-bottom: 18px;
+}
+.price-card {
+  background: var(--ink-soft);
+  border: 1px solid #3a3d45;
+  border-radius: var(--radius);
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.price-card h3 { color: #f2efe8; font-size: 1.1rem; }
+.price-card .amount { font-size: 1.7rem; font-weight: 800; color: var(--accent); }
+.price-card ul { list-style: none; }
+.price-card li { padding: 6px 0 6px 24px; position: relative; font-size: 0.93rem; color: #cfcabd; }
+.price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 800; }
+.pricing .fine { margin-top: 24px; font-size: 0.88rem; color: #b9b4a8; max-width: 70ch; }
+
+/* How it will work */
+.steps { counter-reset: step; list-style: none; display: grid; gap: 14px; margin-top: 24px; }
+.steps li {
+  counter-increment: step;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px 16px 62px;
+  position: relative;
+  font-size: 0.97rem;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--accent);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+/* Early access */
+.early {
+  background: linear-gradient(160deg, var(--ink) 0%, #2c2620 100%);
+  color: #f2efe8;
+  text-align: center;
+}
+.early h2 { color: #f2efe8; }
+.early p { color: #cfcabd; max-width: 56ch; margin: 12px auto 0; }
+.early .hero-badge { margin-bottom: 14px; }
+
+/* FAQ */
+.faq details { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; padding: 0 18px; }
+.faq summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 15px 0;
+  list-style: none;
+  position: relative;
+  padding-right: 28px;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+";
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent-dark);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+.faq details[open] summary::after { content: "–"; }
+.faq details p { color: var(--muted); font-size: 0.95rem; padding: 0 0 16px; }
+
+/* Footer */
+footer { background: var(--ink); color: #b9b4a8; padding: 36px 0; font-size: 0.88rem; }
+footer .brand { color: #f2efe8; display: block; margin-bottom: 8px; }
+footer a { color: #b9b4a8; }
+
+/* Desktop */
+@media (min-width: 720px) {
+  section { padding: 76px 0; }
+  h2 { font-size: 1.9rem; }
+  .grid--3 { grid-template-columns: repeat(3, 1fr); }
+  .grid--2 { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 480px) and (max-width: 719px) {
+  .grid--3 { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="../">HMU <span>Link</span></a>
+    <div class="top-links">
+      <a class="lang-switch" href="../mx/" hreflang="es-MX" lang="es-MX">Español (México)</a>
+      <div class="top-note">Coming soon</div>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <span class="hero-badge">HMU Link · USA &amp; Canada</span>
+    <h1>A polished service page your clients can open from <em>Instagram, Google, WhatsApp, or a QR code</em>.</h1>
+    <p class="sub">HMU Link creates mobile-friendly service pages for local businesses to show services, prices, promotions, and booking/contact options from one simple link.</p>
+    <div class="cta-row">
+      <a class="btn btn--primary" href="#early-access">Get my HMU Link</a>
+      <a class="btn btn--outline" href="#styles">View examples</a>
+    </div>
+  </div>
+</section>
+
+<!-- What it is -->
+<section class="what" id="what">
+  <div class="wrap">
+    <span class="kicker">What it is</span>
+    <h2>Look professional without building a website</h2>
+    <p class="lead">Not ready for a full website? HMU Link gives you a clean, mobile-first page with your services, prices, promotions, hours, location, and reviews — plus buttons so clients can book or reach you in one tap.</p>
+    <div class="grid grid--3">
+      <div class="card">
+        <h3>One link, everywhere</h3>
+        <p>Drop it in your Instagram bio, Google Business profile, text messages, printed cards, or a QR code at your front desk.</p>
+      </div>
+      <div class="card">
+        <h3>No app, no accounts</h3>
+        <p>Your clients don't download anything or sign up. They open the link and see everything they need to book.</p>
+      </div>
+      <div class="card">
+        <h3>No dashboard to manage</h3>
+        <p>You don't learn or maintain any software either. Send us your info — we build and publish your page.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Who it's for -->
+<section id="who">
+  <div class="wrap">
+    <span class="kicker">Who it's for</span>
+    <h2>Built for small local service businesses</h2>
+    <p class="lead">If your business runs on Instagram DMs, walk-ins, and word of mouth, HMU Link gives you a professional home base without the website project.</p>
+    <div class="grid grid--3">
+      <div class="card"><h3>Spas</h3><p>Massages, facials, rituals, and packages with clear pricing up front.</p></div>
+      <div class="card"><h3>Hair salons</h3><p>Cuts, color, treatments, and this month's promo in one place.</p></div>
+      <div class="card"><h3>Barbershops</h3><p>Cut, beard, and combo menus with one-tap booking via WhatsApp or your booking link.</p></div>
+      <div class="card"><h3>Nails · Lashes · Brows</h3><p>Service menus with time and price — perfect to answer DMs instantly.</p></div>
+      <div class="card"><h3>Wellness &amp; massage</h3><p>Sessions, therapies, and memberships presented professionally.</p></div>
+      <div class="card"><h3>Other local services</h3><p>Fitness studios, classes, pet grooming, tattoo studios, and independent pros.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- What's included / not included -->
+<section class="what" id="included">
+  <div class="wrap">
+    <span class="kicker">Clear scope</span>
+    <h2>What's included (and what's not)</h2>
+    <p class="lead">We'd rather be upfront: this is exactly what you get, no fine print.</p>
+    <div class="two-col">
+      <div class="card">
+        <h3>Included</h3>
+        <ul class="list list--yes">
+          <li>A public service page for your business</li>
+          <li>A short, shareable link</li>
+          <li>A real QR code, print-ready</li>
+          <li>WhatsApp, Instagram, Google Maps, and Google Reviews buttons</li>
+          <li>Services and prices organized by category</li>
+          <li>A featured promotion or package</li>
+          <li>Hours and location</li>
+          <li>One revision included</li>
+          <li>6 curated visual styles to choose from</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Not included</h3>
+        <ul class="list list--no">
+          <li>Admin dashboard</li>
+          <li>Logins or user accounts</li>
+          <li>Built-in booking system (booking happens via WhatsApp, Instagram, Maps, or your external booking link)</li>
+          <li>Payments from your end clients</li>
+          <li>Inventory management</li>
+          <li>Unlimited changes</li>
+          <li>Unlimited custom design</li>
+          <li>Mobile app</li>
+          <li>Marketplace</li>
+          <li>AI features</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Visual styles -->
+<section id="styles">
+  <div class="wrap">
+    <span class="kicker">Visual styles</span>
+    <h2>6 curated styles, each with a live example</h2>
+    <p class="lead">Pick one of these 6 styles and your page looks polished from day one. Open any example — they're real published pages with fictional data.</p>
+    <div class="grid grid--3">
+      <div class="card style-card">
+        <div class="swatch sw-black-gold"></div>
+        <h3>Black Gold</h3>
+        <p>Dark elegance with gold accents. Premium, sophisticated presence.</p>
+        <p class="ideal"><strong>Great for:</strong> premium spas, high-end barbershops, exclusive studios.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/bella-spa/">View example: Bella Spa →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-soft-blush"></div>
+        <h3>Soft Blush</h3>
+        <p>Soft, delicate pink tones. Warm, welcoming, and feminine.</p>
+        <p class="ideal"><strong>Great for:</strong> hair salons, lash and brow studios, facials.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/studio-blush/">View example: Studio Blush →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-charcoal-clean"></div>
+        <h3>Charcoal Clean</h3>
+        <p>Charcoal gray, understated and direct. Masculine, contemporary look.</p>
+        <p class="ideal"><strong>Great for:</strong> barbershops, men's grooming, tattoo studios.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/north-barber/">View example: North Barber →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-warm-sand"></div>
+        <h3>Warm Sand</h3>
+        <p>Sand and earth tones. Natural, warm, and artisanal.</p>
+        <p class="ideal"><strong>Great for:</strong> nail studios, natural beauty, boho spaces.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/glow-nails/">View example: Glow Nails →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-aqua-clean"></div>
+        <h3>Aqua Clean</h3>
+        <p>Fresh, clean aqua blues. Communicates hygiene, water, and calm.</p>
+        <p class="ideal"><strong>Great for:</strong> wellness, massage, hydrotherapy, aesthetic clinics.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/aqua-wellness/">View example: Aqua Wellness →</a>
+      </div>
+      <div class="card style-card">
+        <div class="swatch sw-sage-calm"></div>
+        <h3>Sage Calm</h3>
+        <p>Serene, balanced sage green. Minimal and organic.</p>
+        <p class="ideal"><strong>Great for:</strong> yoga, holistic therapies, meditation, natural wellness.</p>
+        <a class="demo-link" href="https://yuyitov.github.io/service-menu-app/demos/sage-studio/">View example: Sage Studio →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <span class="price-note">Launch pricing · Subject to change</span>
+    <h2>One-time payment, no subscriptions</h2>
+    <p class="lead">This is the planned launch pricing for the US and Canada. Checkout is not live yet — the product is in preparation.</p>
+    <div class="grid grid--3">
+      <div class="price-card">
+        <h3>Founder</h3>
+        <div class="amount">USD $39</div>
+        <ul>
+          <li>1 published service page</li>
+          <li>1 visual style of your choice</li>
+          <li>Real QR code</li>
+          <li>Shareable link</li>
+          <li>1 revision included</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Standard</h3>
+        <div class="amount">USD $69</div>
+        <ul>
+          <li>Full service page</li>
+          <li>Featured package or promotion</li>
+          <li>QR kit</li>
+          <li>Shareable link</li>
+          <li>1 revision included</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3>Extra revision</h3>
+        <div class="amount">USD $15–$25</div>
+        <ul>
+          <li>Changes after your included revision</li>
+          <li>Price or service updates</li>
+          <li>Quoted based on the scope of the change</li>
+        </ul>
+      </div>
+    </div>
+    <p class="fine">One-time payment for creating and publishing your page. Future changes are billed separately as extra revisions. Checkout is not active in this phase — pricing may be adjusted before launch.</p>
+  </div>
+</section>
+
+<!-- How it will work -->
+<section id="how">
+  <div class="wrap">
+    <span class="kicker">How it will work</span>
+    <h2>From purchase to published page</h2>
+    <p class="lead">This is the flow once the product is available for purchase. Checkout is not active yet in this phase.</p>
+    <ol class="steps">
+      <li>Your business purchases a package.</li>
+      <li>You receive an intake form.</li>
+      <li>You fill in your services, prices, hours, links, and pick your style.</li>
+      <li>The system generates your page.</li>
+      <li>You get your link and QR code, ready to share.</li>
+      <li>You can use your included revision whenever you need it.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- Early access -->
+<section class="early" id="early-access">
+  <div class="wrap">
+    <span class="hero-badge">Coming soon · Early access</span>
+    <h2>HMU Link is in preparation</h2>
+    <p>You can't purchase yet — we're finishing the ordering system. The examples are already real and public. Once checkout goes live, this page is where you'll order your HMU Link at launch pricing.</p>
+    <p>In the meantime, browse the examples and picture your business in one of them.</p>
+    <div class="cta-row" style="justify-content: center; margin-top: 24px;">
+      <a class="btn btn--primary" href="#styles">View examples</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="what faq" id="faq">
+  <div class="wrap">
+    <span class="kicker">FAQ</span>
+    <h2>Straight answers</h2>
+    <p class="lead">No inflated promises — here's what HMU Link does and doesn't do.</p>
+    <details>
+      <summary>Is it just a QR code?</summary>
+      <p>No. The QR code is only one way to share your page. What you get is a full service page with your services, prices, promotions, hours, location, and contact buttons — plus a shareable link and the QR code.</p>
+    </details>
+    <details>
+      <summary>Do I need an app?</summary>
+      <p>No. Neither you nor your clients download anything. Your page works in any browser, on any phone or computer.</p>
+    </details>
+    <details>
+      <summary>Can I use it in my Instagram bio?</summary>
+      <p>Yes. Your link works perfectly as your Instagram link-in-bio, and you can share it in stories or reply to DMs with it.</p>
+    </details>
+    <details>
+      <summary>Can I use it with WhatsApp or texts?</summary>
+      <p>Yes. Send your link in any chat instead of typing out your price list, and your page includes a WhatsApp button so clients can message you directly.</p>
+    </details>
+    <details>
+      <summary>Can I change my prices later?</summary>
+      <p>Yes. Your package includes one free revision. After that, additional changes are billed separately as extra revisions.</p>
+    </details>
+    <details>
+      <summary>Does it include booking?</summary>
+      <p>Booking and contact happen through WhatsApp, Instagram, Google Maps, or your external booking link (for example, your existing scheduling tool). There's no built-in booking system yet.</p>
+    </details>
+    <details>
+      <summary>Can I pick my own colors?</summary>
+      <p>You choose from 6 curated visual styles designed to look professional for any business. There's no free-form color picking — that's how we guarantee your page always looks good.</p>
+    </details>
+    <details>
+      <summary>Does it work for barbershops?</summary>
+      <p>Yes. Styles like Charcoal Clean and Black Gold were designed with barbershops and men's grooming in mind. Check out the North Barber example.</p>
+    </details>
+    <details>
+      <summary>Does it work for businesses other than salons and spas?</summary>
+      <p>Yes. It works for any local service business: nails, lashes, massage, fitness studios, classes, pet grooming, tattoo studios, and independent professionals.</p>
+    </details>
+    <details>
+      <summary>When can I buy it?</summary>
+      <p>The product is in preparation. The examples are already public and real; checkout will be enabled in an upcoming phase. The pricing shown is tentative launch pricing.</p>
+    </details>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <span class="brand">HMU <span style="color: var(--accent);">Link</span></span>
+    <p>Product in progress. Public demos use fictional data.</p>
+    <p><a href="../">Home</a> · <a href="../mx/" hreflang="es-MX" lang="es-MX">Español (México)</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

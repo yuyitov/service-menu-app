@@ -1,5 +1,9 @@
 # Product Spec — Service Menu App
 
+**Marca pública provisional: HMU Link** (`hmulink.com`). "Service Menu App" se mantiene
+como nombre interno del repo y de la documentación técnica; todo el lenguaje comercial
+público (landing, demos futuras, emails futuros) usa HMU Link.
+
 ## Cliente objetivo
 
 Negocios locales pequeños con servicio a clientes que necesitan mostrar su oferta de forma

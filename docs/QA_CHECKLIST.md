@@ -85,6 +85,35 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] No hay datos reales de clientes ni secrets en la landing.
 - [ ] Las 6 demos y sus `qr.svg` siguen existiendo sin cambios.
 
+## Phase 4C — Marca HMU Link, landings por mercado y dominio custom
+
+- [ ] Existen `public/index.html` (portada/selector), `public/mx/index.html` y
+      `public/us/index.html`, y abren en sus URLs públicas.
+- [ ] Las tres páginas usan la marca **HMU Link**; no mencionan MyGuest ni marcas viejas.
+- [ ] La portada `/` permite elegir mercado manualmente; sin geolocalización, sin
+      cookies, sin JS de redirección.
+- [ ] `/mx/` está en español (lang="es-MX"), WhatsApp-first, con CTA "Quiero mi HMU
+      Link" (sin pago real) y "Ver demos"; precios MXN $599 / $999 / $250–$400 marcados
+      como tentativos, pago único, checkout no activo.
+- [ ] `/us/` está en inglés (lang="en-US"), con CTA "Get my HMU Link" (sin pago real) y
+      "View examples"; precios USD $39 / $69 / $15–$25 marcados como launch pricing,
+      one-time, checkout not active.
+- [ ] Copy adaptado por mercado (no traducción literal): MX enfocado en WhatsApp/preguntas
+      repetidas; US enfocado en polished page / not ready for a full website.
+- [ ] Cada página tiene title, meta description, canonical y hreflang
+      (es-MX / en-US / x-default) apuntando al dominio activo.
+- [ ] Las tres páginas son HTML/CSS estático: sin JS, sin fonts/imágenes externas, sin
+      analytics/pixels, sin scripts de terceros, sin formularios reales.
+- [ ] Los 6 estilos aparecen en /mx/ y /us/ con link a su demo, y los links abren.
+- [ ] Dominio custom: si `www.hmulink.com` está activo, `/`, `/mx/`, `/us/`, las 6 demos
+      y al menos un `qr.svg` responden 200 en el dominio custom y HTTPS es válido; si no
+      está activo, se documenta como pendiente y todo sigue funcionando en
+      `yuyitov.github.io`.
+- [ ] Los QR codifican el dominio correcto según el estado del dominio custom (pendiente
+      de migrar a www.hmulink.com cuando esté activo).
+- [ ] Sin wildcard DNS; sin subdominios adicionales.
+- [ ] Las 6 demos y sus `qr.svg` siguen existiendo sin cambios funcionales.
+
 ## Generación de página dummy
 
 - [ ] Se puede generar una página completa a partir de un `service_menu_payload_public`

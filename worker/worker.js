@@ -110,6 +110,24 @@ async function handleStripeWebhook(request, env) {
   }
 
   const session = event?.data?.object || {};
+
+  // Product filter: the Stripe account is shared with other products (MyGuest),
+  // so every webhook receives every sale. Only checkout.session.completed
+  // carries payment_link; payment_intent.succeeded can't be attributed to a
+  // product, so it's ignored when the filter is configured.
+  const expectedPaymentLink = (env.STRIPE_PAYMENT_LINK_ID || '').trim();
+  if (expectedPaymentLink) {
+    if (type !== 'checkout.session.completed') {
+      return jsonResponse({ ok: true, ignored: true, reason: 'unattributable_event_type' });
+    }
+    if ((session.payment_link || '') !== expectedPaymentLink) {
+      return jsonResponse({ ok: true, ignored: true, reason: 'other_product' });
+    }
+  } else if (type === 'checkout.session.completed') {
+    // Filter not configured yet — log the plink id so it can be captured.
+    console.log('stripe payment_link observed:', session.payment_link || '(none)');
+  }
+
   const paymentIntentId =
     type === 'checkout.session.completed'
       ? (session.payment_intent || session.id || '')
@@ -686,7 +704,8 @@ async function sendEmail({ env, to, subject, html }) {
     throw new Error(`Email send failed: ${response.status}`);
   }
 
-  return response.json();
+  // SendGrid responds 202 with an empty body — nothing to parse.
+  return { ok: true, status: response.status };
 }
 
 // Normalización de payload Tally — copiada del patrón probado de MyGuest.

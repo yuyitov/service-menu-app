@@ -369,10 +369,12 @@ async function handleTallyWebhook(request, env) {
   // Dispatch GitHub Actions to generate page.
   // The full public payload travels in client_payload (MyGuest pattern):
   // GitHub Actions never needs KV access.
+  // OJO: NO incluir order_id — GitHub imprime el env de cada step en los logs
+  // públicos del repo. El workflow notifica con submission_id y el worker
+  // resuelve el order_id desde KV.
   try {
     await dispatchGitHubAction(env, {
       submission_id: normalized.submission_id,
-      order_id: incomingOrderId,
       slug,
       public_payload: publicPayload
     });
@@ -428,9 +430,18 @@ async function handleNotify(request, env) {
   }
 
   const slug = (body?.slug || '').trim();
-  const orderId = (body?.order_id || '').trim();
+  const submissionId = (body?.submission_id || '').trim();
+  let orderId = (body?.order_id || '').trim();
+
+  // El workflow ya no conoce el order_id (no viaja en client_payload para no
+  // aparecer en logs públicos de Actions); se resuelve desde la submission.
+  if (!orderId && submissionId) {
+    const submission = await env.SERVICE_MENU_KV.get(`hmu_submission:${submissionId}`, { type: 'json' }).catch(() => null);
+    orderId = (submission?.order_id || '').trim();
+  }
+
   if (!slug || !orderId) {
-    return jsonResponse({ ok: false, error: 'Missing slug or order_id' }, 400);
+    return jsonResponse({ ok: false, error: 'Missing slug or order reference' }, 400);
   }
 
   // Get order from KV
@@ -648,9 +659,11 @@ async function dispatchGitHubAction(env, payload) {
   const response = await fetch(`https://api.github.com/repos/${repo}/dispatches`, {
     method: 'POST',
     headers: {
-      'Authorization': `token ${env.GITHUB_TOKEN}`,
-      'Accept': 'application/vnd.github.v3+json',
-      'Content-Type': 'application/json'
+      'Authorization': `Bearer ${env.GITHUB_TOKEN}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      // GitHub API rechaza con 403 cualquier request sin User-Agent.
+      'User-Agent': 'service-menu-worker'
     },
     body: JSON.stringify({
       event_type: eventType,

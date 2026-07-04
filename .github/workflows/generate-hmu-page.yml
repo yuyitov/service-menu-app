@@ -14,6 +14,10 @@ concurrency:
 
 permissions:
   contents: write
+  # Necesario para disparar el workflow de pages: los push hechos con el
+  # GITHUB_TOKEN por defecto no disparan otros workflows (anti-recursión),
+  # así que el deploy se lanza explícitamente vía workflow_dispatch.
+  actions: write
 
 jobs:
   generate:
@@ -52,12 +56,17 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
+      - name: Deploy pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages --repo ${{ github.repository }}
+
       - name: Notify delivery
         env:
           WORKER_URL: ${{ secrets.SERVICE_MENU_WORKER_URL }}
           NOTIFY_SECRET: ${{ secrets.NOTIFY_SECRET }}
           SLUG: ${{ steps.build.outputs.slug }}
-          ORDER_ID: ${{ github.event.client_payload.order_id }}
+          SUBMISSION_ID: ${{ github.event.client_payload.submission_id }}
         run: |
           if [ -z "$WORKER_URL" ] || [ -z "$NOTIFY_SECRET" ]; then
             echo "WORKER_URL or NOTIFY_SECRET not configured — skipping notify"
@@ -66,4 +75,4 @@ jobs:
           curl -sS -X POST "$WORKER_URL/notify" \
             -H "Authorization: Bearer $NOTIFY_SECRET" \
             -H "Content-Type: application/json" \
-            -d "{\"slug\":\"$SLUG\",\"order_id\":\"$ORDER_ID\"}"
+            -d "{\"slug\":\"$SLUG\",\"submission_id\":\"$SUBMISSION_ID\"}"

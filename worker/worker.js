@@ -20,7 +20,8 @@
  *
  * Secrets (in Cloudflare):
  * - STRIPE_WEBHOOK_SECRET
- * - TALLY_SIGNING_SECRET
+ * - TALLY_SIGNING_SECRET_EN (form yPkN5X has its own signing secret)
+ * - TALLY_SIGNING_SECRET_ES (form MeyDpk has its own signing secret)
  * - GITHUB_TOKEN
  * - SENDGRID_API_KEY
  * - NOTIFY_SECRET
@@ -200,12 +201,19 @@ async function handleTallyWebhook(request, env) {
     return jsonResponse({ ok: false, error: 'Could not read request body' }, 400);
   }
 
-  if (!env.TALLY_SIGNING_SECRET) {
+  const secrets = [env.TALLY_SIGNING_SECRET_EN, env.TALLY_SIGNING_SECRET_ES].filter(Boolean);
+  if (secrets.length === 0) {
     return jsonResponse({ ok: false, error: 'Webhook signature validation not configured' }, 500);
   }
 
   const sigHeader = request.headers.get('tally-signature') || '';
-  const valid = await verifyTallySignature(rawBody, sigHeader, env.TALLY_SIGNING_SECRET);
+  let valid = false;
+  for (const secret of secrets) {
+    if (await verifyTallySignature(rawBody, sigHeader, secret)) {
+      valid = true;
+      break;
+    }
+  }
   if (!valid) {
     return jsonResponse({ ok: false, error: 'Invalid webhook signature' }, 401);
   }

@@ -96,8 +96,12 @@ como línea de producto separada una vez validado el MVP.
   ("Extra correction") y están fuera del alcance cubierto por el pago único inicial.
 - El intake se recibe una sola vez por pedido (no hay edición libre del formulario).
 - El contenido se limita a los campos definidos en [DATA_CONTRACT.md](DATA_CONTRACT.md).
-- Sin soporte para múltiples idiomas en el MVP (una página = un idioma).
-- Sin soporte para múltiples sucursales en un mismo pedido.
+- **Clientes reales (Phase 5+): toda página se entrega bilingüe (ES + EN).** El
+  cliente elige el idioma por defecto (raíz de su URL) y nosotros traducimos y
+  editamos ligeramente la otra versión. Las **demos** siguen siendo de un solo
+  idioma.
+- Sin soporte para múltiples sucursales en un mismo pedido (hasta 3 se
+  recolectan en el intake como campo futuro; el generador aún publica una).
 
 ## Reglas para mantenerlo automatizado
 

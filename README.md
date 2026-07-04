@@ -43,6 +43,20 @@ incluida vía un link de un solo uso.
 
 ## Estado actual
 
+**Phase 5 — Listo para vender y entregar el primer cliente real (manual).**
+
+El generador soporta **clientes reales bilingües**: un JSON público en
+`data/clients/<slug>.client.json` produce `public/links/<slug>/` (idioma por
+defecto elegido por el cliente) + `/en/` o `/es/` (idioma alterno), con switch
+de idioma, canonical/hreflang y un QR apuntando a la URL por defecto. Las demos
+en `/demos/` no cambian. Operación manual documentada en
+[docs/FIRST_CLIENT_RUNBOOK.md](docs/FIRST_CLIENT_RUNBOOK.md),
+[docs/INTAKE_TO_CLIENT_JSON_GUIDE.md](docs/INTAKE_TO_CLIENT_JSON_GUIDE.md),
+[docs/FIRST_CLIENT_QA_CHECKLIST.md](docs/FIRST_CLIENT_QA_CHECKLIST.md),
+[docs/PILOT_PAYMENT_AND_DELIVERY.md](docs/PILOT_PAYMENT_AND_DELIVERY.md) y
+[docs/SALES_MESSAGES.md](docs/SALES_MESSAGES.md). Cobro manual: sin Stripe,
+sin checkout, sin webhooks.
+
 **Phase 4G/4H — Intake forms conectados · Phase 5A-prep — flujo manual del primer cliente listo.**
 
 Los CTAs primarios de la landing ahora abren los formularios de intake publicados en Tally

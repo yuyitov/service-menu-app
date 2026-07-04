@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
+{{HEAD_META}}
 <title>{{PAGE_TITLE}}</title>
 <style>
 /* ---- Per-style palette (injected: one of the 12 closed styles) ---- */
@@ -64,11 +64,14 @@ h1{font-family:var(--heading-font);font-size:23px;margin:6px 0 4px;letter-spacin
 .link__url{display:inline-block;text-decoration:none}
 .qr__open{margin-top:14px}
 .footer{padding:20px 22px;text-align:center;color:var(--muted);font-size:12px}
+.lang-switch{padding:12px 22px 0;text-align:right;font-size:13px}
+.lang-switch a{color:var(--accent);text-decoration:none;font-weight:700}
 </style>
 </head>
 <body class="style-{{STYLE_NAME}}">
   <div class="wrap">
     <main class="card">
+      {{LANG_SWITCH_BLOCK}}
       <header class="head">
         {{LOGO_BLOCK}}
         <h1>{{BUSINESS_NAME}}</h1>

@@ -1,7 +1,23 @@
 # Architecture — Service Menu App
 
-Arquitectura conceptual. Nada de esto está implementado en Phase 0; este documento existe
-para aprobar el diseño antes de escribir código de integración.
+Arquitectura conceptual de la **automatización futura** (Stripe/Worker/KV/emails). Nada de
+esto está implementado; este documento existe para aprobar el diseño antes de escribir
+código de integración.
+
+## Estado actual (Phase 5 — flujo manual, sin backend)
+
+Lo único operativo hoy es estático y manual:
+
+- **Intake**: formularios Tally publicados (EN `yPkN5X`, ES `MeyDpk`), conectados desde
+  los CTAs de la landing. Sin webhooks: las submissions se revisan a mano en Tally.
+- **Clientes reales**: `data/clients/<slug>.client.json` (`client_payload_public` v1,
+  solo datos públicos) → generador local → `public/links/<slug>/` bilingüe (idioma por
+  defecto en la raíz, alterno en `/en/` o `/es/`, canonical + hreflang, un QR) →
+  commit/push → GitHub Actions → GitHub Pages.
+- **Demos**: `data/demos/*.json` → `public/demos/<slug>/`, sin cambios.
+- **Cobro**: manual (ver [PILOT_PAYMENT_AND_DELIVERY.md](PILOT_PAYMENT_AND_DELIVERY.md)).
+
+Todo lo que sigue en este documento es el diseño futuro.
 
 ## Componentes
 

@@ -1,0 +1,77 @@
+{
+  "_comment": "PLANTILLA client_payload_public v1 — copiar como <slug>.client.json y llenar SOLO con informacion publica aprobada. Los campos null/[] son opcionales y pueden borrarse. Ver docs/INTAKE_TO_CLIENT_JSON_GUIDE.md.",
+  "public_slug": "example-business",
+  "default_language": "es",
+  "brand_style": "warm-sand",
+  "business_name": "Example Business Name",
+  "logo_url": null,
+  "primary_image_url": null,
+  "whatsapp": "+52 00 0000 0000",
+  "phone": null,
+  "public_email": null,
+  "instagram": "https://instagram.com/example",
+  "facebook": null,
+  "tiktok": null,
+  "website": null,
+  "booking_url": null,
+  "google_maps_url": "https://maps.app.goo.gl/EXAMPLE",
+  "google_reviews_url": null,
+  "content": {
+    "es": {
+      "short_description": "Descripcion corta de ejemplo del negocio",
+      "address": "Calle Ejemplo 123, Colonia Centro, Ciudad",
+      "opening_hours_text": "Lun-Sab 10:00-19:00 · Dom cerrado",
+      "service_categories": ["Categoria A", "Categoria B"],
+      "services": [
+        {
+          "category": "Categoria A",
+          "name": "Servicio de ejemplo",
+          "description": "Descripcion opcional del servicio",
+          "price_label": "$000 MXN"
+        },
+        {
+          "category": "Categoria B",
+          "name": "Otro servicio de ejemplo",
+          "price_label": "Desde $000 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Paquete destacado de ejemplo",
+        "description": "Que incluye el paquete",
+        "price_label": "$000 MXN"
+      },
+      "policies": [
+        "Politica de ejemplo 1.",
+        "Politica de ejemplo 2."
+      ]
+    },
+    "en": {
+      "short_description": "Example short description of the business",
+      "address": "123 Example St, Downtown, City",
+      "opening_hours_text": "Mon-Sat 10:00-19:00 · Sun closed",
+      "service_categories": ["Category A", "Category B"],
+      "services": [
+        {
+          "category": "Category A",
+          "name": "Example service",
+          "description": "Optional service description",
+          "price_label": "$00 USD"
+        },
+        {
+          "category": "Category B",
+          "name": "Another example service",
+          "price_label": "From $00 USD"
+        }
+      ],
+      "featured_package": {
+        "name": "Example featured package",
+        "description": "What the package includes",
+        "price_label": "$00 USD"
+      },
+      "policies": [
+        "Example policy 1.",
+        "Example policy 2."
+      ]
+    }
+  }
+}

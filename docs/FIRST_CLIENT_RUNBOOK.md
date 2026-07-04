@@ -28,10 +28,12 @@ QR, 1 corrección incluida), el precio acordado y que es pago único. El precio 
 la landing es tentativo; lo acordado por escrito manda.
 
 **D. Cobrar manualmente.**
-Transferencia, efectivo o (más adelante) un payment link sencillo. En esta fase
-**no** hay Stripe ni checkout en el sitio, y el formulario **no** cobra nada.
-No empezar a construir hasta tener el pago (o una decisión explícita de hacer el
-primer piloto gratis/descuento — dejar constancia por escrito).
+Seguir [PILOT_PAYMENT_AND_DELIVERY.md](PILOT_PAYMENT_AND_DELIVERY.md):
+transferencia o efectivo; nunca datos de tarjeta a mano; nada de pagos al repo.
+En esta fase **no** hay Stripe ni checkout en el sitio, y el formulario **no**
+cobra nada. No empezar a construir hasta tener el pago (o una decisión explícita
+de hacer el primer piloto gratis/descuento — dejar constancia por escrito).
+Mensajes listos para cada paso en [SALES_MESSAGES.md](SALES_MESSAGES.md).
 
 **E. Extraer solo la información pública.**
 Usar [CLIENT_PUBLIC_DATA_CHECKLIST.md](CLIENT_PUBLIC_DATA_CHECKLIST.md). El correo
@@ -43,15 +45,21 @@ Producir la versión en el otro idioma (EN↔ES) respetando el tono del cliente.
 La autorización de traducción ya viene firmada en el intake.
 
 **G. Crear el JSON del cliente solo con información pública aprobada.**
-Seguir [DATA_CONTRACT.md](DATA_CONTRACT.md) (`service_menu_payload_public`).
-Respetar la lista de "qué no publicar" del intake al pie de la letra.
+Copiar `data/clients/_template.client.json` → `data/clients/<slug>.client.json`
+y llenarlo siguiendo [INTAKE_TO_CLIENT_JSON_GUIDE.md](INTAKE_TO_CLIENT_JSON_GUIDE.md)
+(esquema `client_payload_public` v1 en [DATA_CONTRACT.md](DATA_CONTRACT.md)).
+Incluye el contenido en **ambos idiomas** (`content.es` + `content.en`) y el
+`default_language` que eligió el cliente. Respetar la lista de "qué no
+publicar" del intake al pie de la letra.
 
-**H. Generar la página.**
-`python generator/generate_service_menu.py <archivo.json>`
+**H. Generar la página bilingüe.**
+`python generator/generate_service_menu.py --client data/clients/<slug>.client.json`
+Salida: `public/links/<slug>/` (idioma por defecto) + `/en/` o `/es/` (alterno)
++ `qr.svg` apuntando a la URL por defecto.
 
 **I. Revisar localmente.**
-Abrir el HTML generado, verificar contra [QA_CHECKLIST.md](QA_CHECKLIST.md):
-datos correctos, estilo correcto, links de WhatsApp/Maps funcionan, QR escanea,
+Pasar [FIRST_CLIENT_QA_CHECKLIST.md](FIRST_CLIENT_QA_CHECKLIST.md) completo:
+ambos idiomas, switch de idioma, botones, QR, canonical/hreflang, móvil,
 sin datos internos visibles, sin errores de ortografía.
 
 **J. Publicar.**

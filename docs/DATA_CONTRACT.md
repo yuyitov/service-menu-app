@@ -138,6 +138,65 @@ interno (sin `payment_intent_id`, sin `customer_email` completo, etc.).
 | `google_reviews_url` | string (URL) \| null | |
 | `policies` | array<string> | |
 
+### 3b. `client_payload_public` (v1 — clientes reales, Phase 5)
+
+Payload bilingüe para **clientes reales**, consumido por el generador desde
+`data/clients/<slug>.client.json` y publicado en `public/links/<slug>/`
+(idioma por defecto en la raíz, alterno en `/en/` o `/es/`, un QR apuntando a
+la URL por defecto, canonical + hreflang estáticos en ambas páginas).
+
+**El repo es público: este payload solo puede contener información pública
+aprobada por el cliente.** Ver
+[CLIENT_PUBLIC_DATA_CHECKLIST.md](CLIENT_PUBLIC_DATA_CHECKLIST.md) y
+[INTAKE_TO_CLIENT_JSON_GUIDE.md](INTAKE_TO_CLIENT_JSON_GUIDE.md).
+
+Campos compartidos (independientes del idioma):
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `public_slug` | string | Requerido. URL: `https://www.hmulink.com/links/<slug>/`. |
+| `default_language` | `"es"` \| `"en"` | Requerido. Idioma que vive en la raíz del slug. |
+| `brand_style` | enum | Requerido. Uno de los 12 estilos cerrados. |
+| `business_name` | string | Requerido. |
+| `logo_url` / `primary_image_url` | string (URL) \| null | Opcionales. Ausente → placeholder. |
+| `whatsapp` | string \| null | Botón wa.me. |
+| `phone` | string \| null | Botón `tel:` (separado de WhatsApp). |
+| `public_email` | string \| null | Botón `mailto:`. |
+| `instagram`, `facebook`, `tiktok`, `website` | string (URL) \| null | Botones. |
+| `booking_url` | string (URL) \| null | Botón a sistema de reservas externo del cliente. |
+| `google_maps_url` | string (URL) \| null | |
+| `google_reviews_url` | string (URL) \| null | |
+
+Se requiere **al menos un contacto público** (`whatsapp`, `phone`,
+`public_email` o `booking_url`).
+
+`content.es` y `content.en` (ambos requeridos; el cliente escribe uno y el otro
+se traduce/edita con su autorización):
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `short_description` | string | Requerido. |
+| `address` | string \| null | Opcional (negocios en línea/a domicilio: texto de cobertura). |
+| `opening_hours_text` | string | Requerido. Texto libre en el idioma. |
+| `service_categories` | array<string> | Opcional. |
+| `services` | array<object> | Requerido, ≥1. Misma estructura que en demos (`price_label` opcional según visibilidad de precios elegida). |
+| `featured_package` | object \| null | Opcional. |
+| `policies` | array<string> | Opcional. |
+
+**Campos internos (nunca en este payload ni en el repo):** correo interno de
+vista previa, nombre/teléfono de contacto interno, "qué no publicar", notas
+privadas, `order_id`, estado o datos de pago, metadata de Tally.
+
+**Campos futuros (se recolectan en el intake pero el generador aún no los
+renderiza; guardarlos fuera del repo):** FAQ, fotos adicionales, botón
+principal/CTA destacado, ubicaciones 2–3 con datos propios, selección explícita
+de botones, `additional_images`.
+
+**Campos prohibidos (nunca se recolectan):** contraseñas, identificaciones
+oficiales, datos médicos, datos de tarjetas/cuentas, datos personales de los
+clientes finales del negocio, direcciones particulares no públicas, secretos o
+tokens.
+
 ### 4. `service_menu_delivery`
 
 Registro de la entrega final al cliente.

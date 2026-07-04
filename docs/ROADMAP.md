@@ -188,27 +188,49 @@ el usuario.
   público, qué es interno, qué nunca se recolecta y qué confirmar antes de publicar.
 - El cobro del primer cliente es manual; Stripe/checkout siguen fuera de alcance.
 
-## Phase 5 — Stripe/Tally
+## Phase 5 — Primer cliente real (manual) ✅
+
+Listo para vender y entregar el primer cliente de forma manual y segura:
+
+- **Generador bilingüe de clientes reales**: `data/clients/*.json`
+  (`client_payload_public` v1) → `public/links/<slug>/` con idioma por defecto
+  en la raíz, alterno en `/en/` o `/es/`, switch de idioma, canonical +
+  hreflang estáticos, un QR a la URL por defecto, botones ampliados
+  (tel:, mailto:, website, booking, Facebook, TikTok). Demos intactos.
+- **Plantilla segura**: `data/clients/_template.client.json` (solo placeholders;
+  archivos `_*` ignorados por el generador) + `data/clients/README.md`.
+- **Operación**: [FIRST_CLIENT_RUNBOOK.md](FIRST_CLIENT_RUNBOOK.md) (A–M),
+  [INTAKE_TO_CLIENT_JSON_GUIDE.md](INTAKE_TO_CLIENT_JSON_GUIDE.md),
+  [FIRST_CLIENT_QA_CHECKLIST.md](FIRST_CLIENT_QA_CHECKLIST.md),
+  [PILOT_PAYMENT_AND_DELIVERY.md](PILOT_PAYMENT_AND_DELIVERY.md) (cobro manual,
+  sin Stripe) y [SALES_MESSAGES.md](SALES_MESSAGES.md).
+- **Contrato**: `client_payload_public` v1 documentado en
+  [DATA_CONTRACT.md](DATA_CONTRACT.md) con campos públicos / internos /
+  futuros / prohibidos.
+- Sin Stripe, pagos, Worker, KV, backend, emails, webhooks, analytics ni
+  datos de clientes reales.
+
+## Phase 6 — Stripe/Tally (automatización)
 
 - Conectar Stripe Payment Link real y su webhook.
 - Conectar formulario Tally real y su webhook.
 - Validación de firmas de ambos webhooks (ver [SECURITY.md](SECURITY.md)).
 - Checklist de secrets futuros completado antes de esta fase.
 
-## Phase 6 — Emails y correcciones
+## Phase 7 — Emails y correcciones
 
 - Integración con proveedor de email (Resend u otro) para email post-pago y email de
   entrega.
 - Implementación completa del flujo de corrección one-time.
 
-## Phase 7 — QA end-to-end
+## Phase 8 — QA end-to-end
 
 - Recorrer [QA_CHECKLIST.md](QA_CHECKLIST.md) completo con el pipeline real conectado.
 - Prueba end-to-end: pago dummy → intake dummy → generación → publicación → entrega →
   corrección.
 - Verificación de idempotencia con eventos duplicados reales de Stripe/Tally.
 
-## Phase 8 — Checkout activo, pricing final y primeras ventas
+## Phase 9 — Checkout activo, pricing final y primeras ventas
 
 - Activar el checkout real en la landing (hasta entonces el pricing es tentativo).
 - Confirmar paquetes/precios definidos en [PRODUCT_SPEC.md](PRODUCT_SPEC.md) contra

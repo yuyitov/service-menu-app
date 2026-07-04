@@ -264,6 +264,16 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] Ningún formulario tiene pagos, Stripe, webhooks, automatizaciones ni analytics.
 - [ ] La landing no promete checkout activo ni cobro dentro del formulario.
 
+## Páginas de clientes reales (Phase 5)
+
+- [ ] Para cada cliente publicado se completó
+      [FIRST_CLIENT_QA_CHECKLIST.md](FIRST_CLIENT_QA_CHECKLIST.md).
+- [ ] `data/clients/` contiene solo JSONs con información pública aprobada
+      (sin correos internos, teléfonos internos, pagos ni notas privadas).
+- [ ] `public/links/<slug>/` y su versión alterna cargan en vivo; el QR escanea
+      a la URL por defecto.
+- [ ] Los demos bajo `/demos/` siguen intactos tras generar clientes.
+
 ## No tocar MyGuest
 
 - [ ] Ningún archivo del repo de MyGuest fue modificado durante el trabajo en este

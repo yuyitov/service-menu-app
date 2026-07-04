@@ -1,0 +1,69 @@
+name: Generate HMU Service Menu Page
+
+# Triggered by service-menu-worker via repository_dispatch after it validates
+# a paid order + Tally intake. The full sanitized public payload arrives in
+# client_payload (the workflow never reads KV, Tally or Stripe).
+
+on:
+  repository_dispatch:
+    types: [new-hmu-service-menu]
+
+concurrency:
+  group: generate-hmu-page
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build client page from intake
+        id: build
+        env:
+          INTAKE_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+        run: python generator/build_client_from_intake.py
+
+      - name: Commit and push generated page
+        run: |
+          git config user.name "hmu-link-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/clients/ public/links/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "feat: publish HMU Link page ${{ steps.build.outputs.slug }}"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Notify delivery
+        env:
+          WORKER_URL: ${{ secrets.SERVICE_MENU_WORKER_URL }}
+          NOTIFY_SECRET: ${{ secrets.NOTIFY_SECRET }}
+          SLUG: ${{ steps.build.outputs.slug }}
+          ORDER_ID: ${{ github.event.client_payload.order_id }}
+        run: |
+          if [ -z "$WORKER_URL" ] || [ -z "$NOTIFY_SECRET" ]; then
+            echo "WORKER_URL or NOTIFY_SECRET not configured — skipping notify"
+            exit 0
+          fi
+          curl -sS -X POST "$WORKER_URL/notify" \
+            -H "Authorization: Bearer $NOTIFY_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"slug\":\"$SLUG\",\"order_id\":\"$ORDER_ID\"}"

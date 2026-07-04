@@ -1,0 +1,214 @@
+═══════════════════════════════════════════════════════════════════════════════
+  HMU LINK AUTOMATED PAYMENT FLOW — QUICK START
+═══════════════════════════════════════════════════════════════════════════════
+
+STATUS: ✅ All code written. Now: 5 setup steps + deploy + test.
+
+ESTIMATED TIME: 45-60 minutes
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 1: STRIPE SETUP (15 minutes)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Go to: https://dashboard.stripe.com/
+2. Click: Products → Add product
+3. Fill:
+   Name: HMU Link Service Menu — Founder
+   Price: $39 USD or $699 MXN
+   Billing: One-time
+4. Save product
+5. Click: Create payment link
+6. Copy the payment link URL (looks like: https://buy.stripe.com/...)
+7. Go to: Developers → Webhooks → Add endpoint
+8. Fill:
+   URL: https://service-menu-worker.veronica-perezarroyo.workers.dev/stripe/webhook
+   Events: checkout.session.completed
+9. Click: Add endpoint
+10. Copy the SIGNING SECRET (starts with "whsec_...")
+
+SAVE: Payment link URL, Webhook signing secret
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 3: CLOUDFLARE KV SETUP (5 minutes)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Go to: https://dash.cloudflare.com/
+2. Click: Workers & Pages → KV
+3. Click: Create a namespace
+4. Name: SERVICE_MENU_KV
+5. Copy the NAMESPACE ID (long hex string)
+
+SAVE: KV namespace ID
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 4: UPDATE WRANGLER.TOML (2 minutes)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Open: worker/wrangler.toml
+2. Find line: id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+3. Replace with your KV ID from STEP 3:
+   id = "YOUR_KV_NAMESPACE_ID_HERE"
+4. Save
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 4B: CONFIGURE WORKER SECRETS (10 minutes)
+═══════════════════════════════════════════════════════════════════════════════
+
+In terminal:
+
+cd worker/
+
+# Authenticate with Cloudflare (one time)
+npx wrangler login
+
+# Set each secret (copy-paste values when prompted)
+
+1. Stripe webhook secret (from STEP 1):
+   npx wrangler secret put STRIPE_WEBHOOK_SECRET
+   > Paste: whsec_...
+
+2. GitHub token (create one: https://github.com/settings/tokens/new)
+   - Scopes: repo, workflow
+   - Copy the token
+   npx wrangler secret put GITHUB_TOKEN
+   > Paste: ghp_...
+
+3. Resend API key (get from: https://resend.com/api-keys)
+   npx wrangler secret put RESEND_API_KEY
+   > Paste: re_...
+
+4. Notification secret (generate random: use openssl rand -base64 32)
+   npx wrangler secret put NOTIFY_SECRET
+   > Paste: random 32-char string
+   SAVE THIS LOCALLY — you'll need it for GitHub Actions
+
+5. Tally signing secret — SKIP FOR NOW, do after STEP 5
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 5: TALLY WEBHOOK SETUP (5 minutes)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Go to: https://tally.so/
+2. Login, go to your Workspace
+3. Settings → Integrations → Webhooks
+4. Click: + Create a webhook
+5. Fill:
+   Endpoint URL: https://service-menu-worker.veronica-perezarroyo.workers.dev/tally-webhook
+   Events: All (or at minimum: Form submitted)
+6. Click: Create webhook
+7. Copy the SIGNING SECRET (long string)
+
+In terminal (from Step 4B, secret #5):
+   npx wrangler secret put TALLY_SIGNING_SECRET
+   > Paste: sk_...
+
+VERIFY TALLY FORMS:
+- EN form (yPkN5X): Should have fields for order_id, customer_email
+- ES form (MeyDpk): Should have fields for order_id, customer_email
+If missing, add them to both forms
+
+═══════════════════════════════════════════════════════════════════════════════
+DEPLOY WORKER (2 minutes)
+═══════════════════════════════════════════════════════════════════════════════
+
+In terminal (from worker/ directory):
+
+npx wrangler deploy
+
+EXPECTED OUTPUT:
+✓ Uploaded service-menu-worker (...)
+✓ Published to https://service-menu-worker.veronica-perezarroyo.workers.dev
+
+TEST HEALTH:
+curl https://service-menu-worker.veronica-perezarroyo.workers.dev/health
+
+EXPECTED RESPONSE:
+{"ok": true, "worker": "service-menu-worker"}
+
+═══════════════════════════════════════════════════════════════════════════════
+ADD GITHUB SECRETS (2 minutes)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Go to: https://github.com/yuyitov/service-menu-app
+2. Settings → Secrets and variables → Actions
+3. Click: New repository secret
+4. Add:
+   Name: SERVICE_MENU_WORKER_URL
+   Value: https://service-menu-worker.veronica-perezarroyo.workers.dev
+5. Click: Add secret
+6. Repeat:
+   Name: NOTIFY_SECRET
+   Value: (the 32-char string from Step 4B, secret #4)
+
+═══════════════════════════════════════════════════════════════════════════════
+END-TO-END TEST (20 minutes)
+═══════════════════════════════════════════════════════════════════════════════
+
+SETUP:
+1. Make sure Stripe is in TEST MODE (toggle at top of Dashboard)
+2. Use test card: 4242 4242 4242 4242
+
+TEST FLOW:
+1. Click your Stripe payment link (from STEP 1)
+2. Fill email: test@example.com
+3. Fill card: 4242 4242 4242 4242, any expiry, any CVC
+4. Click: Pay
+5. SUCCESS → Check your test email inbox for post-payment email
+   - Should say: "Complete your HMU Link service menu"
+   - Should have Tally form link with order_id= prefilled
+6. Click Tally link → form opens
+7. Fill service menu data:
+   - Business name
+   - At least 1 service with price
+   - Hours (e.g., "Mon-Fri 9am-6pm")
+   - Address
+   - WhatsApp
+   - Google Maps link
+   - Brand style (pick one of 12)
+8. Submit form
+9. WAIT 30 seconds → Check email for delivery email
+   - Should say: "Your HMU Link service menu is ready! 🎉"
+   - Should have public page link
+   - Should have QR code
+   - Should have one-time correction link
+10. Click public page link → page should load with your business info
+11. Scan QR code with phone → should open same page
+12. Click correction link → Tally form opens with correction_token prefilled
+13. Edit one field (e.g., price), submit
+14. Public page should update with your change
+15. Click correction link again → should get error (token already used)
+
+IF ANYTHING FAILS:
+→ Read: docs/SETUP_AUTOMATED_PAYMENT_FLOW.md (detailed troubleshooting)
+
+═══════════════════════════════════════════════════════════════════════════════
+READY FOR LIVE (when test passes)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Go to Stripe Dashboard
+2. Toggle to LIVE MODE (top-right corner)
+3. Update your landing page CTA to point to your live Stripe payment link
+4. Do one final live test with a small transaction ($1-5)
+5. Monitor first few orders:
+   - Check emails sent
+   - Check pages generated
+   - Check delivery emails sent
+
+═══════════════════════════════════════════════════════════════════════════════
+DETAILED DOCS
+═══════════════════════════════════════════════════════════════════════════════
+
+For more details, see:
+- Full setup guide: docs/SETUP_AUTOMATED_PAYMENT_FLOW.md
+- QA checklist: docs/SETUP_QA_CHECKLIST.md
+- Implementation summary: docs/IMPLEMENTATION_COMPLETE.md
+
+═══════════════════════════════════════════════════════════════════════════════
+STATUS
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Code complete (worker.js, wrangler.toml, GitHub Actions workflow)
+✅ Setup instructions complete
+✅ You're 5 manual steps + test away from first real automated sale
+
+🎯 Target: Complete all steps within 1 hour, test, ready to go live!

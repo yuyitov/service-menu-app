@@ -3,7 +3,7 @@
 
 Runs inside GitHub Actions when the service-menu-worker dispatches a
 `new-hmu-service-menu` repository_dispatch event. The full sanitized public
-payload travels in the event's client_payload (MyGuest pattern), so this
+payload travels in the event's client_payload (proven upstream pattern), so this
 script never talks to KV, Tally or Stripe.
 
 Input:  env INTAKE_PAYLOAD — JSON string:

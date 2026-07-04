@@ -440,17 +440,46 @@ def build_hours(payload: dict, s: dict) -> str:
     )
 
 
+def _address_map_link(maps_url, s: dict) -> str:
+    maps = safe_href(maps_url)
+    if not maps:
+        return ""
+    return (
+        f'<a class="address__map" href="{maps}" target="_blank" '
+        f'rel="noopener noreferrer">{s["address_map"]}</a>'
+    )
+
+
 def build_address(payload: dict, s: dict) -> str:
+    locations = payload.get("locations")
+    if isinstance(locations, list) and len(locations) > 1:
+        items = []
+        for loc in locations:
+            if not isinstance(loc, dict):
+                continue
+            addr = str(loc.get("address", "") or "").strip()
+            if not addr:
+                continue
+            name = str(loc.get("name", "") or "").strip()
+            name_html = f'<h3 class="address__name">{esc(name)}</h3>' if name else ""
+            notes = str(loc.get("notes", "") or "").strip()
+            notes_html = f'<p class="address__notes">{esc(notes)}</p>' if notes else ""
+            link = _address_map_link(loc.get("google_maps_url"), s)
+            items.append(
+                f'<div class="address__item">{name_html}'
+                f'<p class="address">{esc(addr)}</p>{notes_html}{link}</div>'
+            )
+        if not items:
+            return ""
+        return (
+            f'<section class="section"><h2 class="section__title">{s["address_title"]}</h2>'
+            f'{"".join(items)}</section>'
+        )
+
     if not str(payload.get("address", "") or "").strip():
         return ""
     text = esc(payload.get("address"))
-    maps = safe_href(payload.get("google_maps_url"))
-    link = (
-        f'<a class="address__map" href="{maps}" target="_blank" '
-        f'rel="noopener noreferrer">{s["address_map"]}</a>'
-        if maps
-        else ""
-    )
+    link = _address_map_link(payload.get("google_maps_url"), s)
     return (
         f'<section class="section"><h2 class="section__title">{s["address_title"]}</h2>'
         f'<p class="address">{text}</p>{link}</section>'
@@ -629,6 +658,7 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "booking_url",
             "google_maps_url",
             "google_reviews_url",
+            "locations",
         )
     }
     view.update(payload["content"][lang])

@@ -848,6 +848,20 @@ function answerAny(answers, keys) {
   return '';
 }
 
+// Tally FILE_UPLOAD fields arrive as an array of { url, name, mimeType, ... }.
+// Only the first file is used (logo / main photo are single-file fields).
+function answerFileUrl(answers, keys) {
+  for (const k of keys) {
+    const v = getAnswer(answers, k);
+    if (Array.isArray(v) && v.length > 0) {
+      const first = v[0];
+      if (first && typeof first === 'object' && typeof first.url === 'string') return first.url;
+      if (typeof first === 'string' && first.trim()) return first.trim();
+    }
+  }
+  return '';
+}
+
 function slugify(text) {
   return String(text || '')
     .normalize('NFD')
@@ -917,7 +931,24 @@ function buildHmuPublicPayload(normalized, orderId) {
       'featured_package_promo_or_signature_offer',
       'paquete_destacado_promocion_u_oferta_especial'
     ]),
-    policies_text: answerAny(a, ['policies_your_clients_should_see', 'politicas_que_tus_clientes_deben_ver'])
+    policies_text: answerAny(a, ['policies_your_clients_should_see', 'politicas_que_tus_clientes_deben_ver']),
+    logo_url: answerFileUrl(a, ['upload_your_logo', 'sube_tu_logo']),
+    image_url: answerFileUrl(a, ['upload_a_main_photo', 'sube_una_foto_principal']),
+    location_1_name: answerAny(a, ['location_1_name', 'ubicacion_1_nombre']),
+    location_2_name: answerAny(a, ['location_2_name', 'ubicacion_2_nombre']),
+    location_2_address: answerAny(a, ['location_2_public_address', 'ubicacion_2_direccion_publica']),
+    location_2_maps_url: answerAny(a, ['location_2_google_maps_link', 'ubicacion_2_enlace_de_google_maps']),
+    location_2_notes: answerAny(a, [
+      'location_2_phone_whatsapp_or_hours_if_different',
+      'ubicacion_2_telefono_whatsapp_u_horarios_si_son_diferentes'
+    ]),
+    location_3_name: answerAny(a, ['location_3_name', 'ubicacion_3_nombre']),
+    location_3_address: answerAny(a, ['location_3_public_address', 'ubicacion_3_direccion_publica']),
+    location_3_maps_url: answerAny(a, ['location_3_google_maps_link', 'ubicacion_3_enlace_de_google_maps']),
+    location_3_notes: answerAny(a, [
+      'location_3_phone_whatsapp_or_hours_if_different',
+      'ubicacion_3_telefono_whatsapp_u_horarios_si_son_diferentes'
+    ])
   };
 }
 

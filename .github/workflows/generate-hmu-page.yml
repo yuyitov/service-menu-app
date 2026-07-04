@@ -41,6 +41,7 @@ jobs:
         id: build
         env:
           INTAKE_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python generator/build_client_from_intake.py
 
       - name: Commit and push generated page

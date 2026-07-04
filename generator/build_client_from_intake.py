@@ -23,9 +23,12 @@ Security notes:
   is under MAX_IMAGE_BYTES; anything else is skipped (page falls back to the
   placeholder), it never blocks generation.
 
-Translation note (v1): the intake arrives in one language; content.es and
-content.en are published with the same text. Light manual translation can be
-applied later via the correction flow or a follow-up commit.
+Translation: the intake is authored in one language (default_language). When
+OPENAI_API_KEY is configured, the other language's short_description, service
+names, policies and featured_package are translated via the OpenAI API
+(gpt-4o-mini). If the key is missing or the call fails, both languages just
+publish the same source-language text (original v1 behavior) — translation
+never blocks page generation.
 """
 
 from __future__ import annotations
@@ -198,6 +201,100 @@ def social_url(value: str, base: str, handle_prefix: str = "") -> str | None:
     return f"https://{base}/{handle_prefix}{handle}"
 
 
+LANG_NAMES = {"es": "Spanish", "en": "English"}
+
+
+def translate_block(source_lang: str, target_lang: str, fields: dict) -> dict | None:
+    """Translate short_description/services/policies/featured via OpenAI.
+
+    `fields` is a flat dict of translatable strings/lists (see call site).
+    Returns a dict with the same keys translated, or None if OPENAI_API_KEY
+    is missing or the call/response is unusable. Never raises: a translation
+    problem must fall back to publishing the source-language text, not block
+    page generation.
+    """
+    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        return None
+
+    prompt = (
+        f"Translate the following small-business page content from "
+        f"{LANG_NAMES[source_lang]} to {LANG_NAMES[target_lang]}. Keep prices, "
+        f"numbers, phone numbers and proper nouns (business names, brand names) "
+        f"unchanged. Return ONLY a JSON object with exactly the same keys and "
+        f"structure as the input, with translated string values.\n\n"
+        f"{json.dumps(fields, ensure_ascii=False)}"
+    )
+    body = json.dumps({
+        "model": "gpt-4o-mini",
+        "messages": [{"role": "user", "content": prompt}],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.2,
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=body,
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+        content = result["choices"][0]["message"]["content"]
+        translated = json.loads(content)
+        return translated if isinstance(translated, dict) else None
+    except (urllib.error.URLError, OSError, ValueError, KeyError, IndexError) as e:
+        print(f"WARN: translation failed ({e}); publishing source-language text for {target_lang}", file=sys.stderr)
+        return None
+
+
+def apply_translation(content: dict, source_lang: str, target_lang: str) -> None:
+    """Translate content[target_lang] in place from content[source_lang].
+
+    Every translated field is validated (type + shape) before being applied;
+    anything missing or malformed just keeps the original source-language
+    fallback text already in content[target_lang].
+    """
+    src = content[source_lang]
+    fields = {
+        "short_description": src["short_description"],
+        "opening_hours_text": src["opening_hours_text"],
+        "service_names": [s["name"] for s in src["services"]],
+        "policies": src["policies"],
+    }
+    if "featured_package" in src:
+        fields["featured_name"] = src["featured_package"]["name"]
+        fields["featured_description"] = src["featured_package"].get("description", "")
+
+    translated = translate_block(source_lang, target_lang, fields)
+    if not translated:
+        return
+
+    tgt = content[target_lang]
+    if isinstance(translated.get("short_description"), str) and translated["short_description"].strip():
+        tgt["short_description"] = translated["short_description"][:300]
+    if isinstance(translated.get("opening_hours_text"), str) and translated["opening_hours_text"].strip():
+        tgt["opening_hours_text"] = translated["opening_hours_text"][:200]
+
+    names = translated.get("service_names")
+    if isinstance(names, list) and len(names) == len(tgt["services"]):
+        for svc, name in zip(tgt["services"], names):
+            if isinstance(name, str) and name.strip():
+                svc["name"] = name[:120]
+
+    pols = translated.get("policies")
+    if isinstance(pols, list) and len(pols) == len(tgt["policies"]):
+        if all(isinstance(p, str) for p in pols):
+            tgt["policies"] = [p[:200] for p in pols]
+
+    if "featured_package" in tgt:
+        if isinstance(translated.get("featured_name"), str) and translated["featured_name"].strip():
+            tgt["featured_package"]["name"] = translated["featured_name"][:120]
+        if isinstance(translated.get("featured_description"), str):
+            tgt["featured_package"]["description"] = translated["featured_description"][:300]
+
+
 def main() -> int:
     raw = os.environ.get("INTAKE_PAYLOAD", "")
     if not raw:
@@ -233,16 +330,19 @@ def main() -> int:
     address = str(payload.get("address", "")).strip()
 
     def content_block(lang: str) -> dict:
+        # Each language gets its own copies of the mutable structures: later,
+        # apply_translation() overwrites content[target_lang] in place and
+        # must never affect content[source_lang]'s original text.
         block = {
             "short_description": short_description[:300],
             "address": address[:200],
             "opening_hours_text": hours[:200],
             "service_categories": ["Servicios" if lang == "es" else "Services"],
-            "services": services_es if lang == "es" else services_en,
-            "policies": policies,
+            "services": [dict(s) for s in (services_es if lang == "es" else services_en)],
+            "policies": list(policies),
         }
         if featured:
-            block["featured_package"] = featured
+            block["featured_package"] = dict(featured)
         return block
 
     assets_dir = LINKS_DIR / slug / "assets"
@@ -272,6 +372,12 @@ def main() -> int:
     }
     if len(locations) > 1:
         client["locations"] = locations
+
+    # The intake is authored in one language (default_language); translate the
+    # other one via OpenAI when OPENAI_API_KEY is configured. On any failure
+    # this just leaves the source-language text in both, unchanged from v1.
+    other_lang = "en" if default_language == "es" else "es"
+    apply_translation(client["content"], default_language, other_lang)
 
     if not (client["whatsapp"] or client["phone"] or client["public_email"] or client["booking_url"]):
         fail("no public contact (whatsapp/phone/email/booking) — manual review required")

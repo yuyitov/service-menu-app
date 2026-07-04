@@ -22,7 +22,7 @@
  * - STRIPE_WEBHOOK_SECRET
  * - TALLY_SIGNING_SECRET
  * - GITHUB_TOKEN
- * - RESEND_API_KEY
+ * - SENDGRID_API_KEY
  * - NOTIFY_SECRET
  */
 
@@ -156,8 +156,8 @@ async function handleStripeWebhook(request, env) {
     return jsonResponse({ ok: true, paymentIntentId, hasEmail: false });
   }
 
-  if (!env.RESEND_API_KEY) {
-    return jsonResponse({ ok: false, error: 'RESEND_API_KEY not configured' }, 500);
+  if (!env.SENDGRID_API_KEY) {
+    return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
   }
 
   const baseFormEN = (env.TALLY_FORM_URL_EN || '').trim();
@@ -461,8 +461,8 @@ async function handleNotify(request, env) {
   }
 
   // Send delivery email
-  if (!env.RESEND_API_KEY) {
-    return jsonResponse({ ok: false, error: 'RESEND_API_KEY not configured' }, 500);
+  if (!env.SENDGRID_API_KEY) {
+    return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
   }
 
   try {
@@ -648,21 +648,29 @@ async function checkRateLimit(env, key, limit, ttl) {
 }
 
 async function sendEmail({ env, to, subject, html }) {
-  if (!env.RESEND_API_KEY) {
-    throw new Error('RESEND_API_KEY not configured');
+  if (!env.SENDGRID_API_KEY) {
+    throw new Error('SENDGRID_API_KEY not configured');
   }
 
-  const response = await fetch('https://api.resend.com/emails', {
+  const fromEmail = (env.FROM_EMAIL || 'hello@hmulink.com').split('<').pop().replace('>', '').trim();
+
+  const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      from: env.FROM_EMAIL || 'HMU Link <hello@hmulink.com>',
-      to,
-      subject,
-      html
+      personalizations: [
+        {
+          to: [{ email: to }],
+          subject
+        }
+      ],
+      from: { email: fromEmail },
+      content: [
+        { type: 'text/html', value: html }
+      ]
     })
   });
 

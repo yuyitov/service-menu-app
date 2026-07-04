@@ -19,14 +19,14 @@ id      = "0743b2af26cd47fb88d4fef62e90a118"
 #   npx wrangler secret put STRIPE_WEBHOOK_SECRET
 #   npx wrangler secret put TALLY_SIGNING_SECRET
 #   npx wrangler secret put GITHUB_TOKEN
-#   npx wrangler secret put RESEND_API_KEY
+#   npx wrangler secret put SENDGRID_API_KEY
 #   npx wrangler secret put NOTIFY_SECRET
 #
 # Secrets requeridos:
 # - STRIPE_WEBHOOK_SECRET — obtén de: Stripe Dashboard → Webhooks → Signing secret
 # - TALLY_SIGNING_SECRET — obtén de: Tally.so → Workspace → Webhooks → Signing secret
 # - GITHUB_TOKEN — GitHub Personal Access Token (repo dispatch scope)
-# - RESEND_API_KEY — obtén de: https://resend.com/api-keys
+# - SENDGRID_API_KEY — obtén de: https://sendgrid.com/login → API Keys
 # - NOTIFY_SECRET — genera uno: openssl rand -base64 32 (solo para ti, guardar seguro)
 
 # ─── Environment Variables (no-secret) ────────────────────────────────────────

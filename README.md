@@ -43,6 +43,19 @@ incluida vía un link de un solo uso.
 
 ## Estado actual
 
+**Phase 4G/4H — Intake forms conectados · Phase 5A-prep — flujo manual del primer cliente listo.**
+
+Los CTAs primarios de la landing ahora abren los formularios de intake publicados en Tally
+(sin pagos, sin webhooks, sin automatizaciones):
+
+- Intake en inglés: https://tally.so/r/yPkN5X (desde `/` con `?source=hmu_website_en`)
+- Intake en español: https://tally.so/r/MeyDpk (desde `/es/` con `?source=hmu_website_es`)
+
+El primer cliente se atiende manualmente siguiendo
+[docs/FIRST_CLIENT_RUNBOOK.md](docs/FIRST_CLIENT_RUNBOOK.md) y
+[docs/CLIENT_PUBLIC_DATA_CHECKLIST.md](docs/CLIENT_PUBLIC_DATA_CHECKLIST.md).
+El checkout no está activo: el cobro es manual en esta fase.
+
 **Phase 4E — Migración a dominio custom completa.**
 
 El sitio público de HMU Link está completamente migrado al dominio custom `https://www.hmulink.com`:

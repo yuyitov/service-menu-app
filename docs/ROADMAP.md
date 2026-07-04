@@ -162,6 +162,32 @@ el usuario.
 - Documentación actualizada (README, ARCHITECTURE, QA_CHECKLIST).
 - Verificación: https://www.hmulink.com/ → HTTP 200, HTTPS válido, QRs codifican URLs correctas.
 
+## Phase 4G — Intake forms conectados ✅
+
+- Formularios de intake bilingües creados y publicados en Tally:
+  - Inglés: https://tally.so/r/yPkN5X
+  - Español: https://tally.so/r/MeyDpk
+- CTAs primarios de la landing (`/` y `/es/`) conectados a su formulario por idioma,
+  con `?source=hmu_website_en|es`, `target="_blank"` y `rel="noopener noreferrer"`.
+- Sin Stripe, pagos, webhooks, automatizaciones ni analytics en los formularios.
+
+## Phase 4H — QA en vivo de formularios y CTAs ✅
+
+- Verificado que ambos formularios publicados cargan públicamente (HTTP 200,
+  status PUBLISHED en Tally).
+- Verificados CTAs de hero, pricing, acceso anticipado y header en ambas landings.
+- Copy de "coming soon" actualizado a acceso anticipado abierto, manteniendo honesto
+  que el checkout no está activo y que el formulario no cobra.
+- Checklist de verificación en vivo agregado a [QA_CHECKLIST.md](QA_CHECKLIST.md).
+
+## Phase 5A-prep — Flujo manual del primer cliente ✅
+
+- [FIRST_CLIENT_RUNBOOK.md](FIRST_CLIENT_RUNBOOK.md): proceso manual A–M desde el
+  lead en Tally hasta la publicación final, con reglas de seguridad estrictas.
+- [CLIENT_PUBLIC_DATA_CHECKLIST.md](CLIENT_PUBLIC_DATA_CHECKLIST.md): qué puede ser
+  público, qué es interno, qué nunca se recolecta y qué confirmar antes de publicar.
+- El cobro del primer cliente es manual; Stripe/checkout siguen fuera de alcance.
+
 ## Phase 5 — Stripe/Tally
 
 - Conectar Stripe Payment Link real y su webhook.

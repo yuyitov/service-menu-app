@@ -252,6 +252,18 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] Los cambios enviados vía corrección se reflejan correctamente en la página
       republicada.
 
+## CTAs e intake en vivo (Phase 4G/4H)
+
+- [ ] https://tally.so/r/yPkN5X carga públicamente y está en inglés.
+- [ ] https://tally.so/r/MeyDpk carga públicamente y está en español.
+- [ ] El selector de estilo muestra las 12 imágenes de preview en ambos formularios.
+- [ ] Los CTAs primarios de `/` abren el formulario EN con `?source=hmu_website_en`.
+- [ ] Los CTAs primarios de `/es/` abren el formulario ES con `?source=hmu_website_es`.
+- [ ] Todos los CTAs a Tally usan `target="_blank"` y `rel="noopener noreferrer"`.
+- [ ] Los botones de demos/ejemplos siguen funcionando sin cambios.
+- [ ] Ningún formulario tiene pagos, Stripe, webhooks, automatizaciones ni analytics.
+- [ ] La landing no promete checkout activo ni cobro dentro del formulario.
+
 ## No tocar MyGuest
 
 - [ ] Ningún archivo del repo de MyGuest fue modificado durante el trabajo en este

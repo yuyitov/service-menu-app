@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html lang="en-US" class="no-js">
+<html lang="es-MX" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>document.documentElement.classList.remove('no-js')</script>
-<title>HMU Link — A polished service page your clients can open from one link</title>
-<meta name="description" content="HMU Link creates mobile-friendly service pages for local businesses to show services, prices, promotions, and booking/contact options from one simple link. Built for salons, spas, barbershops, and independent pros in the US and Canada.">
+<title>HMU Link México — Todo lo que tus clientes te preguntan por WhatsApp, en un solo link</title>
+<meta name="description" content="HMU Link crea una página digital para que tus clientes vean tus servicios, precios, promociones y te contacten o reserven desde un solo link. Ideal para spas, salones, barberías y negocios locales en México.">
 <meta name="theme-color" content="#fffdf6">
 <meta property="og:type" content="website">
-<meta property="og:title" content="HMU Link — Your business in one link">
-<meta property="og:description" content="Services, prices, promotions, and contact in one polished page — ready for Instagram, Google, and WhatsApp.">
-<meta property="og:url" content="https://yuyitov.github.io/service-menu-app/">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://yuyitov.github.io/service-menu-app/assets/brand/hmu-link-logo.png">
-<link rel="canonical" href="https://yuyitov.github.io/service-menu-app/">
+<meta property="og:title" content="HMU Link México — Tu negocio en un solo link">
+<meta property="og:description" content="Servicios, precios, promociones y contacto en una página digital lista para WhatsApp e Instagram.">
+<meta property="og:url" content="https://yuyitov.github.io/service-menu-app/es/">
+<meta property="og:locale" content="es_MX">
+<link rel="canonical" href="https://yuyitov.github.io/service-menu-app/es/">
 <link rel="alternate" hreflang="es-MX" href="https://yuyitov.github.io/service-menu-app/es/">
 <link rel="alternate" hreflang="en-US" href="https://yuyitov.github.io/service-menu-app/">
 <link rel="alternate" hreflang="x-default" href="https://yuyitov.github.io/service-menu-app/">
@@ -24,11 +23,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500..800&family=Outfit:wght@400..800&display=swap" rel="stylesheet">
 <style>
 /* ------------------------------------------------------------------- */
-/* Home landing (English default, USD) — HMU Link visual identity.    */
-/* Official palette: Bubblegum #f478b0 · Tangerine #ffa934 · Ocean     */
-/* Blue #00a0b5 · Banana #ffef5a · Avocado #98c54e · Bell Pepper       */
-/* #14704f. Static: no backend, no forms, no tracking. Minimal inline  */
-/* JS for animations only (reveal, ticker, tilt). Fonts: Google Fonts. */
+/* Landing México — identidad visual HMU Link, edición elevada.        */
+/* Paleta oficial: Bubblegum #f478b0 · Tangerine #ffa934 · Ocean Blue  */
+/* #00a0b5 · Banana #ffef5a · Avocado #98c54e · Bell Pepper #14704f.   */
+/* Estática: sin backend, sin forms, sin tracking. JS mínimo inline    */
+/* solo para animaciones (reveal, ticker, tilt). Fonts: Google Fonts.  */
 /* ------------------------------------------------------------------- */
 :root {
   --bubblegum: #f478b0;
@@ -89,14 +88,14 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .kicker::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ocean); }
 .lead { color: var(--muted); max-width: 60ch; margin-bottom: 34px; font-size: 1.05rem; }
 
-/* Accessibility */
+/* Accesibilidad */
 .skip {
   position: absolute; left: -9999px; top: 12px; z-index: 200;
   background: var(--pepper); color: #fff; padding: 10px 18px; border-radius: 999px; font-weight: 700;
 }
 .skip:focus { left: 12px; }
 
-/* Scroll progress bar */
+/* Barra de progreso de scroll */
 .progress { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 90; pointer-events: none; }
 .progress i {
   display: block; height: 100%; transform: scaleX(0); transform-origin: 0 50%;
@@ -118,7 +117,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 }
 .logo:hover .pin { transform: rotate(-45deg) translateY(-0.34em) scale(1.15); }
 
-/* Sticky header with blur */
+/* Header pegajoso con blur */
 .top {
   position: sticky; top: 0; z-index: 80;
   background: rgba(255, 253, 246, 0.82);
@@ -150,7 +149,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .btn-mini:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--bubblegum-deep); }
 .btn-mini:active { transform: scale(0.94); }
 
-/* Decorative blobs: time-based shape morph + scroll-scrubbed parallax drift */
+/* Blobs decorativos: morph de forma por tiempo + parallax scrub por scroll */
 .blob {
   position: absolute; border-radius: 58% 42% 55% 45% / 50% 58% 42% 50%;
   pointer-events: none; z-index: 0; filter: blur(36px);
@@ -168,12 +167,12 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .blob--ocean { background: var(--ocean); opacity: 0.22; }
 .wrap > *:not(.blob) { position: relative; z-index: 1; }
 
-/* Load-in animations (hero) */
+/* Animaciones de entrada (hero: al cargar) */
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 .rise { opacity: 0; animation: rise 0.9s var(--ease-spring) forwards; animation-delay: var(--d, 0s); }
 .no-js .rise { opacity: 1; animation: none; }
 
-/* Reveal on scroll */
+/* Reveal al hacer scroll */
 [data-reveal] {
   opacity: 0; transform: translateY(26px);
   transition: opacity 0.7s ease, transform 0.7s var(--ease-spring);
@@ -295,7 +294,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   width: 46px; height: 46px; font-size: 1.35rem;
   background: var(--ocean-soft); border: 2px solid var(--ocean); border-radius: 50%;
 }
-.m-name { display: block; font-family: var(--font-display); font-weight: 680; font-size: 1.02rem; margin-top: 7px; }
+.m-name { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; margin-top: 7px; }
 .m-sub { display: block; color: var(--muted); font-size: 0.68rem; }
 .m-promo {
   background: var(--banana-soft); border: 1.5px dashed var(--tangerine);
@@ -317,13 +316,6 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   box-shadow: 0 3px 0 var(--avocado-deep); font-size: 0.75rem;
 }
 .m-foot { display: flex; justify-content: space-around; color: var(--muted); font-size: 0.64rem; margin-top: 11px; }
-
-/* Linky mascot peeking beside the phone */
-.mascot {
-  position: absolute; z-index: 6; left: -22px; bottom: -16px; width: 158px; height: auto;
-  pointer-events: none;
-  filter: drop-shadow(0 16px 26px rgba(31, 45, 39, 0.28));
-}
 
 /* Floating chat bubbles */
 .bubble {
@@ -351,6 +343,13 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   bottom: 7%; right: -5%; background: var(--bubblegum); border-color: var(--bubblegum-deep);
   color: var(--bubblegum-ink); font-weight: 800; border-bottom-right-radius: 4px;
   animation-delay: 2.6s;
+}
+
+/* Linky mascot peeking beside the phone */
+.mascot {
+  position: absolute; z-index: 6; left: -22px; bottom: -16px; width: 158px; height: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 16px 26px rgba(31, 45, 39, 0.28));
 }
 
 /* Marquee ticker */
@@ -395,7 +394,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .grid .card:nth-child(6n+6) .icon { background: var(--pepper-soft); border-color: #a9cdbc; }
 .alt { background: #fdf8ec; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 
-/* Included chips */
+/* Chips de qué incluye */
 .chip-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
 .chip {
   display: inline-flex; align-items: center; gap: 9px;
@@ -452,7 +451,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .pill.is-active { background: var(--ocean); border-color: var(--ocean-deep); color: #fff; box-shadow: 0 3px 0 var(--ocean-deep); }
 .style-card.is-hidden { display: none; }
 
-/* Pricing: rounded dark slab */
+/* Pricing: bloque oscuro redondeado */
 .pricing-shell { padding: 26px 14px; }
 .pricing {
   background: linear-gradient(155deg, var(--pepper) 0%, var(--pepper-deep) 70%, var(--pepper-ink) 100%);
@@ -476,7 +475,6 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .price-card:hover { transform: translateY(-6px); background: rgba(255, 255, 255, 0.1); }
 .price-card h3 { color: #ffffff; font-size: 1.3rem; }
 .price-card .amount { font-family: var(--font-display); font-size: 2.8rem; font-weight: 700; color: var(--banana); line-height: 1; }
-.price-card .amount b { font-weight: inherit; }
 .price-card .amount small { font-size: 0.95rem; font-weight: 600; color: #bfe0cd; font-family: var(--font-body); }
 .price-card ul { list-style: none; text-align: left; align-self: stretch; }
 .price-card li { padding: 7px 0 7px 26px; position: relative; font-size: 0.95rem; color: #cfe9da; }
@@ -556,8 +554,7 @@ footer {
 footer .cols { display: grid; gap: 34px; }
 footer .logo { font-size: 1.5rem; }
 footer .logo .hmu { color: var(--bubblegum); }
-footer .logo .lnk { color: #b8dd7f; }
-footer .logo .logo-mascot { width: 46px; }
+footer .logo .lnk { color: #6fd6e2; }
 footer h4 { color: #fff; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 12px; }
 footer ul { list-style: none; }
 footer li { margin-bottom: 8px; }
@@ -584,8 +581,6 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
   .bubble { max-width: 170px; font-size: 0.74rem; }
   .b1 { top: 1%; left: 0; }
   .b4 { bottom: 1%; right: 0; }
-  .mascot { width: 106px; left: -8px; bottom: -10px; }
-  .early .mascot-poster { width: 130px; }
 }
 
 /* GSAP takes over the entrance choreography when it loads (progressive enhancement):
@@ -608,72 +603,71 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 </head>
 <body>
 
-<a class="skip" href="#content">Skip to content</a>
+<a class="skip" href="#contenido">Saltar al contenido</a>
 <div class="progress" aria-hidden="true"><i></i></div>
 
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="./"><img class="logo-mascot" src="assets/brand/mascot-96.png" alt="" width="96" height="81"><span class="hmu">HMU</span><span class="lnk">Link</span><span class="pin" aria-hidden="true"></span></a>
-    <nav aria-label="Sections">
-      <a href="#what">What it is</a>
-      <a href="#styles">Styles</a>
-      <a href="#pricing">Pricing</a>
+    <a class="logo" href="../"><img class="logo-mascot" src="assets/brand/mascot-96.png" alt="" width="96" height="81"><span class="hmu">HMU</span><span class="lnk">Link</span><span class="pin" aria-hidden="true"></span></a>
+    <nav aria-label="Secciones">
+      <a href="#que-es">Qué es</a>
+      <a href="#estilos">Estilos</a>
+      <a href="#precios">Precios</a>
       <a href="#faq">FAQ</a>
     </nav>
     <div class="top-actions">
-      <div class="lang" aria-label="Language">
-        <a href="es/" hreflang="es-MX" lang="es-MX">ES</a>
-        <span lang="en-US">EN</span>
+      <div class="lang" aria-label="Idioma">
+        <span lang="es-MX">ES</span>
+        <a href="../" hreflang="en-US" lang="en-US">EN</a>
       </div>
-      <a class="btn-mini" href="#early-access">Get my link</a>
+      <a class="btn-mini" href="#acceso-anticipado">Quiero mi link</a>
     </div>
   </div>
 </header>
 
-<main id="content">
+<main id="contenido">
 
 <!-- Hero -->
-<section class="hero" id="top-hero">
+<section class="hero" id="inicio">
   <div class="wrap">
     <span class="blob blob--banana" aria-hidden="true"></span>
-    <span class="blob blob--ocean" aria-hidden="true"></span>
     <span class="blob blob--pink" aria-hidden="true"></span>
     <div class="hero-copy">
-      <span class="hero-badge rise" style="--d:.05s"><span class="dot" aria-hidden="true"></span>Coming soon · USA &amp; Canada</span>
-      <h1 class="kinetic"><span class="kw" style="--i:0">Everything</span> <span class="kw" style="--i:1">your</span> <span class="kw" style="--i:2">clients</span> <span class="kw" style="--i:3">ask</span> <span class="kw" style="--i:4">by</span> <span class="kw kw-a" style="--i:5">call,</span> <span class="kw kw-b" style="--i:6">text,</span> <span class="kw" style="--i:7">or</span> <span class="kw kw-c" style="--i:8">DM</span> <span class="kw" style="--i:9">—</span> <span class="kw" style="--i:10"><span class="hl">in one link</span></span><span class="kw" style="--i:11">.</span></h1>
-      <p class="slogan rise" style="--d:.3s">Connect your business.</p>
-      <p class="sub rise" style="--d:.4s">HMU Link creates mobile-friendly service pages for local businesses to show services, prices, promotions, and contact options — from a call, a text, Instagram, Google, or a QR code.</p>
+      <span class="hero-badge rise" style="--d:.05s"><span class="dot" aria-hidden="true"></span>Producto en preparación · México</span>
+      <h1 class="kinetic"><span class="kw" style="--i:0">Todo</span> <span class="kw" style="--i:1">lo</span> <span class="kw" style="--i:2">que</span> <span class="kw" style="--i:3">te</span> <span class="kw" style="--i:4">preguntan</span> <span class="kw" style="--i:5">por</span> <span class="kw" style="--i:6">WhatsApp,</span> <span class="kw" style="--i:7"><span class="hl">en un solo link</span></span><span class="kw" style="--i:8">.</span></h1>
+      <p class="slogan rise" style="--d:.3s">Conecta tu negocio.</p>
+      <p class="sub rise" style="--d:.4s">HMU Link crea una página digital para que tus clientes vean tus servicios, precios, promociones y te contacten o reserven desde un solo link.</p>
       <div class="cta-row rise" style="--d:.5s">
-        <a class="btn btn--primary" href="#early-access">Get my HMU Link <span class="arr" aria-hidden="true">→</span></a>
-        <a class="btn btn--secondary" href="#styles">View live examples</a>
+        <a class="btn btn--primary" href="#acceso-anticipado">Quiero mi HMU Link <span class="arr" aria-hidden="true">→</span></a>
+        <a class="btn btn--secondary" href="#estilos">Ver demos reales</a>
       </div>
       <ul class="hero-chips rise" style="--d:.62s">
-        <li>No app</li>
-        <li>No subscriptions</li>
-        <li>Live in days</li>
+        <li>Sin app</li>
+        <li>Sin mensualidades</li>
+        <li>Listo en días</li>
       </ul>
     </div>
     <div class="hero-visual rise" style="--d:.35s" aria-hidden="true">
       <div class="scene">
-        <div class="bubble bubble--q b1">🙋 “Hi! Do you have a price list?”</div>
-        <div class="bubble bubble--q b2">“How late are you open today?”</div>
+        <div class="bubble bubble--q b1">🙋‍♀️ «Hola, ¿me pasas la lista de precios?»</div>
+        <div class="bubble bubble--q b2">«¿Hasta qué hora abren hoy?»</div>
         <div class="bubble b3"><i></i><i></i><i></i></div>
-        <div class="bubble b4">✨ hmu.link/luna-studio</div>
+        <div class="bubble b4">✨ hmu.link/estetica-luna</div>
         <div class="phone-wrap">
           <div class="phone">
             <div class="screen">
               <div class="m-head">
-                <span class="m-ava">💇</span>
-                <span class="m-name">Luna Beauty Studio</span>
-                <span class="m-sub">Hair · Nails · Lashes · Austin, TX</span>
+                <span class="m-ava">💇‍♀️</span>
+                <span class="m-name">Estética Luna</span>
+                <span class="m-sub">Corte · Color · Uñas · CDMX</span>
               </div>
-              <div class="m-promo">🎉 This month: 20% off color</div>
-              <div class="m-cat">Services</div>
-              <div class="m-row"><span>Cut + style</span><b>$45</b></div>
-              <div class="m-row"><span>Full color</span><b>$120</b></div>
-              <div class="m-row"><span>Gel manicure</span><b>$45</b></div>
-              <div class="m-wa">💬 Message us</div>
-              <div class="m-foot"><span>📍 South Congress</span><span>⭐ 4.9</span><span>🕐 10–8</span></div>
+              <div class="m-promo">🎉 Promo del mes: color −20%</div>
+              <div class="m-cat">Servicios</div>
+              <div class="m-row"><span>Corte + peinado</span><b>$250</b></div>
+              <div class="m-row"><span>Color completo</span><b>$890</b></div>
+              <div class="m-row"><span>Manicure gel</span><b>$320</b></div>
+              <div class="m-wa">💬 Reservar por WhatsApp</div>
+              <div class="m-foot"><span>📍 Roma Norte</span><span>⭐ 4.9</span><span>🕐 10–20 h</span></div>
             </div>
           </div>
         </div>
@@ -687,260 +681,260 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track">
     <div class="ticker-set">
-      <span>One link</span><i>✦</i><span>No app</span><i>✦</i><span>Real QR</span><i>✦</i>
-      <span>Instagram-ready</span><i>✦</i><span>Clear prices</span><i>✦</i><span>Live in days</span><i>✦</i>
+      <span>Un solo link</span><i>✦</i><span>Sin app</span><i>✦</i><span>QR real</span><i>✦</i>
+      <span>WhatsApp directo</span><i>✦</i><span>Precios claros</span><i>✦</i><span>Listo en días</span><i>✦</i>
     </div>
     <div class="ticker-set">
-      <span>One link</span><i>✦</i><span>No app</span><i>✦</i><span>Real QR</span><i>✦</i>
-      <span>Instagram-ready</span><i>✦</i><span>Clear prices</span><i>✦</i><span>Live in days</span><i>✦</i>
+      <span>Un solo link</span><i>✦</i><span>Sin app</span><i>✦</i><span>QR real</span><i>✦</i>
+      <span>WhatsApp directo</span><i>✦</i><span>Precios claros</span><i>✦</i><span>Listo en días</span><i>✦</i>
     </div>
   </div>
 </div>
 
-<!-- What it is -->
-<section class="alt" id="what">
+<!-- Qué es -->
+<section class="alt" id="que-es">
   <div class="wrap">
-    <span class="kicker" data-reveal>What it is</span>
-    <h2 data-reveal>Look professional without building a website</h2>
-    <p class="lead" data-reveal>Not ready for a full website? HMU Link gives you a clean, mobile-first page with your services, prices, promotions, hours, location, and reviews — plus buttons so clients can book or reach you in one tap.</p>
+    <span class="kicker" data-reveal>Qué es</span>
+    <h2 data-reveal>Deja de repetir precios por mensaje</h2>
+    <p class="lead" data-reveal>¿«Hola, ¿me pasas la lista de precios?» otra vez? Con HMU Link respondes con un solo link: tu cliente ve servicios, precios, promociones, ubicación, horarios y reseñas, y te escribe o reserva al instante.</p>
     <div class="grid grid--3" data-stagger>
       <div class="card">
         <span class="icon" aria-hidden="true">🔗</span>
-        <h3>One link, everywhere</h3>
-        <p>Drop it in your Instagram bio, Google Business profile, text messages, printed cards, or a QR code at your front desk.</p>
+        <h3>Un link para todo</h3>
+        <p>Compártelo en WhatsApp, Instagram, Google Business, tarjetas, flyers o como código QR en tu local.</p>
       </div>
       <div class="card">
         <span class="icon" aria-hidden="true">📱</span>
-        <h3>No app, no accounts</h3>
-        <p>Your clients don't download anything or sign up. They open the link and see everything they need to book.</p>
+        <h3>Sin app, sin cuentas</h3>
+        <p>Tus clientes no descargan nada ni crean cuenta. Abren el link y ven todo para decidir y escribirte.</p>
       </div>
       <div class="card">
         <span class="icon" aria-hidden="true">✨</span>
-        <h3>No hassle, ever</h3>
-        <p>Just fill out one simple form — no software to learn, no dashboard to manage. We build and publish your page for you.</p>
+        <h3>Sin complicaciones</h3>
+        <p>Llenas un formulario y listo — nosotros creamos y publicamos tu página. No hay ningún sistema que aprender.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Who it's for -->
-<section id="who">
+<!-- Para quién es -->
+<section id="para-quien">
   <div class="wrap">
     <span class="blob blob--ocean" aria-hidden="true" style="width: 260px; height: 230px; top: -60px; right: -120px;"></span>
-    <span class="kicker" data-reveal>Who it's for</span>
-    <h2 data-reveal>Built for small local service businesses</h2>
-    <p class="lead" data-reveal>If your business runs on Instagram DMs, walk-ins, and word of mouth, HMU Link gives you a professional home base without the website project.</p>
+    <span class="kicker" data-reveal>Para quién es</span>
+    <h2 data-reveal>Para negocios que venden por WhatsApp e Instagram</h2>
+    <p class="lead" data-reveal>Si todos los días respondes las mismas preguntas — precios, horarios, ubicación, «¿tienes promociones?» — HMU Link es para ti.</p>
     <div class="grid grid--3" data-stagger>
-      <div class="card"><span class="icon" aria-hidden="true">🧖</span><h3>Spas</h3><p>Massages, facials, rituals, and packages with clear pricing up front.</p></div>
-      <div class="card"><span class="icon" aria-hidden="true">💇</span><h3>Hair salons</h3><p>Cuts, color, treatments, and this month's promo in one place.</p></div>
-      <div class="card"><span class="icon" aria-hidden="true">💈</span><h3>Barbershops</h3><p>Cut, beard, and combo menus with one-tap booking via WhatsApp or your booking link.</p></div>
-      <div class="card"><span class="icon" aria-hidden="true">💅</span><h3>Nails · Lashes · Brows</h3><p>Service menus with time and price — perfect to answer DMs instantly.</p></div>
-      <div class="card"><span class="icon" aria-hidden="true">🌿</span><h3>Wellness &amp; massage</h3><p>Sessions, therapies, and memberships presented professionally.</p></div>
-      <div class="card"><span class="icon" aria-hidden="true">📍</span><h3>Other local services</h3><p>Tours, fitness studios, classes, coaches, pet grooming, tattoo studios, and independent pros.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">🧖</span><h3>Spas</h3><p>Masajes, faciales, rituales y paquetes con precios claros antes de que te escriban.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💇</span><h3>Salones de belleza</h3><p>Cortes, color, tratamientos y la promo del mes en un solo lugar.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💈</span><h3>Barberías</h3><p>Menú de cortes, barba y combos, con reserva directa por WhatsApp.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">💅</span><h3>Uñas · Lashes · Brows</h3><p>Catálogo de servicios con duración y precio, listo para mandar por DM.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">🌿</span><h3>Wellness y masajes</h3><p>Terapias, sesiones y paquetes presentados de forma profesional.</p></div>
+      <div class="card"><span class="icon" aria-hidden="true">📍</span><h3>Otros servicios locales</h3><p>Tours, clases, consultorios, restaurantes, coaches, grooming de mascotas y profesionales independientes.</p></div>
     </div>
   </div>
 </section>
 
-<!-- What's included / not included -->
-<section class="alt" id="included">
+<!-- Qué incluye / qué no incluye -->
+<section class="alt" id="incluye">
   <div class="wrap">
-    <span class="kicker" data-reveal>Clear scope</span>
-    <h2 data-reveal>What's included (and what's not)</h2>
-    <p class="lead" data-reveal>We'd rather be upfront: this is exactly what you get, no fine print.</p>
+    <span class="kicker" data-reveal>Alcance claro</span>
+    <h2 data-reveal>Qué incluye (y qué no)</h2>
+    <p class="lead" data-reveal>Preferimos ser directos: esto es exactamente lo que recibes, sin letras chicas.</p>
     <div class="chip-grid" data-stagger>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Public service page</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Shareable link + real QR code</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>WhatsApp, Instagram, Maps &amp; Reviews buttons</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Services organized by category</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Featured promo or package</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>1 free revision included</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Página digital pública</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Link + código QR real compartible</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Botones WhatsApp, Instagram, Maps y Reviews</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Servicios organizados por categoría</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Promoción o paquete destacado</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>1 corrección incluida</span>
     </div>
-    <p class="not-included" data-reveal>No dashboards, no logins, no built-in payments or booking system — your clients reach you directly through WhatsApp, Instagram, or Maps.</p>
+    <p class="not-included" data-reveal>Sin dashboards, sin logins, sin sistema de pagos o reservas integrado — tus clientes te contactan directo por WhatsApp, Instagram o Maps.</p>
   </div>
 </section>
 
-<!-- Visual styles -->
-<section id="styles">
+<!-- Estilos visuales -->
+<section id="estilos">
   <div class="wrap">
     <span class="blob blob--pink" aria-hidden="true" style="width: 260px; height: 230px; top: -50px; right: -110px;"></span>
-    <span class="kicker" data-reveal>Visual styles</span>
-    <h2 data-reveal>12 curated styles, each with a live example</h2>
-    <p class="lead" data-reveal>Pick one of these 12 styles and your page looks polished from day one. Filter by the kind of business you run, or open any example — they're real published pages with fictional data.</p>
-    <div class="filter-pills" data-reveal role="group" aria-label="Filter styles by category">
-      <button class="pill is-active" data-filter="all" type="button">All styles</button>
-      <button class="pill" data-filter="beauty" type="button">Beauty &amp; Wellness</button>
-      <button class="pill" data-filter="fitness" type="button">Fitness &amp; Active</button>
-      <button class="pill" data-filter="food" type="button">Food &amp; Hospitality</button>
-      <button class="pill" data-filter="creative" type="button">Creative &amp; Services</button>
+    <span class="kicker" data-reveal>Estilos visuales</span>
+    <h2 data-reveal>12 estilos cerrados, cada uno con demo real</h2>
+    <p class="lead" data-reveal>Eliges uno de estos 12 estilos y tu página se ve profesional desde el primer día. Filtra por el tipo de negocio que tienes, o abre cualquier demo: son páginas reales publicadas, con datos ficticios.</p>
+    <div class="filter-pills" data-reveal role="group" aria-label="Filtrar estilos por categoría">
+      <button class="pill is-active" data-filter="all" type="button">Todos</button>
+      <button class="pill" data-filter="beauty" type="button">Belleza y Wellness</button>
+      <button class="pill" data-filter="fitness" type="button">Fitness y Activo</button>
+      <button class="pill" data-filter="food" type="button">Comida y Hospitalidad</button>
+      <button class="pill" data-filter="creative" type="button">Creativo y Servicios</button>
     </div>
     <div class="grid grid--3" id="style-grid" data-stagger>
-      <a class="card style-card" data-category="beauty" href="demos/bella-spa/" style="--th-b:#17171a; --th-a:#c9a24b;">
+      <a class="card style-card" data-category="beauty" href="../demos/bella-spa/" style="--th-b:#17171a; --th-a:#c9a24b;">
         <div class="thumb">
-          <img src="assets/previews/black-gold.jpg" alt="Real screenshot of the Bella Spa demo, Black Gold style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/black-gold.jpg" alt="Captura real de la demo Bella Spa, estilo Black Gold" width="390" height="520" loading="lazy">
         </div>
         <h3>Black Gold</h3>
-        <p>Dark elegance with gold accents. Premium, sophisticated presence.</p>
-        <p class="ideal"><strong>Great for:</strong> premium spas, high-end barbershops, exclusive studios.</p>
-        <span class="demo-link">View example: Bella Spa <span class="arr" aria-hidden="true">→</span></span>
+        <p>Elegancia oscura con acentos dorados. Presencia premium y sofisticada.</p>
+        <p class="ideal"><strong>Ideal para:</strong> spas premium, barberías de alta gama, estudios exclusivos.</p>
+        <span class="demo-link">Ver demo: Bella Spa <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="beauty" href="demos/studio-blush/" style="--th-b:#fdf3f4; --th-a:#c96f7d;">
+      <a class="card style-card" data-category="beauty" href="../demos/studio-blush/" style="--th-b:#fdf3f4; --th-a:#c96f7d;">
         <div class="thumb">
-          <img src="assets/previews/soft-blush.jpg" alt="Real screenshot of the Studio Blush demo, Soft Blush style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/soft-blush.jpg" alt="Captura real de la demo Studio Blush, estilo Soft Blush" width="390" height="520" loading="lazy">
         </div>
         <h3>Soft Blush</h3>
-        <p>Soft, delicate pink tones. Warm, welcoming, and feminine.</p>
-        <p class="ideal"><strong>Great for:</strong> hair salons, lash and brow studios, facials.</p>
-        <span class="demo-link">View example: Studio Blush <span class="arr" aria-hidden="true">→</span></span>
+        <p>Tonos rosados suaves y delicados. Cálido, acogedor y femenino.</p>
+        <p class="ideal"><strong>Ideal para:</strong> salones de belleza, estudios de lashes y brows, faciales.</p>
+        <span class="demo-link">Ver demo: Studio Blush <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="beauty" href="demos/north-barber/" style="--th-b:#33373d; --th-a:#9fb2bd;">
+      <a class="card style-card" data-category="beauty" href="../demos/north-barber/" style="--th-b:#33373d; --th-a:#9fb2bd;">
         <div class="thumb">
-          <img src="assets/previews/charcoal-clean.jpg" alt="Real screenshot of the North Barber demo, Charcoal Clean style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/charcoal-clean.jpg" alt="Captura real de la demo North Barber, estilo Charcoal Clean" width="390" height="520" loading="lazy">
         </div>
         <h3>Charcoal Clean</h3>
-        <p>Charcoal gray, understated and direct. Masculine, contemporary look.</p>
-        <p class="ideal"><strong>Great for:</strong> barbershops, men's grooming, tattoo studios.</p>
-        <span class="demo-link">View example: North Barber <span class="arr" aria-hidden="true">→</span></span>
+        <p>Gris carbón, sobrio y directo. Estética masculina y contemporánea.</p>
+        <p class="ideal"><strong>Ideal para:</strong> barberías, grooming masculino, estudios de tatuaje.</p>
+        <span class="demo-link">Ver demo: North Barber <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="beauty" href="demos/glow-nails/" style="--th-b:#f7efe2; --th-a:#a97b3f;">
+      <a class="card style-card" data-category="beauty" href="../demos/glow-nails/" style="--th-b:#f7efe2; --th-a:#a97b3f;">
         <div class="thumb">
-          <img src="assets/previews/warm-sand.jpg" alt="Real screenshot of the Glow Nails demo, Warm Sand style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/warm-sand.jpg" alt="Captura real de la demo Glow Nails, estilo Warm Sand" width="390" height="520" loading="lazy">
         </div>
         <h3>Warm Sand</h3>
-        <p>Sand and earth tones. Natural, warm, and artisanal.</p>
-        <p class="ideal"><strong>Great for:</strong> nail studios, natural beauty, boho spaces.</p>
-        <span class="demo-link">View example: Glow Nails <span class="arr" aria-hidden="true">→</span></span>
+        <p>Tonos arena y tierra. Natural, cálido y artesanal.</p>
+        <p class="ideal"><strong>Ideal para:</strong> estudios de uñas, belleza natural, espacios boho.</p>
+        <span class="demo-link">Ver demo: Glow Nails <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="beauty" href="demos/aqua-wellness/" style="--th-b:#eaf7f8; --th-a:#2f8f96;">
+      <a class="card style-card" data-category="beauty" href="../demos/aqua-wellness/" style="--th-b:#eaf7f8; --th-a:#2f8f96;">
         <div class="thumb">
-          <img src="assets/previews/aqua-clean.jpg" alt="Real screenshot of the Aqua Wellness demo, Aqua Clean style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/aqua-clean.jpg" alt="Captura real de la demo Aqua Wellness, estilo Aqua Clean" width="390" height="520" loading="lazy">
         </div>
         <h3>Aqua Clean</h3>
-        <p>Fresh, clean aqua blues. Communicates hygiene, water, and calm.</p>
-        <p class="ideal"><strong>Great for:</strong> wellness, massage, hydrotherapy, aesthetic clinics.</p>
-        <span class="demo-link">View example: Aqua Wellness <span class="arr" aria-hidden="true">→</span></span>
+        <p>Azules aqua frescos y limpios. Transmite higiene, agua y calma.</p>
+        <p class="ideal"><strong>Ideal para:</strong> wellness, masajes, hidroterapia, clínicas estéticas.</p>
+        <span class="demo-link">Ver demo: Aqua Wellness <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="beauty" href="demos/sage-studio/" style="--th-b:#eef2ea; --th-a:#6d8a63;">
+      <a class="card style-card" data-category="beauty" href="../demos/sage-studio/" style="--th-b:#eef2ea; --th-a:#6d8a63;">
         <div class="thumb">
-          <img src="assets/previews/sage-calm.jpg" alt="Real screenshot of the Sage Studio demo, Sage Calm style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/sage-calm.jpg" alt="Captura real de la demo Sage Studio, estilo Sage Calm" width="390" height="520" loading="lazy">
         </div>
         <h3>Sage Calm</h3>
-        <p>Serene, balanced sage green. Minimal and organic.</p>
-        <p class="ideal"><strong>Great for:</strong> yoga, holistic therapies, meditation, natural wellness.</p>
-        <span class="demo-link">View example: Sage Studio <span class="arr" aria-hidden="true">→</span></span>
+        <p>Verde salvia sereno y equilibrado. Minimalista y orgánico.</p>
+        <p class="ideal"><strong>Ideal para:</strong> yoga, terapias holísticas, meditación, wellness natural.</p>
+        <span class="demo-link">Ver demo: Sage Studio <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="beauty" href="demos/pawsome-grooming/" style="--th-b:#fffaf0; --th-a:#ff9f1c;">
+      <a class="card style-card" data-category="beauty" href="../demos/pawsome-grooming/" style="--th-b:#fffaf0; --th-a:#ff9f1c;">
         <div class="thumb">
-          <img src="assets/previews/sunny-paws.jpg" alt="Real screenshot of the Pawsome Grooming demo, Sunny Paws style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/sunny-paws.jpg" alt="Captura real de la demo Pawsome Grooming, estilo Sunny Paws" width="390" height="520" loading="lazy">
         </div>
         <h3>Sunny Paws</h3>
-        <p>Bright yellow and orange. Playful, friendly, full of energy.</p>
-        <p class="ideal"><strong>Great for:</strong> pet grooming, pet care services.</p>
-        <span class="demo-link">View example: Pawsome Grooming <span class="arr" aria-hidden="true">→</span></span>
+        <p>Amarillo y naranja brillante. Juguetón, amigable y lleno de energía.</p>
+        <p class="ideal"><strong>Ideal para:</strong> pet grooming, servicios para mascotas.</p>
+        <span class="demo-link">Ver demo: Pawsome Grooming <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="fitness" href="demos/pulse-fitness/" style="--th-b:#101214; --th-a:#c6ff3d;">
+      <a class="card style-card" data-category="fitness" href="../demos/pulse-fitness/" style="--th-b:#101214; --th-a:#c6ff3d;">
         <div class="thumb">
-          <img src="assets/previews/electric-slate.jpg" alt="Real screenshot of the Pulse Fitness Studio demo, Electric Slate style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/electric-slate.jpg" alt="Captura real de la demo Pulse Fitness Studio, estilo Electric Slate" width="390" height="520" loading="lazy">
         </div>
         <h3>Electric Slate</h3>
-        <p>Bold charcoal with electric lime accents. High-performance and motivating.</p>
-        <p class="ideal"><strong>Great for:</strong> gyms, fitness studios, personal trainers.</p>
-        <span class="demo-link">View example: Pulse Fitness Studio <span class="arr" aria-hidden="true">→</span></span>
+        <p>Carbón audaz con acentos verde lima eléctrico. Alto rendimiento y motivador.</p>
+        <p class="ideal"><strong>Ideal para:</strong> gimnasios, estudios de fitness, entrenadores personales.</p>
+        <span class="demo-link">Ver demo: Pulse Fitness Studio <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="fitness" href="demos/horizon-tours/" style="--th-b:#f5f1e6; --th-a:#0f6e6e;">
+      <a class="card style-card" data-category="fitness" href="../demos/horizon-tours/" style="--th-b:#f5f1e6; --th-a:#0f6e6e;">
         <div class="thumb">
-          <img src="assets/previews/horizon-teal.jpg" alt="Real screenshot of the Horizon City Tours demo, Horizon Teal style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/horizon-teal.jpg" alt="Captura real de la demo Horizon City Tours, estilo Horizon Teal" width="390" height="520" loading="lazy">
         </div>
         <h3>Horizon Teal</h3>
-        <p>Deep teal with warm sand accents. Adventurous and fresh.</p>
-        <p class="ideal"><strong>Great for:</strong> tours, experiences, outdoor activities.</p>
-        <span class="demo-link">View example: Horizon City Tours <span class="arr" aria-hidden="true">→</span></span>
+        <p>Teal profundo con acentos de arena cálida. Aventurero y fresco.</p>
+        <p class="ideal"><strong>Ideal para:</strong> tours, experiencias, actividades al aire libre.</p>
+        <span class="demo-link">Ver demo: Horizon City Tours <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="food" href="demos/cafe-terra/" style="--th-b:#fbf1e6; --th-a:#b5502f;">
+      <a class="card style-card" data-category="food" href="../demos/cafe-terra/" style="--th-b:#fbf1e6; --th-a:#b5502f;">
         <div class="thumb">
-          <img src="assets/previews/terracotta-warm.jpg" alt="Real screenshot of the Café Terra demo, Terracotta Warm style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/terracotta-warm.jpg" alt="Captura real de la demo Café Terra, estilo Terracotta Warm" width="390" height="520" loading="lazy">
         </div>
         <h3>Terracotta Warm</h3>
-        <p>Deep terracotta and warm cream. Cozy, artisanal, and appetizing.</p>
-        <p class="ideal"><strong>Great for:</strong> restaurants, cafés, food businesses.</p>
-        <span class="demo-link">View example: Café Terra <span class="arr" aria-hidden="true">→</span></span>
+        <p>Terracota profundo y crema cálido. Acogedor, artesanal y apetitoso.</p>
+        <p class="ideal"><strong>Ideal para:</strong> restaurantes, cafés, negocios de comida.</p>
+        <span class="demo-link">Ver demo: Café Terra <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="creative" href="demos/iron-ink-tattoo/" style="--th-b:#0c0c0e; --th-a:#c0203a;">
+      <a class="card style-card" data-category="creative" href="../demos/iron-ink-tattoo/" style="--th-b:#0c0c0e; --th-a:#c0203a;">
         <div class="thumb">
-          <img src="assets/previews/midnight-ink.jpg" alt="Real screenshot of the Iron &amp; Ink Tattoo demo, Midnight Ink style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/midnight-ink.jpg" alt="Captura real de la demo Iron &amp; Ink Tattoo, estilo Midnight Ink" width="390" height="520" loading="lazy">
         </div>
         <h3>Midnight Ink</h3>
-        <p>Deep black with crimson accents. Bold and artistic.</p>
-        <p class="ideal"><strong>Great for:</strong> tattoo studios, alternative grooming.</p>
-        <span class="demo-link">View example: Iron &amp; Ink Tattoo <span class="arr" aria-hidden="true">→</span></span>
+        <p>Negro profundo con acentos carmesí. Audaz y artístico.</p>
+        <p class="ideal"><strong>Ideal para:</strong> estudios de tatuaje, grooming alternativo.</p>
+        <span class="demo-link">Ver demo: Iron &amp; Ink Tattoo <span class="arr" aria-hidden="true">→</span></span>
       </a>
-      <a class="card style-card" data-category="creative" href="demos/clarity-coaching/" style="--th-b:#f7f6f2; --th-a:#1f3a5f;">
+      <a class="card style-card" data-category="creative" href="../demos/clarity-coaching/" style="--th-b:#f7f6f2; --th-a:#1f3a5f;">
         <div class="thumb">
-          <img src="assets/previews/clarity-editorial.jpg" alt="Real screenshot of the Clarity Coaching Co. demo, Clarity Editorial style" width="390" height="520" loading="lazy">
+          <img src="../assets/previews/clarity-editorial.jpg" alt="Captura real de la demo Clarity Coaching Co., estilo Clarity Editorial" width="390" height="520" loading="lazy">
         </div>
         <h3>Clarity Editorial</h3>
-        <p>Navy and cream, minimal and professional.</p>
-        <p class="ideal"><strong>Great for:</strong> coaches, consultants, professional services.</p>
-        <span class="demo-link">View example: Clarity Coaching Co. <span class="arr" aria-hidden="true">→</span></span>
+        <p>Azul marino y crema, minimalista y profesional.</p>
+        <p class="ideal"><strong>Ideal para:</strong> coaches, consultores, servicios profesionales.</p>
+        <span class="demo-link">Ver demo: Clarity Coaching Co. <span class="arr" aria-hidden="true">→</span></span>
       </a>
     </div>
   </div>
 </section>
 
 <!-- Pricing -->
-<div class="pricing-shell" id="pricing">
+<div class="pricing-shell" id="precios">
   <section class="pricing">
     <div class="wrap">
       <span class="blob blob--banana" aria-hidden="true"></span>
       <span class="blob blob--pink" aria-hidden="true"></span>
-      <span class="kicker" data-reveal>Launch pricing · Subject to change</span>
-      <h2 data-reveal>One-time payment, no subscriptions</h2>
-      <p class="lead" data-reveal>This is the planned launch pricing for the US and Canada. Checkout is not live yet — the product is in preparation.</p>
+      <span class="kicker" data-reveal>Precios de lanzamiento · Tentativos</span>
+      <h2 data-reveal>Pago único, sin mensualidades</h2>
+      <p class="lead" data-reveal>Este es el precio de lanzamiento previsto para México. El checkout todavía no está activo: el producto está en preparación.</p>
       <div class="price-single" data-reveal>
         <div class="price-card">
-          <h3>Your HMU Link</h3>
-          <div class="amount"><small>USD</small> <b class="amt" data-count="59">$59</b></div>
+          <h3>Tu HMU Link</h3>
+          <div class="amount"><small>MXN</small> $799</div>
           <ul>
-            <li>1 published service page</li>
-            <li>1 visual style of your choice</li>
-            <li>Featured promotion or package</li>
-            <li>Real QR code + shareable link</li>
-            <li>1 revision included</li>
+            <li>1 página digital publicada</li>
+            <li>1 estilo visual a elegir</li>
+            <li>Paquete o promoción destacada</li>
+            <li>Código QR real + link compartible</li>
+            <li>1 corrección incluida</li>
           </ul>
-          <a class="btn btn--primary" href="#early-access">Get my HMU Link <span class="arr" aria-hidden="true">→</span></a>
+          <a class="btn btn--primary" href="#acceso-anticipado">Quiero mi HMU Link <span aria-hidden="true">→</span></a>
         </div>
       </div>
-      <p class="fine" data-reveal>One-time payment for creating and publishing your page. Need a change later? Extra revisions are just $3. Checkout is not active in this phase — pricing may be adjusted before launch.</p>
+      <p class="fine" data-reveal>Pago único por la creación y publicación de tu página. ¿Necesitas un cambio después? Las correcciones extra cuestan solo $60 MXN. El checkout no está activo en esta fase: los precios pueden ajustarse antes del lanzamiento.</p>
     </div>
   </section>
 </div>
 
-<!-- How it will work -->
-<section id="how">
+<!-- Cómo funcionará -->
+<section id="como-funciona">
   <div class="wrap">
     <span class="blob blob--banana" aria-hidden="true" style="width: 240px; height: 210px; top: 40px; right: -110px; opacity: 0.35;"></span>
-    <span class="kicker" data-reveal>How it will work</span>
-    <h2 data-reveal>From purchase to published page</h2>
-    <p class="lead" data-reveal>This is the flow once the product is available for purchase. Checkout is not active yet in this phase.</p>
+    <span class="kicker" data-reveal>Cómo funcionará</span>
+    <h2 data-reveal>Del pago a tu página publicada</h2>
+    <p class="lead" data-reveal>Así será el flujo cuando el producto esté disponible para compra. En esta fase el checkout todavía no está activo.</p>
     <ol class="steps" data-stagger>
-      <li><b>You pay.</b></li>
-      <li>You fill out the form with your services, prices, and details.</li>
-      <li>We generate your page.</li>
-      <li><b>You get your link and QR code by email</b>, ready to share.</li>
-      <li>Use your included revision whenever you need it.</li>
+      <li><b>Pagas.</b></li>
+      <li>Llenas el formulario con tus servicios, precios y datos.</li>
+      <li>Generamos tu página.</li>
+      <li><b>Recibes tu link y tu código QR por correo</b>, listos para compartir.</li>
+      <li>Usas tu corrección incluida cuando la necesites.</li>
     </ol>
   </div>
 </section>
 
-<!-- Early access -->
-<div class="early-shell" id="early-access">
+<!-- Acceso anticipado -->
+<div class="early-shell" id="acceso-anticipado">
   <section class="early">
-    <img class="mascot-poster" src="assets/brand/mascot-480.png" alt="Linky, the HMU Link mascot" width="480" height="407" loading="lazy" data-reveal>
-    <span class="hero-badge" data-reveal><span class="dot" aria-hidden="true"></span>Coming soon · Early access</span>
-    <h2 data-reveal>Your business, in a link that looks amazing.</h2>
-    <p data-reveal>You can't purchase yet — we're finishing the ordering system. The examples are already real and public. Once checkout goes live, this page is where you'll order your HMU Link at launch pricing.</p>
-    <p data-reveal>In the meantime, browse the examples and picture your business in one of them.</p>
+    <img class="mascot-poster" src="assets/brand/mascot-480.png" alt="Linky, la mascota de HMU Link" width="480" height="407" loading="lazy" data-reveal>
+    <span class="hero-badge" data-reveal><span class="dot" aria-hidden="true"></span>Próximamente · Acceso anticipado</span>
+    <h2 data-reveal>Tu negocio, en un link que se ve increíble.</h2>
+    <p data-reveal>Todavía no puedes comprar: estamos terminando el sistema de pedidos. Las demos ya son reales y públicas. Cuando el checkout esté activo, esta página será el lugar para pedir tu HMU Link con precio de lanzamiento.</p>
+    <p data-reveal>Mientras tanto, explora las demos y ve cómo se vería tu negocio.</p>
     <div class="cta-row" data-reveal>
-      <a class="btn btn--primary" href="#styles">See all 6 examples <span class="arr" aria-hidden="true">→</span></a>
+      <a class="btn btn--primary" href="#estilos">Ver todas las demos <span class="arr" aria-hidden="true">→</span></a>
     </div>
   </section>
 </div>
@@ -948,49 +942,49 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 <!-- FAQ -->
 <section class="alt faq" id="faq">
   <div class="wrap">
-    <span class="kicker" data-reveal>FAQ</span>
-    <h2 data-reveal>Straight answers</h2>
-    <p class="lead" data-reveal>No inflated promises — here's what HMU Link does and doesn't do.</p>
+    <span class="kicker" data-reveal>Preguntas frecuentes</span>
+    <h2 data-reveal>Respuestas directas</h2>
+    <p class="lead" data-reveal>Sin promesas infladas: esto es lo que HMU Link hace y lo que no.</p>
     <div data-stagger>
       <details>
-        <summary>Is it just a QR code?</summary>
-        <div class="fa">No. The QR code is only one way to share your page. What you get is a full service page with your services, prices, promotions, hours, location, and contact buttons — plus a shareable link and the QR code.</div>
+        <summary>¿Es solo un QR?</summary>
+        <div class="fa">No. El QR es solo una de las formas de compartir tu página. Lo que recibes es una página digital completa con tus servicios, precios, promociones, horarios, ubicación y botones de contacto, más un link compartible y el QR.</div>
       </details>
       <details>
-        <summary>Do I need an app?</summary>
-        <div class="fa">No. Neither you nor your clients download anything. Your page works in any browser, on any phone or computer.</div>
+        <summary>¿Necesito una app?</summary>
+        <div class="fa">No. Ni tú ni tus clientes necesitan descargar nada. Tu página funciona en cualquier navegador, desde cualquier celular o computadora.</div>
       </details>
       <details>
-        <summary>Can I use it in my Instagram bio?</summary>
-        <div class="fa">Yes. Your link works perfectly as your Instagram link-in-bio, and you can share it in stories or reply to DMs with it.</div>
+        <summary>¿Cómo lo uso en WhatsApp?</summary>
+        <div class="fa">Mandas tu link en cualquier chat en vez de escribir la lista de precios cada vez, lo pones en tu perfil de WhatsApp Business o en tu estado. Además, tu página incluye un botón para que tus clientes te escriban directo por WhatsApp.</div>
       </details>
       <details>
-        <summary>Can I use it with WhatsApp or texts?</summary>
-        <div class="fa">Yes. Send your link in any chat instead of typing out your price list, and your page includes a WhatsApp button so clients can message you directly.</div>
+        <summary>¿Puedo usarlo en Instagram?</summary>
+        <div class="fa">Sí. Tu link funciona perfecto como «link en bio» de Instagram, y también puedes compartirlo en historias o responder DMs con él.</div>
       </details>
       <details>
-        <summary>Can I change my prices later?</summary>
-        <div class="fa">Yes. Your package includes one free revision. After that, additional changes are billed separately as extra revisions.</div>
+        <summary>¿Puedo cambiar precios después?</summary>
+        <div class="fa">Sí. Tu paquete incluye una corrección sin costo. Después de usarla, los cambios adicionales se cobran aparte como corrección extra.</div>
       </details>
       <details>
-        <summary>Does it include booking?</summary>
-        <div class="fa">Booking and contact happen through WhatsApp, Instagram, Google Maps, or your external booking link (for example, your existing scheduling tool). There's no built-in booking system yet.</div>
+        <summary>¿Incluye reservas?</summary>
+        <div class="fa">La reserva y el contacto se hacen por WhatsApp, Instagram, Google Maps o un link externo tuyo (por ejemplo, tu sistema de citas si ya tienes uno). No hay un sistema interno de reservas todavía.</div>
       </details>
       <details>
-        <summary>Can I pick my own colors?</summary>
-        <div class="fa">You choose from 12 curated visual styles designed to look professional for any business. There's no free-form color picking — that's how we guarantee your page always looks good.</div>
+        <summary>¿Puedo elegir colores?</summary>
+        <div class="fa">Eliges entre 12 estilos visuales cerrados, diseñados para verse profesionales en cualquier negocio. No hay selección libre de colores: así garantizamos que tu página siempre se vea bien.</div>
       </details>
       <details>
-        <summary>Does it work for barbershops?</summary>
-        <div class="fa">Yes. Styles like Charcoal Clean and Black Gold were designed with barbershops and men's grooming in mind. Check out the North Barber example.</div>
+        <summary>¿Sirve para barberías?</summary>
+        <div class="fa">Sí. Estilos como Charcoal Clean y Black Gold están pensados justo para barberías y grooming masculino. Mira la demo de North Barber.</div>
       </details>
       <details>
-        <summary>Does it work for businesses other than salons and spas?</summary>
-        <div class="fa">Yes. It works for any local service business: nails, lashes, massage, tours, fitness studios, classes, coaches, pet grooming, tattoo studios, and independent professionals.</div>
+        <summary>¿Sirve para otros negocios además de spas y salones?</summary>
+        <div class="fa">Sí. Funciona para cualquier negocio local de servicios: uñas, lashes, masajes, tours, clases, consultorios, restaurantes, coaches, grooming de mascotas, tatuajes y profesionales independientes.</div>
       </details>
       <details>
-        <summary>When can I buy it?</summary>
-        <div class="fa">The product is in preparation. The examples are already public and real; checkout will be enabled in an upcoming phase. The pricing shown is tentative launch pricing.</div>
+        <summary>¿Cuándo estará disponible para compra?</summary>
+        <div class="fa">El producto está en preparación. Las demos ya son públicas y reales; el checkout se activará en una fase próxima. Los precios mostrados son tentativos de lanzamiento.</div>
       </details>
     </div>
   </div>
@@ -1004,25 +998,25 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <div class="cols">
       <div>
         <span class="logo"><img class="logo-mascot" src="assets/brand/mascot-96.png" alt="" width="96" height="81"><span class="hmu">HMU</span><span class="lnk">Link</span><span class="pin" aria-hidden="true"></span></span>
-        <p style="margin-top: 10px; max-width: 34ch;">Connect your business. Your digital service page in one link.</p>
+        <p style="margin-top: 10px; max-width: 34ch;">Conecta tu negocio. Tu página digital de servicios en un solo link.</p>
       </div>
       <div>
-        <h4>Explore</h4>
+        <h4>Explora</h4>
         <ul>
-          <li><a href="#what">What it is</a></li>
-          <li><a href="#styles">Styles &amp; examples</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#que-es">Qué es</a></li>
+          <li><a href="#estilos">Estilos y demos</a></li>
+          <li><a href="#precios">Precios</a></li>
+          <li><a href="#faq">Preguntas frecuentes</a></li>
         </ul>
       </div>
       <div>
-        <h4>Language</h4>
+        <h4>Idioma</h4>
         <ul>
-          <li><a href="es/" hreflang="es-MX" lang="es-MX">Español (México)</a></li>
+          <li><a href="../" hreflang="en-US" lang="en-US">English (USA/Canada)</a></li>
         </ul>
       </div>
     </div>
-    <p class="note">Product in progress · Public demos use fictional data.</p>
+    <p class="note">Producto en construcción · Las demos públicas usan datos ficticios.</p>
   </div>
 </footer>
 

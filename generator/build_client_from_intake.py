@@ -94,8 +94,6 @@ def parse_featured(featured_text: str) -> dict | None:
     featured = {"name": name[:120], "description": " ".join(lines[1:])[:300]}
     if price_label:
         featured["price_label"] = price_label
-    if not featured["description"]:
-        featured["description"] = name[:300]
     return featured
 
 
@@ -106,6 +104,22 @@ def url_or_none(value: str) -> str | None:
     if not v.lower().startswith(("http://", "https://")):
         v = "https://" + v
     return v
+
+
+def social_url(value: str, base: str, handle_prefix: str = "") -> str | None:
+    """Accepts a full URL, a domain path (instagram.com/x) or a bare handle
+    (@unveilmexico / unveilmexico) and returns a valid profile URL."""
+    v = (value or "").strip()
+    if not v:
+        return None
+    if v.lower().startswith(("http://", "https://")):
+        return v
+    if "." in v.split("/")[0]:  # looks like a domain: instagram.com/x, www...
+        return "https://" + v
+    handle = v.lstrip("@").strip("/").split("/")[0]
+    if not handle:
+        return None
+    return f"https://{base}/{handle_prefix}{handle}"
 
 
 def main() -> int:
@@ -165,9 +179,9 @@ def main() -> int:
         "whatsapp": str(payload.get("whatsapp", "")).strip() or None,
         "phone": str(payload.get("phone", "")).strip() or None,
         "public_email": str(payload.get("public_email", "")).strip() or None,
-        "instagram": url_or_none(payload.get("instagram", "")),
-        "facebook": url_or_none(payload.get("facebook", "")),
-        "tiktok": url_or_none(payload.get("tiktok", "")),
+        "instagram": social_url(payload.get("instagram", ""), "instagram.com"),
+        "facebook": social_url(payload.get("facebook", ""), "facebook.com"),
+        "tiktok": social_url(payload.get("tiktok", ""), "www.tiktok.com", handle_prefix="@"),
         "website": url_or_none(payload.get("website", "")),
         "booking_url": url_or_none(payload.get("booking_url", "")),
         "google_maps_url": url_or_none(payload.get("google_maps_url", "")),

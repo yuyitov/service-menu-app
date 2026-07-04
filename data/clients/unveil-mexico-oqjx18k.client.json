@@ -8,7 +8,7 @@
   "whatsapp": "+523221553952",
   "phone": "+523221553952",
   "public_email": "casinosmanager.mx@gmail.com",
-  "instagram": "https://@unveilmexico",
+  "instagram": "https://instagram.com/unveilmexico",
   "facebook": "https://www.facebook.com/UnveilMexicoExperiences/",
   "tiktok": null,
   "website": "https://www.unveilmexico.com",
@@ -38,7 +38,7 @@
       ],
       "featured_package": {
         "name": "$1,800 MX por persona",
-        "description": "$1,800 MX por persona"
+        "description": ""
       }
     },
     "en": {
@@ -63,7 +63,7 @@
       ],
       "featured_package": {
         "name": "$1,800 MX por persona",
-        "description": "$1,800 MX por persona"
+        "description": ""
       }
     }
   }

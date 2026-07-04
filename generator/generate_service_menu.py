@@ -423,10 +423,12 @@ def build_featured(payload: dict, s: dict) -> str:
     desc = esc(pkg.get("description"))
     price = pkg.get("price_label")
     price_html = f'<div class="featured__price">{esc(price)}</div>' if price else ""
+    # Sin descripción (o igual al nombre) no se repite el texto.
+    desc_html = f'<p class="featured__desc">{desc}</p>' if desc and desc != name else ""
     return (
         f'<section class="section featured"><div class="featured__badge">{s["featured_badge"]}</div>'
         f'<h2 class="featured__name">{name}</h2>'
-        f'<p class="featured__desc">{desc}</p>{price_html}</section>'
+        f'{desc_html}{price_html}</section>'
     )
 
 
@@ -494,11 +496,12 @@ def make_qr_svg(public_url: str) -> str:
 
 
 def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
-    """"Share this page" section: QR image + visible link + open button.
+    """"Share this page" section: QR image + visible link.
 
     The QR references the static asset written next to the page (qr.svg) or at
     the client root (../qr.svg for alternate-language pages). No JavaScript,
-    no external scripts, no tracking.
+    no external scripts, no tracking. No "open page" button: on the page
+    itself it would just reload the same page.
     """
     href = safe_href(public_url)
     shown = esc(public_url)
@@ -509,12 +512,6 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
         if href
         else f'<span class="link__url">{shown}</span>'
     )
-    open_btn = (
-        f'<a class="btn btn--wa qr__open" href="{href}" target="_blank" '
-        f'rel="noopener noreferrer">{s["share_open"]}</a>'
-        if href
-        else ""
-    )
     return (
         '<section class="section qr" id="compartir">'
         f'<h2 class="section__title">{s["share_title"]}</h2>'
@@ -522,7 +519,6 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
         f'<div class="qr__box"><img class="qr__img" src="{esc(qr_src)}" '
         f'alt="{alt}" width="180" height="180"></div>'
         f'<p class="qr__url-line">{link_line}</p>'
-        f'{open_btn}'
         "</section>"
     )
 

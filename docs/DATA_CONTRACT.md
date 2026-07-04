@@ -29,7 +29,7 @@ Respuesta del formulario Tally que el cliente llena post-pago.
 | `business_name` | string | |
 | `service_type` | string | Ej: "salon", "spa", "barbershop". |
 | `short_description` | string | |
-| `brand_style` | enum | Uno de los 6 estilos cerrados. Ver [Estilos visuales](#estilos-visuales-brand_style). |
+| `brand_style` | enum | Uno de los 12 estilos cerrados. Ver [Estilos visuales](#estilos-visuales-brand_style). |
 | `primary_image_url` | string (URL) \| null | Opcional. Si ausente, el generador usa placeholder/template. |
 | `logo_url` | string (URL) \| null | Opcional. Si ausente, el generador usa placeholder/template. |
 | `service_categories` | array<string> | |
@@ -91,7 +91,7 @@ dejar la sección rota o vacía.
 
 #### Estilos visuales (`brand_style`)
 
-`brand_style` acepta **exactamente uno** de estos 6 estilos cerrados y aprobados. No se
+`brand_style` acepta **exactamente uno** de estos 12 estilos cerrados y aprobados. No se
 permiten colores libres ni personalización fuera de esta lista: la personalización visual
 es siempre por estilo cerrado, para mantener el producto automatizable y consistente.
 
@@ -103,6 +103,12 @@ es siempre por estilo cerrado, para mantener el producto automatizable y consist
 | `warm-sand` | Cálido, cercano, boutique | Nails, salones, wellness cálido | Arena / beige / crema + terracota |
 | `aqua-clean` | Limpio, fresco, moderno | Wellness, servicios neutrales, negocios modernos | Blanco / gris muy claro + aqua / turquesa |
 | `sage-calm` | Natural, relajante, orgánico | Wellness, yoga, masajes, terapias holísticas | Salvia / marfil / verde suave |
+| `electric-slate` | Enérgico, audaz, alto rendimiento | Fitness, gimnasios, entrenamiento | Carbón oscuro + verde lima eléctrico |
+| `terracotta-warm` | Acogedor, artesanal, sabroso | Restaurantes, cafés, hospitalidad | Terracota profundo + crema cálido |
+| `sunny-paws` | Alegre, juguetón, amigable | Pet grooming, servicios para mascotas | Amarillo sol + naranja + blanco cálido |
+| `midnight-ink` | Audaz, artístico, underground | Estudios de tatuaje, grooming alternativo | Negro profundo + carmesí + acero |
+| `clarity-editorial` | Profesional, minimal, confiable | Coaches, consultores, servicios profesionales | Azul marino + crema + gris cálido |
+| `horizon-teal` | Aventurero, fresco, expansivo | Tours, experiencias, actividades al aire libre | Teal profundo + arena cálida |
 
 `aqua-clean` reemplaza la idea previa de `clean-blue`. Los estilos base anteriores
 (`clean` / `warm` / `premium`) quedan **obsoletos** y ya no son valores válidos.
@@ -118,7 +124,7 @@ interno (sin `payment_intent_id`, sin `customer_email` completo, etc.).
 | `public_slug` | string | Slug único usado en la URL pública. |
 | `business_name` | string | |
 | `short_description` | string | |
-| `brand_style` | enum | Uno de los 6 estilos cerrados. Ver [Estilos visuales](#estilos-visuales-brand_style). |
+| `brand_style` | enum | Uno de los 12 estilos cerrados. Ver [Estilos visuales](#estilos-visuales-brand_style). |
 | `primary_image_url` | string (URL) \| null | Opcional. Ausente → placeholder/template. |
 | `logo_url` | string (URL) \| null | Opcional. Ausente → placeholder/template. |
 | `service_categories` | array<string> | |

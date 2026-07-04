@@ -106,6 +106,47 @@ el usuario.
 - Solo visual/branding estático: sin JS, sin assets externos, sin cambios de copy
   estratégico, precios ni arquitectura.
 
+## Phase 4E — Landing elevada + reestructura por idioma (pendiente de commit)
+
+- Rediseño visual elevado de las landings: tipografía Fraunces/Outfit (Google Fonts),
+  animaciones de scroll-reveal, ticker, mockup de teléfono en el hero y
+  micro-interacciones en CTAs. Sigue sin backend, sin forms reales, sin
+  analytics/tracking.
+- Reestructura de arquitectura: se elimina la portada/selector de mercado intermedio.
+  `/` pasa a ser la landing por default (inglés, USD) y `/mx/` se renombra a `/es/`
+  (español, MXN). Un botón de idioma en header y footer navega entre ambas. `/mx/` y
+  `/us/` quedan eliminadas sin redirects (el producto aún no lanza).
+- La sección "Estilos visuales" reemplaza los mockups CSS abstractos por capturas
+  reales (`public/assets/previews/`) de las 6 demos ya publicadas, para que el
+  cliente vea exactamente qué recibiría al abrir su link o escanear su QR.
+- Pendiente de commit y revisión visual antes de publicar.
+
+## Phase 4F — Copy, densidad de info, 12 estilos, pricing único y animación (pendiente de commit)
+
+- Copy: hero de `/` deja de liderar con WhatsApp ("Everything your clients ask by
+  call, text, or DM"); `/es/` no cambia (WhatsApp sí domina en México). Tercera
+  tarjeta de "Qué es" pasa de "sin dashboard" a "Sin complicaciones"/"No hassle,
+  ever". Pasos de "Cómo funciona" bajan de 6 a 5.
+- La cinta amarilla del ticker se endereza (ya no está inclinada).
+- La sección "Qué incluye" pasa de un comparativo de dos columnas (~19 líneas) a 6
+  chips compactos + 1 párrafo de exclusiones.
+- Pricing pasa de dos niveles (Founder/Standard) a **un solo precio** (USD $59 /
+  MXN $799, pago único); la corrección extra baja de USD $15–25 / MXN $250–400 a
+  ~USD $3 / ~MXN $60.
+- De 6 a **12 estilos visuales cerrados**: se agregan `electric-slate` (fitness),
+  `terracotta-warm` (restaurantes), `sunny-paws` (pet grooming), `midnight-ink`
+  (tatuajes), `clarity-editorial` (coaches/consultores) y `horizon-teal` (tours),
+  cada uno con su paleta (`generator/styles/`), payload demo (`data/demos/`) y
+  captura real (`public/assets/previews/`). La sección de estilos agrega pills de
+  filtro por categoría (Belleza y Wellness / Fitness y Activo / Comida y
+  Hospitalidad / Creativo y Servicios).
+- Animación premium sin dependencias nuevas (sin GSAP/Lottie): kinetic typography
+  en el H1 del hero, parallax scrub de blobs ligado al scroll, tilt 3D con cursor
+  extendido a tarjetas y miniaturas de estilos, checkmarks con line-draw SVG, y
+  micro-interacciones en botones. Todo vía CSS + el mismo `<script>` inline ya
+  existente; `prefers-reduced-motion` sigue desactivando todo.
+- Pendiente de commit y revisión visual antes de publicar.
+
 ## Phase 5 — Stripe/Tally
 
 - Conectar Stripe Payment Link real y su webhook.

@@ -1,0 +1,54 @@
+{
+  "public_slug": "iron-ink-tattoo",
+  "public_url": "https://yuyitov.github.io/service-menu-app/demos/iron-ink-tattoo/",
+  "business_name": "Iron & Ink Tattoo",
+  "short_description": "Tatuaje personalizado, trazo limpio, cero prisa 🖤",
+  "brand_style": "midnight-ink",
+  "primary_image_url": null,
+  "logo_url": null,
+  "service_categories": ["Tatuajes", "Piercing", "Retoques"],
+  "services": [
+    {
+      "category": "Tatuajes",
+      "name": "Tatuaje pequeño (hasta 5 cm)",
+      "price_label": "Desde $800 MXN"
+    },
+    {
+      "category": "Tatuajes",
+      "name": "Tatuaje mediano (5–15 cm)",
+      "price_label": "Desde $1,800 MXN"
+    },
+    {
+      "category": "Tatuajes",
+      "name": "Sesión por hora (piezas grandes)",
+      "price_label": "$1,200 MXN/hora"
+    },
+    {
+      "category": "Piercing",
+      "name": "Piercing sencillo",
+      "description": "Incluye joyería básica",
+      "price_label": "$350 MXN"
+    },
+    {
+      "category": "Retoques",
+      "name": "Retoque (dentro de 3 meses)",
+      "price_label": "$300 MXN"
+    }
+  ],
+  "featured_package": {
+    "name": "Consulta + diseño personalizado",
+    "description": "Diseño exclusivo basado en tu idea, sin costo si te tatúas con nosotros",
+    "price_label": "Consultar"
+  },
+  "whatsapp": "+52 55 5678 9012",
+  "instagram": "https://instagram.com/ironink.demo",
+  "google_maps_url": "https://maps.google.com/?q=Iron+Ink+Tattoo+Demo",
+  "address": "Calle Génova 55, Zona Rosa, CDMX",
+  "opening_hours_text": "Mar–Dom 13:00–21:00 · Lun cerrado",
+  "google_reviews_url": "https://g.page/r/iron-ink-demo/review",
+  "policies": [
+    "Mayores de 18 años, o menores con tutor presente.",
+    "Depósito no reembolsable para apartar cita.",
+    "Trae identificación oficial el día de tu cita."
+  ]
+}

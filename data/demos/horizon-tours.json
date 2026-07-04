@@ -1,0 +1,51 @@
+{
+  "public_slug": "horizon-tours",
+  "public_url": "https://yuyitov.github.io/service-menu-app/demos/horizon-tours/",
+  "business_name": "Horizon City Tours",
+  "short_description": "Explora la ciudad como local, no como turista 🧭",
+  "brand_style": "horizon-teal",
+  "primary_image_url": null,
+  "logo_url": null,
+  "service_categories": ["Tours a pie", "Experiencias", "Privados"],
+  "services": [
+    {
+      "category": "Tours a pie",
+      "name": "Centro Histórico esencial",
+      "description": "3 horas, grupo compartido",
+      "price_label": "$350 MXN"
+    },
+    {
+      "category": "Tours a pie",
+      "name": "Ruta de mercados y sabores",
+      "description": "Incluye 4 degustaciones",
+      "price_label": "$550 MXN"
+    },
+    {
+      "category": "Experiencias",
+      "name": "Bici nocturna por la ciudad",
+      "price_label": "$450 MXN"
+    },
+    {
+      "category": "Privados",
+      "name": "Tour privado a medida",
+      "description": "Hasta 6 personas, ruta personalizada",
+      "price_label": "Desde $2,200 MXN"
+    }
+  ],
+  "featured_package": {
+    "name": "Día completo: Historia + Sabores",
+    "description": "Tour matutino + ruta de mercados + transporte incluido",
+    "price_label": "$780 MXN"
+  },
+  "whatsapp": "+52 55 7890 1234",
+  "instagram": "https://instagram.com/horizontours.demo",
+  "google_maps_url": "https://maps.google.com/?q=Horizon+City+Tours+Demo",
+  "address": "Punto de encuentro: Zócalo, CDMX (confirmamos por WhatsApp)",
+  "opening_hours_text": "Todos los días, salidas 9:00 y 16:00",
+  "google_reviews_url": "https://g.page/r/horizon-tours-demo/review",
+  "policies": [
+    "Reserva con 24 h de anticipación.",
+    "Cancelación gratuita hasta 12 h antes.",
+    "Tours se realizan con cualquier clima, salvo alertas oficiales."
+  ]
+}

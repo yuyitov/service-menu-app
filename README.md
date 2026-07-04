@@ -45,26 +45,26 @@ incluida vía un link de un solo uso.
 
 **Phase 4D — Identidad visual HMU Link aplicada (pendiente de commit/revisión visual).**
 
-Las tres páginas públicas (`/`, `/mx/`, `/us/`) usan la identidad visual oficial de HMU
+Las dos páginas públicas (`/`, `/es/`) usan la identidad visual oficial de HMU
 Link: paleta Bubblegum `#f478b0` / Tangerine `#ffa934` / Ocean Blue `#00a0b5` / Banana
 `#ffef5a` / Avocado `#98c54e` / Bell Pepper `#14704f`, estilo playful + limpio +
 profesional, botones redondeados, blobs decorativos en CSS y logo textual temporal
 ("HMU" en bubblegum + "Link" en ocean + pin tangerine). **Logo final pendiente de
-exportar/aplicar como asset.** Sigue siendo HTML/CSS puro, sin JS ni recursos externos.
+exportar/aplicar como asset.**
 
-**Phase 4C — Marca HMU Link, landings por mercado y dominio custom en preparación.**
+**Phase 4C — Marca HMU Link, landing por idioma y dominio custom en preparación.**
 
-La landing pública usa la marca provisional **HMU Link** y está dividida por mercado:
+La landing pública usa la marca provisional **HMU Link** y está dividida por idioma
+(no hay selector intermedio; cada idioma es directamente su página):
 
 | Ruta | Contenido |
 |---|---|
-| `/` (`public/index.html`) | Portada/selector de mercado (México / USA-Canadá), sin geolocalización ni JS |
-| `/mx/` (`public/mx/index.html`) | Página comercial para México, en español, WhatsApp-first, precios MXN |
-| `/us/` (`public/us/index.html`) | Página comercial para USA/Canadá, en inglés, precios USD |
+| `/` (`public/index.html`) | Landing por default, en inglés, precios USD (mercado USA/Canadá) |
+| `/es/` (`public/es/index.html`) | Landing en español, precios MXN, WhatsApp-first (mercado México) |
 
-Las tres páginas son HTML/CSS puro: sin JavaScript, sin fonts ni imágenes externas, sin
-analytics y sin formularios reales. Los precios mostrados son **de lanzamiento y
-tentativos**; el checkout no está activo.
+Un botón de idioma en el header/footer navega entre ambas. Las dos páginas son
+HTML/CSS estático: sin analytics y sin formularios reales. Los precios mostrados son
+**de lanzamiento y tentativos**; el checkout no está activo.
 
 **Dominio custom:** se compró `hmulink.com` en Cloudflare. El dominio principal será
 `www.hmulink.com` (apex redirigiendo a www). **Aún no está activo**: falta crear los
@@ -73,15 +73,16 @@ registros DNS en Cloudflare y configurar el custom domain en GitHub Pages (ver
 tanto todo se sirve desde `https://yuyitov.github.io/service-menu-app/` y los QR de las
 demos siguen apuntando a esas URLs.
 
-Phase 0 (documentación) y Phase 1 (generador + 6 estilos) están aprobadas. El generador
+Phase 0 (documentación) y Phase 1 (generador + estilos) están aprobadas. El generador
 convierte un payload `service_menu_payload_public` (JSON dummy) en una página pública
-mobile-first, en **6 estilos visuales cerrados**: `black-gold`, `soft-blush`,
-`charcoal-clean`, `warm-sand`, `aqua-clean`, `sage-calm`. Sin colores libres; la
-personalización es siempre por estilo cerrado.
+mobile-first, en **12 estilos visuales cerrados**: `black-gold`, `soft-blush`,
+`charcoal-clean`, `warm-sand`, `aqua-clean`, `sage-calm`, `electric-slate`,
+`terracotta-warm`, `sunny-paws`, `midnight-ink`, `clarity-editorial`, `horizon-teal`.
+Sin colores libres; la personalización es siempre por estilo cerrado.
 
 Phase 2 agrega un **QR real estático** (`qr.svg`) por demo, apuntando al `public_url`, más
 una sección "Comparte esta página" (QR + link visible + botón "Abrir página"). Un workflow
-de GitHub Actions **valida** la generación de las 6 demos en cada push/PR.
+de GitHub Actions **valida** la generación de las 12 demos en cada push/PR.
 
 Phase 3A conectó el repo a GitHub (`yuyitov/service-menu-app`) y validó el workflow de CI.
 Phase 3B publica la carpeta `public/` en **GitHub Pages** vía un workflow dedicado
@@ -106,6 +107,12 @@ Base: `https://yuyitov.github.io/service-menu-app/`
 | Glow Nails | https://yuyitov.github.io/service-menu-app/demos/glow-nails/ |
 | Aqua Wellness | https://yuyitov.github.io/service-menu-app/demos/aqua-wellness/ |
 | Sage Studio | https://yuyitov.github.io/service-menu-app/demos/sage-studio/ |
+| Pulse Fitness Studio | https://yuyitov.github.io/service-menu-app/demos/pulse-fitness/ |
+| Café Terra | https://yuyitov.github.io/service-menu-app/demos/cafe-terra/ |
+| Pawsome Grooming | https://yuyitov.github.io/service-menu-app/demos/pawsome-grooming/ |
+| Iron & Ink Tattoo | https://yuyitov.github.io/service-menu-app/demos/iron-ink-tattoo/ |
+| Clarity Coaching Co. | https://yuyitov.github.io/service-menu-app/demos/clarity-coaching/ |
+| Horizon City Tours | https://yuyitov.github.io/service-menu-app/demos/horizon-tours/ |
 
 El QR de cada demo está en `.../demos/<slug>/qr.svg` y codifica la URL pública de esa demo.
 
@@ -121,7 +128,7 @@ Requiere Python 3 y una dependencia ligera (`segno`, Python puro, para el QR SVG
 # 1) Instalar dependencias
 pip install -r requirements.txt
 
-# 2) Generar las 6 demos (data/demos/*.json) en public/demos/{slug}/
+# 2) Generar las 12 demos (data/demos/*.json) en public/demos/{slug}/
 python generator/generate_service_menu.py
 
 # O generar payloads específicos
@@ -147,9 +154,9 @@ generator/
   styles/                    # 1 paleta CSS por estilo cerrado (6 archivos)
 data/demos/                  # payloads dummy (1 por estilo: bella-spa, studio-blush,
                              #   north-barber, glow-nails, aqua-wellness, sage-studio)
-public/index.html            # portada/selector de mercado HMU Link (sin JS)
-public/mx/index.html         # landing comercial México (español, MXN)
-public/us/index.html         # landing comercial USA/Canadá (inglés, USD)
+public/index.html            # landing HMU Link por default (inglés, USD)
+public/es/index.html         # landing HMU Link en español (México, MXN)
+public/assets/previews/      # capturas reales de las 6 demos (usadas en ambas landings)
 public/demos/                # salida generada (index.html + qr.svg por slug)
 requirements.txt             # dependencia fijada (segno)
 .github/workflows/           # generate-demos.yml (valida en push/PR)

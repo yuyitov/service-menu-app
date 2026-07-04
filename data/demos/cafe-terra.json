@@ -1,0 +1,55 @@
+{
+  "public_slug": "cafe-terra",
+  "public_url": "https://yuyitov.github.io/service-menu-app/demos/cafe-terra/",
+  "business_name": "Café Terra",
+  "short_description": "Café de especialidad y cocina de temporada 🌿",
+  "brand_style": "terracotta-warm",
+  "primary_image_url": null,
+  "logo_url": null,
+  "service_categories": ["Café", "Desayunos", "Postres"],
+  "services": [
+    {
+      "category": "Café",
+      "name": "Espresso",
+      "price_label": "$45 MXN"
+    },
+    {
+      "category": "Café",
+      "name": "Latte de temporada",
+      "description": "Con jarabe artesanal del mes",
+      "price_label": "$68 MXN"
+    },
+    {
+      "category": "Desayunos",
+      "name": "Chilaquiles verdes",
+      "price_label": "$135 MXN"
+    },
+    {
+      "category": "Desayunos",
+      "name": "Avena overnight",
+      "description": "Con fruta de temporada y granola casera",
+      "price_label": "$95 MXN"
+    },
+    {
+      "category": "Postres",
+      "name": "Pan de elote",
+      "price_label": "$55 MXN"
+    }
+  ],
+  "featured_package": {
+    "name": "Brunch de fin de semana",
+    "description": "Bebida + platillo principal + postre, sábados y domingos",
+    "price_label": "$220 MXN"
+  },
+  "whatsapp": "+52 55 3456 7890",
+  "instagram": "https://instagram.com/cafeterra.demo",
+  "google_maps_url": "https://maps.google.com/?q=Cafe+Terra+Demo",
+  "address": "Calle Orizaba 88, Col. Roma Norte, CDMX",
+  "opening_hours_text": "Mar–Dom 8:00–18:00 · Lun cerrado",
+  "google_reviews_url": "https://g.page/r/cafe-terra-demo/review",
+  "policies": [
+    "Reservaciones para grupos de 6+ personas.",
+    "Se acepta un perro por mesa en terraza.",
+    "Wifi disponible, sin enchufes en horas pico."
+  ]
+}

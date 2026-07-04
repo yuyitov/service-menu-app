@@ -1,0 +1,13 @@
+/* electric-slate - energico, audaz, alto rendimiento. Fitness / gimnasios / entrenamiento.
+   Paleta: carbon oscuro + verde lima electrico. */
+:root{
+  --bg:#101214; --card:#1a1d20; --text:#f2f5f2; --muted:#9aa39c;
+  --line:#2a2f32; --accent:#c6ff3d; --accent-ink:#0e1400; --accent-soft:#242b12;
+  --radius:10px; --btn-radius:8px; --badge-radius:6px;
+  --shadow:0 14px 30px rgba(0,0,0,.5);
+  --font:"Arial Black","Segoe UI",sans-serif; --heading-font:"Arial Black","Segoe UI",sans-serif;
+  --heading-spacing:.02em; --tagline-style:normal;
+  --hero-grad:linear-gradient(135deg,#1a1d20,#0c0d0e); --hero-ink:#c6ff3d;
+  --logo-bg:#c6ff3d; --logo-ink:#0e1400; --logo-border:transparent;
+  --featured-bg:#20260f; --qr-bg:#151718;
+}

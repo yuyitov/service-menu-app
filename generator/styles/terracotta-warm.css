@@ -1,0 +1,13 @@
+/* terracotta-warm - acogedor, artesanal, sabroso. Restaurantes / cafes / hospitalidad.
+   Paleta: terracota profundo + crema calido + acento oliva. */
+:root{
+  --bg:#fbf1e6; --card:#fffaf4; --text:#43281c; --muted:#8a6a54;
+  --line:#f0ddc9; --accent:#b5502f; --accent-ink:#fff8f0; --accent-soft:#f6e2d2;
+  --radius:16px; --btn-radius:999px; --badge-radius:999px;
+  --shadow:0 8px 22px rgba(140,60,30,.14);
+  --font:"Georgia","Segoe UI",serif; --heading-font:"Georgia",serif;
+  --heading-spacing:.01em; --tagline-style:italic;
+  --hero-grad:linear-gradient(135deg,#f6e2d2,#eec49f); --hero-ink:#8a3a1f;
+  --logo-bg:#b5502f; --logo-ink:#fff8f0; --logo-border:transparent;
+  --featured-bg:#f0dcc4; --qr-bg:#fffaf4;
+}

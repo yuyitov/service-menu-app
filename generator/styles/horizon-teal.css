@@ -1,0 +1,13 @@
+/* horizon-teal - aventurero, fresco, expansivo. Tours / experiencias / actividades al aire libre.
+   Paleta: teal profundo + arena calida. */
+:root{
+  --bg:#f5f1e6; --card:#ffffff; --text:#0f2e2e; --muted:#5c7876;
+  --line:#e3dcc7; --accent:#0f6e6e; --accent-ink:#ffffff; --accent-soft:#dcece9;
+  --radius:14px; --btn-radius:999px; --badge-radius:999px;
+  --shadow:0 8px 22px rgba(15,110,110,.12);
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; --heading-font:"Georgia",serif;
+  --heading-spacing:.01em; --tagline-style:italic;
+  --hero-grad:linear-gradient(135deg,#dcece9,#bfe0da); --hero-ink:#0f6e6e;
+  --logo-bg:#0f6e6e; --logo-ink:#ffffff; --logo-border:transparent;
+  --featured-bg:#dcece9; --qr-bg:#fbf9f2;
+}

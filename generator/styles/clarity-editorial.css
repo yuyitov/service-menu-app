@@ -1,0 +1,13 @@
+/* clarity-editorial - profesional, minimal, confiable. Coaches / consultores / servicios profesionales.
+   Paleta: azul marino + crema + gris calido. */
+:root{
+  --bg:#f7f6f2; --card:#ffffff; --text:#1e2733; --muted:#697485;
+  --line:#e4e2da; --accent:#1f3a5f; --accent-ink:#ffffff; --accent-soft:#e6ebf1;
+  --radius:8px; --btn-radius:6px; --badge-radius:4px;
+  --shadow:0 6px 18px rgba(30,40,60,.08);
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; --heading-font:"Georgia",serif;
+  --heading-spacing:.01em; --tagline-style:normal;
+  --hero-grad:linear-gradient(135deg,#e6ebf1,#d3dce7); --hero-ink:#1f3a5f;
+  --logo-bg:#1f3a5f; --logo-ink:#ffffff; --logo-border:transparent;
+  --featured-bg:#e6ebf1; --qr-bg:#fbfaf7;
+}

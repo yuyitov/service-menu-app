@@ -1,6 +1,6 @@
 name: generate-demos
 
-# Phase 2: valida que el generador produce las 6 demos (HTML + QR SVG) sin error.
+# Phase 2: valida que el generador produce las 12 demos (HTML + QR SVG) sin error.
 # NO publica a GitHub Pages, NO usa secrets, NO depende de MyGuest.
 
 on:
@@ -30,13 +30,13 @@ jobs:
             pip install -r requirements.txt
           fi
 
-      - name: Generate the 6 demos
+      - name: Generate the 12 demos
         run: python generator/generate_service_menu.py
 
       - name: Verify expected outputs exist (index.html + qr.svg per demo)
         run: |
           set -e
-          demos="bella-spa studio-blush north-barber glow-nails aqua-wellness sage-studio"
+          demos="bella-spa studio-blush north-barber glow-nails aqua-wellness sage-studio pulse-fitness cafe-terra pawsome-grooming iron-ink-tattoo clarity-coaching horizon-tours"
           missing=0
           for slug in $demos; do
             for asset in index.html qr.svg; do
@@ -51,7 +51,7 @@ jobs:
             echo "Faltan archivos esperados."
             exit 1
           fi
-          echo "OK: las 6 demos tienen index.html y qr.svg."
+          echo "OK: las 12 demos tienen index.html y qr.svg."
 
       - name: Verify no unreplaced {{...}} tokens in generated HTML
         run: |

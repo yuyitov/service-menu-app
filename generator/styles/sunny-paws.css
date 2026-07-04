@@ -1,0 +1,13 @@
+/* sunny-paws - alegre, jugueton, amigable. Pet grooming / servicios para mascotas.
+   Paleta: amarillo sol + naranja + blanco calido. */
+:root{
+  --bg:#fffaf0; --card:#ffffff; --text:#3a2b12; --muted:#8a7550;
+  --line:#ffe9b8; --accent:#ff9f1c; --accent-ink:#3a1e00; --accent-soft:#fff1d6;
+  --radius:22px; --btn-radius:999px; --badge-radius:999px;
+  --shadow:0 8px 22px rgba(255,159,28,.18);
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; --heading-font:"Segoe UI",system-ui,sans-serif;
+  --heading-spacing:0; --tagline-style:normal;
+  --hero-grad:linear-gradient(135deg,#fff1d6,#ffdf9e); --hero-ink:#c9720a;
+  --logo-bg:#ff9f1c; --logo-ink:#3a1e00; --logo-border:transparent;
+  --featured-bg:#ffe9b8; --qr-bg:#fffdf6;
+}

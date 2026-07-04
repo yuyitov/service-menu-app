@@ -5,15 +5,18 @@
 Pasos concretos para validar el generador estático de Phase 1:
 
 - [ ] `python generator/generate_service_menu.py` corre sin errores y reporta
-      "Generadas 6/6 paginas".
+      "Generadas 12/12 paginas".
 - [ ] Se crean `public/demos/{bella-spa,studio-blush,north-barber,glow-nails,`
-      `aqua-wellness,sage-studio}/index.html`.
+      `aqua-wellness,sage-studio,pulse-fitness,cafe-terra,pawsome-grooming,`
+      `iron-ink-tattoo,clarity-coaching,horizon-tours}/index.html`.
 - [ ] Un payload al que le falta un campo requerido falla con mensaje claro y exit code
       distinto de 0 (no genera página incompleta).
-- [ ] Un `brand_style` fuera de los 6 estilos cerrados es rechazado con mensaje claro.
-- [ ] Los 6 estilos cerrados (`black-gold`, `soft-blush`, `charcoal-clean`, `warm-sand`,
-      `aqua-clean`, `sage-calm`) renderizan y se distinguen visualmente (paleta/acento
-      distinto por estilo; el `<body>` lleva la clase `style-<brand_style>`).
+- [ ] Un `brand_style` fuera de los 12 estilos cerrados es rechazado con mensaje claro.
+- [ ] Los 12 estilos cerrados (`black-gold`, `soft-blush`, `charcoal-clean`, `warm-sand`,
+      `aqua-clean`, `sage-calm`, `electric-slate`, `terracotta-warm`, `sunny-paws`,
+      `midnight-ink`, `clarity-editorial`, `horizon-teal`) renderizan y se distinguen
+      visualmente (paleta/acento distinto por estilo; el `<body>` lleva la clase
+      `style-<brand_style>`).
 - [ ] En una demo sin `logo_url` / `primary_image_url`, aparece el placeholder visual
       (nunca una imagen rota).
 - [ ] En una demo sin `featured_package` / `instagram` / `google_reviews_url`, esas
@@ -29,12 +32,14 @@ Pasos concretos para validar el generador estático de Phase 1:
 
 - [ ] `python generator/generate_service_menu.py` genera, por cada demo, `index.html`
       **y** `qr.svg` en `public/demos/<slug>/`.
-- [ ] Existen los 12 archivos esperados: `index.html` + `qr.svg` para las 6 demos
-      (bella-spa, studio-blush, north-barber, glow-nails, aqua-wellness, sage-studio).
+- [ ] Existen los 24 archivos esperados: `index.html` + `qr.svg` para las 12 demos
+      (bella-spa, studio-blush, north-barber, glow-nails, aqua-wellness, sage-studio,
+      pulse-fitness, cafe-terra, pawsome-grooming, iron-ink-tattoo, clarity-coaching,
+      horizon-tours).
 - [ ] Cada `qr.svg` es un SVG válido (empieza con `<svg`) y codifica el `public_url`
       de su demo (no localhost, sin tokens, sin parámetros de tracking).
 - [ ] La sección "Comparte esta página" muestra el QR (`<img src="qr.svg">`), el link
-      visible y el botón "Abrir página"; se ve bien en mobile y en los 6 estilos.
+      visible y el botón "Abrir página"; se ve bien en mobile y en los 12 estilos.
 - [ ] El QR se ve escaneable sobre la caja blanca también en estilos oscuros (black-gold).
 - [ ] No hay tokens `{{...}}` sin reemplazar en la salida.
 - [ ] Si falta la dependencia `segno`, el generador falla con mensaje claro (instalar
@@ -47,15 +52,15 @@ Pasos concretos para validar el generador estático de Phase 1:
 
 - [ ] GitHub Pages está habilitado en el repo `yuyitov/service-menu-app` con build
       "GitHub Actions" (no branch).
-- [ ] El workflow `.github/workflows/pages.yml` corre en push a `main`, regenera las 6
+- [ ] El workflow `.github/workflows/pages.yml` corre en push a `main`, regenera las 12
       demos desde cero y repite las validaciones (outputs, tokens, secrets, MyGuest).
 - [ ] `pages.yml` publica **solo** la carpeta `public/` y usa permisos mínimos
       (`contents: read`, `pages: write`, `id-token: write`), sin secrets configurados.
-- [ ] Los 6 `public_url` de `data/demos/*.json` apuntan a
+- [ ] Los 12 `public_url` de `data/demos/*.json` apuntan a
       `https://yuyitov.github.io/service-menu-app/demos/<slug>/` (no localhost, no
       dominio dummy, no dominio custom).
 - [ ] Cada `qr.svg` regenerado codifica la URL pública real de su demo.
-- [ ] Las 6 URLs públicas abren en navegador (HTTP 200) y muestran la página correcta.
+- [ ] Las 12 URLs públicas abren en navegador (HTTP 200) y muestran la página correcta.
 - [ ] Al menos un `qr.svg` público responde HTTP 200 y es un SVG válido.
 - [ ] `generate-demos.yml` sigue existiendo y pasando como workflow de validación.
 - [ ] MyGuest no fue tocado; no hay Stripe/Tally/Worker/KV/emails implementados.
@@ -85,38 +90,40 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] No hay datos reales de clientes ni secrets en la landing.
 - [ ] Las 6 demos y sus `qr.svg` siguen existiendo sin cambios.
 
-## Phase 4C — Marca HMU Link, landings por mercado y dominio custom
+## Phase 4C — Marca HMU Link, landing por idioma y dominio custom
 
-- [ ] Existen `public/index.html` (portada/selector), `public/mx/index.html` y
-      `public/us/index.html`, y abren en sus URLs públicas.
-- [ ] Las tres páginas usan la marca **HMU Link**; no mencionan MyGuest ni marcas viejas.
-- [ ] La portada `/` permite elegir mercado manualmente; sin geolocalización, sin
-      cookies, sin JS de redirección.
-- [ ] `/mx/` está en español (lang="es-MX"), WhatsApp-first, con CTA "Quiero mi HMU
+- [ ] Existen `public/index.html` (default) y `public/es/index.html` (español), y abren
+      en sus URLs públicas. No existe portada/selector intermedio.
+- [ ] Las dos páginas usan la marca **HMU Link**; no mencionan MyGuest ni marcas viejas.
+- [ ] Un botón de idioma en header y footer navega entre `/` y `/es/`; sin
+      geolocalización, sin cookies, sin JS de redirección.
+- [ ] `/es/` está en español (lang="es-MX"), WhatsApp-first, con CTA "Quiero mi HMU
       Link" (sin pago real) y "Ver demos"; precios MXN $599 / $999 / $250–$400 marcados
       como tentativos, pago único, checkout no activo.
-- [ ] `/us/` está en inglés (lang="en-US"), con CTA "Get my HMU Link" (sin pago real) y
+- [ ] `/` está en inglés (lang="en-US"), con CTA "Get my HMU Link" (sin pago real) y
       "View examples"; precios USD $39 / $69 / $15–$25 marcados como launch pricing,
       one-time, checkout not active.
-- [ ] Copy adaptado por mercado (no traducción literal): MX enfocado en WhatsApp/preguntas
-      repetidas; US enfocado en polished page / not ready for a full website.
+- [ ] Copy adaptado por mercado (no traducción literal): `/es/` enfocado en
+      WhatsApp/preguntas repetidas; `/` enfocado en polished page / not ready for a
+      full website.
 - [ ] Cada página tiene title, meta description, canonical y hreflang
       (es-MX / en-US / x-default) apuntando al dominio activo.
-- [ ] Las tres páginas son HTML/CSS estático: sin JS, sin fonts/imágenes externas, sin
-      analytics/pixels, sin scripts de terceros, sin formularios reales.
-- [ ] Los 6 estilos aparecen en /mx/ y /us/ con link a su demo, y los links abren.
-- [ ] Dominio custom: si `www.hmulink.com` está activo, `/`, `/mx/`, `/us/`, las 6 demos
+- [ ] Las dos páginas son HTML/CSS estático: sin analytics/pixels, sin scripts de
+      terceros, sin formularios reales.
+- [ ] Los 12 estilos aparecen en `/` y `/es/` con una captura real de su demo (no un
+      mockup CSS abstracto) y link a la demo; las imágenes cargan sin 404.
+- [ ] Dominio custom: si `www.hmulink.com` está activo, `/`, `/es/`, las 12 demos
       y al menos un `qr.svg` responden 200 en el dominio custom y HTTPS es válido; si no
       está activo, se documenta como pendiente y todo sigue funcionando en
       `yuyitov.github.io`.
 - [ ] Los QR codifican el dominio correcto según el estado del dominio custom (pendiente
       de migrar a www.hmulink.com cuando esté activo).
 - [ ] Sin wildcard DNS; sin subdominios adicionales.
-- [ ] Las 6 demos y sus `qr.svg` siguen existiendo sin cambios funcionales.
+- [ ] Las 12 demos y sus `qr.svg` siguen existiendo sin cambios funcionales.
 
 ## Phase 4D — Identidad visual HMU Link
 
-- [ ] `/`, `/mx/` y `/us/` usan la paleta oficial (Bubblegum #f478b0, Tangerine #ffa934,
+- [ ] `/` y `/es/` usan la paleta oficial (Bubblegum #f478b0, Tangerine #ffa934,
       Ocean Blue #00a0b5, Banana #ffef5a, Avocado #98c54e, Bell Pepper #14704f) y no
       queda el esquema oscuro/dorado anterior ni morado como color principal.
 - [ ] La jerarquía de color es ordenada: bubblegum en CTA principal, ocean en
@@ -124,17 +131,44 @@ Pasos concretos para validar el generador estático de Phase 1:
       avocado como acento secundario, bell pepper como oscuro de soporte.
 - [ ] Logo textual "HMU Link" visible en header y footer: HMU bubblegum, Link ocean,
       pin tangerine; sin tagline dentro del logo.
-- [ ] Slogans "Conecta tu negocio" (/mx/) y "Connect your business" (/us/) aparecen como
+- [ ] Slogans "Conecta tu negocio" (/es/) y "Connect your business" (/) aparecen como
       copy, no como parte del logo.
 - [ ] El look es playful pero no infantil ni demasiado femenino; funciona para
       barberías y tours igual que para spas.
 - [ ] Botones redondeados y legibles; contraste suficiente en CTA y pricing.
-- [ ] Blobs/decoraciones son CSS puro; sin imágenes externas, sin fonts externas, sin
-      JS, sin animaciones complejas.
-- [ ] Se ve bien en mobile (~375px) y desktop en las tres páginas.
+- [ ] Se ve bien en mobile (~375px) y desktop en las dos páginas.
 - [ ] El copy estratégico por mercado, los precios tentativos, los 6 estilos con sus
       demos y los avisos de checkout inactivo se mantienen sin cambios.
 - [ ] Logo final como asset sigue pendiente y está documentado.
+
+## Phase 4F — Copy, densidad de info, 12 estilos, pricing único y animación
+
+- [ ] El hero de `/` ya no lidera con WhatsApp: mensaje neutral de canal ("call, text,
+      or DM"); `/es/` conserva su mensaje WhatsApp-first sin cambios.
+- [ ] La cinta amarilla (ticker) se ve recta, sin inclinación, en ambas páginas.
+- [ ] La tercera tarjeta de "Qué es"/"What it is" dice "Sin complicaciones"/"No hassle,
+      ever" (ya no "sin dashboard").
+- [ ] La sección "Qué incluye"/"What's included" muestra 6 chips compactos + 1 párrafo
+      de exclusiones, no el comparativo de dos columnas anterior.
+- [ ] Existen 12 estilos visuales (no 6), con pills de filtro (Todos / Belleza y
+      Wellness / Fitness y Activo / Comida y Hospitalidad / Creativo y Servicios) que
+      muestran/ocultan tarjetas correctamente al hacer clic.
+- [ ] El pricing muestra **una sola tarjeta de precio** (USD $59 / MXN $799), no
+      Founder/Standard separados; la corrección extra aparece como letra pequeña
+      (~USD $3 / ~MXN $60), no como tarjeta propia.
+- [ ] "Cómo funciona" tiene 5 pasos (no 6): pagar, llenar formulario, generar página,
+      recibir link+QR por correo, usar la corrección incluida.
+- [ ] El H1 del hero entra palabra por palabra (kinetic typography) al cargar la
+      página, y respeta `prefers-reduced-motion` (aparece completo sin animación).
+- [ ] Los blobs decorativos varían de velocidad de scroll-parallax entre sí (no todos
+      se mueven idéntico) y respetan `prefers-reduced-motion` (sin parallax).
+- [ ] Al pasar el cursor sobre `.card` y las miniaturas de estilos (`.thumb`), se nota
+      un tilt 3D sutil que seguido del cursor; se resetea al salir.
+- [ ] Los checkmarks de los chips de "incluye" se dibujan (line-draw) al entrar en
+      pantalla via scroll.
+- [ ] No se agregaron dependencias nuevas al pipeline (`requirements.txt`,
+      `generate-demos.yml`, `pages.yml` sin cambios de dependencias); las animaciones
+      son CSS + el mismo `<script>` inline ya existente.
 
 ## Generación de página dummy
 

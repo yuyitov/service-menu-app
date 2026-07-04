@@ -1,0 +1,13 @@
+/* midnight-ink - audaz, artistico, underground. Estudios de tatuaje / grooming alternativo.
+   Paleta: negro profundo + carmesi + acero. */
+:root{
+  --bg:#0c0c0e; --card:#161618; --text:#eceae7; --muted:#8f8b87;
+  --line:#2a2a2d; --accent:#c0203a; --accent-ink:#fff5f5; --accent-soft:#26141a;
+  --radius:6px; --btn-radius:4px; --badge-radius:4px;
+  --shadow:0 16px 36px rgba(0,0,0,.55);
+  --font:"Georgia","Times New Roman",serif; --heading-font:"Georgia",serif;
+  --heading-spacing:.06em; --tagline-style:italic;
+  --hero-grad:linear-gradient(135deg,#1b1b1e,#0a0a0b); --hero-ink:#c0203a;
+  --logo-bg:transparent; --logo-ink:#c0203a; --logo-border:#c0203a;
+  --featured-bg:#26141a; --qr-bg:#111113;
+}

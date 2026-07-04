@@ -107,7 +107,7 @@ para aprobar el diseño antes de escribir código de integración.
 - El QR codifica el `public_url`, es **estático** (no dinámico), **sin tracking** y **sin
   tokens** — solo datos públicos.
 - Phase 2 **no** publica a GitHub Pages ni usa secrets: un workflow
-  (`.github/workflows/generate-demos.yml`) solo **valida** que las 6 demos generan
+  (`.github/workflows/generate-demos.yml`) solo **valida** que las 12 demos generan
   `index.html` + `qr.svg` sin errores, sin tokens residuales, sin secrets y sin
   referencias a MyGuest.
 
@@ -116,26 +116,31 @@ para aprobar el diseño antes de escribir código de integración.
 - Phase 3A conectó el repo a GitHub (`yuyitov/service-menu-app`, rama `main`) y validó
   `generate-demos.yml` en Actions.
 - Phase 3B **publica las demos** en GitHub Pages mediante un workflow dedicado
-  (`.github/workflows/pages.yml`): en cada push a `main` regenera las 6 demos desde cero,
-  repite las verificaciones de validación (outputs, tokens, secrets, MyGuest) y despliega
-  **solo la carpeta `public/`** con `actions/upload-pages-artifact` + `actions/deploy-pages`.
+  (`.github/workflows/pages.yml`): en cada push a `main` regenera las 12 demos desde
+  cero, repite las verificaciones de validación (outputs, tokens, secrets, MyGuest) y
+  despliega **solo la carpeta `public/`** con `actions/upload-pages-artifact` +
+  `actions/deploy-pages`.
 - El deploy usa el `GITHUB_TOKEN` efímero del propio workflow con permisos mínimos
   (`contents: read`, `pages: write`, `id-token: write`). **No usa secrets configurados.**
 - URL base pública: `https://yuyitov.github.io/service-menu-app/`. Los `public_url` de los
-  6 payloads demo y sus QR apuntan a `.../demos/<slug>/`.
+  12 payloads demo y sus QR apuntan a `.../demos/<slug>/`.
 - `generate-demos.yml` se mantiene como workflow de **validación** independiente en
   push/PR; `pages.yml` es el único que despliega.
 - Sin dominio custom todavía (fase posterior).
 
-## Landing multi-mercado HMU Link (Phase 4C)
+## Landing por idioma HMU Link (Phase 4C, reestructurada)
 
-- La marca pública provisional es **HMU Link**. La landing se divide en tres páginas
-  estáticas mantenidas a mano (no generadas): `public/index.html` (portada/selector de
-  mercado), `public/mx/index.html` (México, español, MXN) y `public/us/index.html`
-  (USA/Canadá, inglés, USD).
-- El usuario elige su mercado manualmente: **sin geolocalización, sin cookies, sin
-  JavaScript de redirección**. Metadata estática por página (`lang`, canonical,
-  `hreflang` es-MX / en-US / x-default).
+- La marca pública provisional es **HMU Link**. La landing se divide en dos páginas
+  estáticas mantenidas a mano (no generadas): `public/index.html` (default, inglés,
+  USD, mercado USA/Canadá) y `public/es/index.html` (español, MXN, mercado México).
+  No existe un selector/portada intermedio: cada idioma abre directo en su URL.
+- El usuario cambia de idioma manualmente con un botón en el header y en el footer:
+  **sin geolocalización, sin cookies, sin JavaScript de redirección**. Metadata
+  estática por página (`lang`, canonical, `hreflang` es-MX / en-US / x-default).
+- La sección "Estilos visuales" de ambas landings usa capturas reales (JPEG estático
+  en `public/assets/previews/`) de las 12 demos publicadas, en vez de un mockup
+  dibujado en CSS — así el cliente ve exactamente qué recibe al abrir su link/QR.
+  Incluye pills de filtro por categoría de negocio (JS vanilla, sin recargar página).
 - Sigue sin haber backend dinámico: todo es HTML/CSS estático publicado por `pages.yml`.
 
 ## Dominio custom hmulink.com (Phase 4C)
@@ -152,7 +157,7 @@ para aprobar el diseño antes de escribir código de integración.
   `www.hmulink.com` como custom domain del repo (Settings → Pages o
   `gh api -X PUT repos/yuyitov/service-menu-app/pages -f cname=www.hmulink.com`);
   (3) esperar validación DNS + certificado HTTPS de GitHub; (4) activar "Enforce HTTPS";
-  (5) actualizar `public_url` de las 6 demos, `DEMO_BASE_URL`, canonicals/hreflang y
+  (5) actualizar `public_url` de las 12 demos, `DEMO_BASE_URL`, canonicals/hreflang y
   regenerar QRs.
 - Cuando el dominio esté activo, GitHub Pages redirige automáticamente las URLs
   `yuyitov.github.io/service-menu-app/...` al dominio custom, así los QR viejos no se

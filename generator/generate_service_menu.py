@@ -3,12 +3,14 @@
 
 Reads a dummy `service_menu_payload_public` JSON, validates the minimum
 required fields, escapes all dynamic content, and renders a mobile-first
-static page using one of six closed brand styles:
-black-gold / soft-blush / charcoal-clean / warm-sand / aqua-clean / sage-calm.
+static page using one of twelve closed brand styles:
+black-gold / soft-blush / charcoal-clean / warm-sand / aqua-clean / sage-calm /
+electric-slate / terracotta-warm / sunny-paws / midnight-ink /
+clarity-editorial / horizon-teal.
 
 Rendering uses a single shared structural template (templates/base.html) plus a
 per-style palette file (styles/<brand_style>.css). Colors are never free-form:
-only the six approved closed styles are accepted.
+only the twelve approved closed styles are accepted.
 
 For each demo it also writes a real, static, scannable QR code as SVG next to the
 page (public/demos/<slug>/qr.svg) pointing at the payload's public_url.
@@ -44,7 +46,7 @@ STYLES_DIR = Path(__file__).resolve().parent / "styles"
 DEMOS_DIR = REPO_ROOT / "data" / "demos"
 OUTPUT_DIR = REPO_ROOT / "public" / "demos"
 
-# The six approved closed visual styles. Colors are NOT free-form; a payload
+# The twelve approved closed visual styles. Colors are NOT free-form; a payload
 # must pick exactly one of these. Each has a matching styles/<name>.css palette.
 BRAND_STYLES = (
     "black-gold",
@@ -53,6 +55,12 @@ BRAND_STYLES = (
     "warm-sand",
     "aqua-clean",
     "sage-calm",
+    "electric-slate",
+    "terracotta-warm",
+    "sunny-paws",
+    "midnight-ink",
+    "clarity-editorial",
+    "horizon-teal",
 )
 
 # Fallback base URL used only if a demo payload omits `public_url`.

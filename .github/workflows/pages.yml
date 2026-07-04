@@ -1,6 +1,6 @@
 name: pages
 
-# Phase 3B: publica las 6 demos (carpeta public/) en GitHub Pages.
+# Phase 3B: publica las 12 demos (carpeta public/) en GitHub Pages.
 # NO usa secrets, NO depende de MyGuest, NO publica nada fuera de public/.
 # generate-demos.yml sigue siendo el workflow de validacion en push/PR.
 
@@ -39,13 +39,13 @@ jobs:
             pip install -r requirements.txt
           fi
 
-      - name: Generate the 6 demos from scratch
+      - name: Generate the 12 demos from scratch
         run: python generator/generate_service_menu.py
 
       - name: Verify expected outputs exist (index.html + qr.svg per demo)
         run: |
           set -e
-          demos="bella-spa studio-blush north-barber glow-nails aqua-wellness sage-studio"
+          demos="bella-spa studio-blush north-barber glow-nails aqua-wellness sage-studio pulse-fitness cafe-terra pawsome-grooming iron-ink-tattoo clarity-coaching horizon-tours"
           missing=0
           for slug in $demos; do
             for asset in index.html qr.svg; do
@@ -60,7 +60,7 @@ jobs:
             echo "Faltan archivos esperados."
             exit 1
           fi
-          echo "OK: las 6 demos tienen index.html y qr.svg."
+          echo "OK: las 12 demos tienen index.html y qr.svg."
 
       - name: Verify no unreplaced {{...}} tokens in generated HTML
         run: |

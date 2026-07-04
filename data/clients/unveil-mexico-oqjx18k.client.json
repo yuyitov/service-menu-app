@@ -1,0 +1,70 @@
+{
+  "public_slug": "unveil-mexico-oqjx18k",
+  "default_language": "en",
+  "brand_style": "electric-slate",
+  "business_name": "Unveil México",
+  "logo_url": null,
+  "primary_image_url": null,
+  "whatsapp": "+523221553952",
+  "phone": "+523221553952",
+  "public_email": "casinosmanager.mx@gmail.com",
+  "instagram": "https://@unveilmexico",
+  "facebook": "https://www.facebook.com/UnveilMexicoExperiences/",
+  "tiktok": null,
+  "website": "https://www.unveilmexico.com",
+  "booking_url": "https://www.unveilmexico.com",
+  "google_maps_url": "https://maps.app.goo.gl/UDxo3oS6VveBA29E7",
+  "google_reviews_url": "https://search.google.com/local/writereview?placeid=ChIJzwIHluifQCMR_FNmF52puE&source=g.page.m.nr._&laa=nmx-review-solicitation-recommendation-card",
+  "content": {
+    "es": {
+      "short_description": "Experiencias mexicanas para que los extranjeros conozcan la cultura mexicana mientras se divierten creando su propio souvenir y apoyando la economía local.",
+      "address": "Av. Francisco Medina Ascencio 1929, Zona hotelera, Las Glorias, 48333. Puerto Vallarta.",
+      "opening_hours_text": "10:00 AM a 7:00 PM",
+      "service_categories": [
+        "Servicios"
+      ],
+      "services": [
+        {
+          "category": "Servicios",
+          "name": "Descubre las Artesanías Mexicanas más populares"
+        },
+        {
+          "category": "Servicios",
+          "name": "Día de Muertos, una experiencia Cultural"
+        }
+      ],
+      "policies": [
+        "Cancela al menos 48 horas antes de tu experiencia."
+      ],
+      "featured_package": {
+        "name": "$1,800 MX por persona",
+        "description": "$1,800 MX por persona"
+      }
+    },
+    "en": {
+      "short_description": "Experiencias mexicanas para que los extranjeros conozcan la cultura mexicana mientras se divierten creando su propio souvenir y apoyando la economía local.",
+      "address": "Av. Francisco Medina Ascencio 1929, Zona hotelera, Las Glorias, 48333. Puerto Vallarta.",
+      "opening_hours_text": "10:00 AM a 7:00 PM",
+      "service_categories": [
+        "Services"
+      ],
+      "services": [
+        {
+          "category": "Services",
+          "name": "Descubre las Artesanías Mexicanas más populares"
+        },
+        {
+          "category": "Services",
+          "name": "Día de Muertos, una experiencia Cultural"
+        }
+      ],
+      "policies": [
+        "Cancela al menos 48 horas antes de tu experiencia."
+      ],
+      "featured_package": {
+        "name": "$1,800 MX por persona",
+        "description": "$1,800 MX por persona"
+      }
+    }
+  }
+}

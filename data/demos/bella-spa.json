@@ -1,57 +1,61 @@
 {
-  "public_slug": "bella-spa",
-  "public_url": "https://yuyitov.github.io/service-menu-app/demos/bella-spa/",
-  "business_name": "Bella Spa & Wellness",
-  "short_description": "Un refugio de relajación en el corazón de la ciudad ✨",
-  "brand_style": "black-gold",
-  "primary_image_url": null,
-  "logo_url": null,
-  "service_categories": ["Faciales", "Masajes", "Rituales"],
-  "services": [
-    {
-      "category": "Faciales",
-      "name": "Facial \"Glow\" hidratante",
-      "description": "Limpieza profunda & hidratación con ácido hialurónico",
-      "price_label": "$650 MXN"
-    },
-    {
-      "category": "Faciales",
-      "name": "Facial anti-edad",
-      "description": "Tratamiento con colágeno y masaje facial",
-      "price_label": "$850 MXN"
-    },
-    {
-      "category": "Masajes",
-      "name": "Masaje relajante 60 min",
-      "price_label": "Desde $700 MXN"
-    },
-    {
-      "category": "Masajes",
-      "name": "Masaje de piedras calientes",
-      "description": "90 minutos de descanso total",
-      "price_label": "$1,100 MXN"
-    },
-    {
-      "category": "Rituales",
-      "name": "Ritual de pareja",
-      "description": "Experiencia para dos: masaje + spa privado",
-      "price_label": "Consultar"
-    }
-  ],
-  "featured_package": {
-    "name": "Día de Spa Completo",
-    "description": "Facial + masaje 60 min + acceso a áreas húmedas & té de cortesía",
-    "price_label": "$1,900 MXN"
-  },
-  "whatsapp": "+52 55 1234 5678",
-  "instagram": "https://instagram.com/bellaspa.demo",
-  "google_maps_url": "https://maps.google.com/?q=Bella+Spa+Wellness+Demo",
-  "address": "Av. Reforma 123, Col. Juárez, CDMX",
-  "opening_hours_text": "Lun–Sáb 10:00–20:00 · Dom 11:00–17:00",
-  "google_reviews_url": "https://g.page/r/bella-spa-demo/review",
-  "policies": [
-    "Cancelaciones con 24 h de anticipación.",
-    "Llega 10 min antes de tu cita.",
-    "Pago en efectivo o tarjeta al finalizar el servicio."
-  ]
+    "public_slug":  "bella-spa",
+    "public_url":  "https://www.hmulink.com/demos/bella-spa/",
+    "business_name":  "Bella Spa \u0026 Wellness",
+    "short_description":  "Un refugio de relajaciÃ³n en el corazÃ³n de la ciudad âœ¨",
+    "brand_style":  "black-gold",
+    "primary_image_url":  null,
+    "logo_url":  null,
+    "service_categories":  [
+                               "Faciales",
+                               "Masajes",
+                               "Rituales"
+                           ],
+    "services":  [
+                     {
+                         "category":  "Faciales",
+                         "name":  "Facial \"Glow\" hidratante",
+                         "description":  "Limpieza profunda \u0026 hidrataciÃ³n con Ã¡cido hialurÃ³nico",
+                         "price_label":  "$650 MXN"
+                     },
+                     {
+                         "category":  "Faciales",
+                         "name":  "Facial anti-edad",
+                         "description":  "Tratamiento con colÃ¡geno y masaje facial",
+                         "price_label":  "$850 MXN"
+                     },
+                     {
+                         "category":  "Masajes",
+                         "name":  "Masaje relajante 60 min",
+                         "price_label":  "Desde $700 MXN"
+                     },
+                     {
+                         "category":  "Masajes",
+                         "name":  "Masaje de piedras calientes",
+                         "description":  "90 minutos de descanso total",
+                         "price_label":  "$1,100 MXN"
+                     },
+                     {
+                         "category":  "Rituales",
+                         "name":  "Ritual de pareja",
+                         "description":  "Experiencia para dos: masaje + spa privado",
+                         "price_label":  "Consultar"
+                     }
+                 ],
+    "featured_package":  {
+                             "name":  "DÃ­a de Spa Completo",
+                             "description":  "Facial + masaje 60 min + acceso a Ã¡reas hÃºmedas \u0026 tÃ© de cortesÃ­a",
+                             "price_label":  "$1,900 MXN"
+                         },
+    "whatsapp":  "+52 55 1234 5678",
+    "instagram":  "https://instagram.com/bellaspa.demo",
+    "google_maps_url":  "https://maps.google.com/?q=Bella+Spa+Wellness+Demo",
+    "address":  "Av. Reforma 123, Col. JuÃ¡rez, CDMX",
+    "opening_hours_text":  "Lunâ€“SÃ¡b 10:00â€“20:00 Â· Dom 11:00â€“17:00",
+    "google_reviews_url":  "https://g.page/r/bella-spa-demo/review",
+    "policies":  [
+                     "Cancelaciones con 24 h de anticipaciÃ³n.",
+                     "Llega 10 min antes de tu cita.",
+                     "Pago en efectivo o tarjeta al finalizar el servicio."
+                 ]
 }

@@ -1,50 +1,54 @@
 {
-  "public_slug": "studio-blush",
-  "public_url": "https://yuyitov.github.io/service-menu-app/demos/studio-blush/",
-  "business_name": "Studio Blush — Lashes & Brows",
-  "short_description": "Realza tu mirada con lashes & brows de autor 🌸",
-  "brand_style": "soft-blush",
-  "primary_image_url": null,
-  "logo_url": null,
-  "service_categories": ["Pestañas", "Cejas", "Faciales express"],
-  "services": [
-    {
-      "category": "Pestañas",
-      "name": "Lashes clásicas",
-      "description": "Extensión pelo a pelo, look natural",
-      "price_label": "$450 MXN"
-    },
-    {
-      "category": "Pestañas",
-      "name": "Lashes volumen ruso",
-      "description": "Máximo volumen & duración",
-      "price_label": "$650 MXN"
-    },
-    {
-      "category": "Cejas",
-      "name": "Diseño & laminado de cejas",
-      "price_label": "$400 MXN"
-    },
-    {
-      "category": "Faciales express",
-      "name": "Limpieza facial express",
-      "description": "30 min de hidratación y glow",
-      "price_label": "Desde $350 MXN"
-    }
-  ],
-  "featured_package": {
-    "name": "Combo Mirada Perfecta",
-    "description": "Lashes volumen + diseño de cejas en una sola cita",
-    "price_label": "$950 MXN"
-  },
-  "whatsapp": "+52 55 2233 4455",
-  "instagram": "https://instagram.com/studioblush.demo",
-  "google_maps_url": "https://maps.google.com/?q=Studio+Blush+Demo",
-  "address": "Av. Ámsterdam 210, Col. Condesa, CDMX",
-  "opening_hours_text": "Mar–Sáb 10:00–19:00 · Dom y Lun cerrado",
-  "google_reviews_url": "https://g.page/r/studio-blush-demo/review",
-  "policies": [
-    "Llega sin maquillaje en el área de ojos para lashes.",
-    "Se requiere anticipo del 30% para reservar."
-  ]
+    "public_slug":  "studio-blush",
+    "public_url":  "https://www.hmulink.com/demos/studio-blush/",
+    "business_name":  "Studio Blush â€” Lashes \u0026 Brows",
+    "short_description":  "Realza tu mirada con lashes \u0026 brows de autor ðŸŒ¸",
+    "brand_style":  "soft-blush",
+    "primary_image_url":  null,
+    "logo_url":  null,
+    "service_categories":  [
+                               "PestaÃ±as",
+                               "Cejas",
+                               "Faciales express"
+                           ],
+    "services":  [
+                     {
+                         "category":  "PestaÃ±as",
+                         "name":  "Lashes clÃ¡sicas",
+                         "description":  "ExtensiÃ³n pelo a pelo, look natural",
+                         "price_label":  "$450 MXN"
+                     },
+                     {
+                         "category":  "PestaÃ±as",
+                         "name":  "Lashes volumen ruso",
+                         "description":  "MÃ¡ximo volumen \u0026 duraciÃ³n",
+                         "price_label":  "$650 MXN"
+                     },
+                     {
+                         "category":  "Cejas",
+                         "name":  "DiseÃ±o \u0026 laminado de cejas",
+                         "price_label":  "$400 MXN"
+                     },
+                     {
+                         "category":  "Faciales express",
+                         "name":  "Limpieza facial express",
+                         "description":  "30 min de hidrataciÃ³n y glow",
+                         "price_label":  "Desde $350 MXN"
+                     }
+                 ],
+    "featured_package":  {
+                             "name":  "Combo Mirada Perfecta",
+                             "description":  "Lashes volumen + diseÃ±o de cejas en una sola cita",
+                             "price_label":  "$950 MXN"
+                         },
+    "whatsapp":  "+52 55 2233 4455",
+    "instagram":  "https://instagram.com/studioblush.demo",
+    "google_maps_url":  "https://maps.google.com/?q=Studio+Blush+Demo",
+    "address":  "Av. Ãmsterdam 210, Col. Condesa, CDMX",
+    "opening_hours_text":  "Marâ€“SÃ¡b 10:00â€“19:00 Â· Dom y Lun cerrado",
+    "google_reviews_url":  "https://g.page/r/studio-blush-demo/review",
+    "policies":  [
+                     "Llega sin maquillaje en el Ã¡rea de ojos para lashes.",
+                     "Se requiere anticipo del 30% para reservar."
+                 ]
 }

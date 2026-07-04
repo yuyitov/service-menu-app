@@ -1,50 +1,54 @@
 {
-  "public_slug": "glow-nails",
-  "public_url": "https://yuyitov.github.io/service-menu-app/demos/glow-nails/",
-  "business_name": "Glow Nails Studio",
-  "short_description": "Uñas que brillan, manos que enamoran 💅",
-  "brand_style": "warm-sand",
-  "primary_image_url": null,
-  "logo_url": null,
-  "service_categories": ["Manicura", "Pedicura", "Extras"],
-  "services": [
-    {
-      "category": "Manicura",
-      "name": "Manicura express",
-      "description": "Limado, cutícula & esmalte tradicional",
-      "price_label": "$180 MXN"
-    },
-    {
-      "category": "Manicura",
-      "name": "Gelish (esmalte semipermanente)",
-      "price_label": "$320 MXN"
-    },
-    {
-      "category": "Pedicura",
-      "name": "Pedicura spa",
-      "description": "Exfoliación + masaje & esmalte",
-      "price_label": "$350 MXN"
-    },
-    {
-      "category": "Extras",
-      "name": "Diseño / nail art",
-      "description": "Por uña, desde diseños simples a 3D",
-      "price_label": "Desde $30 MXN"
-    }
-  ],
-  "featured_package": {
-    "name": "Combo Manos & Pies",
-    "description": "Manicura gelish + pedicura spa en una sola visita",
-    "price_label": "$590 MXN"
-  },
-  "whatsapp": "+52 33 9876 5432",
-  "instagram": "https://instagram.com/glownails.demo",
-  "google_maps_url": "https://maps.google.com/?q=Glow+Nails+Studio+Demo",
-  "address": "Calle Morelos 45, Col. Americana, Guadalajara",
-  "opening_hours_text": "Mar–Sáb 11:00–19:00 · Dom y Lun cerrado",
-  "google_reviews_url": null,
-  "policies": [
-    "Se requiere anticipo para citas de nail art elaborado.",
-    "Reagenda sin costo avisando con 12 h de anticipación."
-  ]
+    "public_slug":  "glow-nails",
+    "public_url":  "https://www.hmulink.com/demos/glow-nails/",
+    "business_name":  "Glow Nails Studio",
+    "short_description":  "UÃ±as que brillan, manos que enamoran ðŸ’…",
+    "brand_style":  "warm-sand",
+    "primary_image_url":  null,
+    "logo_url":  null,
+    "service_categories":  [
+                               "Manicura",
+                               "Pedicura",
+                               "Extras"
+                           ],
+    "services":  [
+                     {
+                         "category":  "Manicura",
+                         "name":  "Manicura express",
+                         "description":  "Limado, cutÃ­cula \u0026 esmalte tradicional",
+                         "price_label":  "$180 MXN"
+                     },
+                     {
+                         "category":  "Manicura",
+                         "name":  "Gelish (esmalte semipermanente)",
+                         "price_label":  "$320 MXN"
+                     },
+                     {
+                         "category":  "Pedicura",
+                         "name":  "Pedicura spa",
+                         "description":  "ExfoliaciÃ³n + masaje \u0026 esmalte",
+                         "price_label":  "$350 MXN"
+                     },
+                     {
+                         "category":  "Extras",
+                         "name":  "DiseÃ±o / nail art",
+                         "description":  "Por uÃ±a, desde diseÃ±os simples a 3D",
+                         "price_label":  "Desde $30 MXN"
+                     }
+                 ],
+    "featured_package":  {
+                             "name":  "Combo Manos \u0026 Pies",
+                             "description":  "Manicura gelish + pedicura spa en una sola visita",
+                             "price_label":  "$590 MXN"
+                         },
+    "whatsapp":  "+52 33 9876 5432",
+    "instagram":  "https://instagram.com/glownails.demo",
+    "google_maps_url":  "https://maps.google.com/?q=Glow+Nails+Studio+Demo",
+    "address":  "Calle Morelos 45, Col. Americana, Guadalajara",
+    "opening_hours_text":  "Marâ€“SÃ¡b 11:00â€“19:00 Â· Dom y Lun cerrado",
+    "google_reviews_url":  null,
+    "policies":  [
+                     "Se requiere anticipo para citas de nail art elaborado.",
+                     "Reagenda sin costo avisando con 12 h de anticipaciÃ³n."
+                 ]
 }

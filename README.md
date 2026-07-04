@@ -43,7 +43,16 @@ incluida vía un link de un solo uso.
 
 ## Estado actual
 
-**Phase 4D — Identidad visual HMU Link aplicada (pendiente de commit/revisión visual).**
+**Phase 4E — Migración a dominio custom completa.**
+
+El sitio público de HMU Link está completamente migrado al dominio custom `https://www.hmulink.com`:
+- Dominio: `www.hmulink.com` (apex redirige a www)
+- GitHub Pages: custom domain configurado
+- Cloudflare DNS: CNAME + records activos
+- HTTPS: activado
+- Archivo CNAME en `public/` creado
+- URLs públicas actualizadas en landing + demos
+- Códigos QR regenerados con nuevas URLs
 
 Las dos páginas públicas (`/`, `/es/`) usan la identidad visual oficial de HMU
 Link: paleta Bubblegum `#f478b0` / Tangerine `#ffa934` / Ocean Blue `#00a0b5` / Banana
@@ -52,9 +61,7 @@ profesional, botones redondeados, blobs decorativos en CSS y logo textual tempor
 ("HMU" en bubblegum + "Link" en ocean + pin tangerine). **Logo final pendiente de
 exportar/aplicar como asset.**
 
-**Phase 4C — Marca HMU Link, landing por idioma y dominio custom en preparación.**
-
-La landing pública usa la marca provisional **HMU Link** y está dividida por idioma
+La landing pública usa la marca **HMU Link** y está dividida por idioma
 (no hay selector intermedio; cada idioma es directamente su página):
 
 | Ruta | Contenido |
@@ -65,13 +72,6 @@ La landing pública usa la marca provisional **HMU Link** y está dividida por i
 Un botón de idioma en el header/footer navega entre ambas. Las dos páginas son
 HTML/CSS estático: sin analytics y sin formularios reales. Los precios mostrados son
 **de lanzamiento y tentativos**; el checkout no está activo.
-
-**Dominio custom:** se compró `hmulink.com` en Cloudflare. El dominio principal será
-`www.hmulink.com` (apex redirigiendo a www). **Aún no está activo**: falta crear los
-registros DNS en Cloudflare y configurar el custom domain en GitHub Pages (ver
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#dominio-custom-hmulinkcom-phase-4c)). Mientras
-tanto todo se sirve desde `https://yuyitov.github.io/service-menu-app/` y los QR de las
-demos siguen apuntando a esas URLs.
 
 Phase 0 (documentación) y Phase 1 (generador + estilos) están aprobadas. El generador
 convierte un payload `service_menu_payload_public` (JSON dummy) en una página pública
@@ -95,24 +95,24 @@ faltan `primary_image_url` / `logo_url`, el generador usa un placeholder visual.
 
 Ver [docs/ROADMAP.md](docs/ROADMAP.md) para las fases siguientes.
 
-## Demos públicas (GitHub Pages)
+## Demos públicas
 
-Base: `https://yuyitov.github.io/service-menu-app/`
+Base: `https://www.hmulink.com/demos/`
 
 | Demo | URL pública |
 |---|---|
-| Bella Spa | https://yuyitov.github.io/service-menu-app/demos/bella-spa/ |
-| Studio Blush | https://yuyitov.github.io/service-menu-app/demos/studio-blush/ |
-| North Barber | https://yuyitov.github.io/service-menu-app/demos/north-barber/ |
-| Glow Nails | https://yuyitov.github.io/service-menu-app/demos/glow-nails/ |
-| Aqua Wellness | https://yuyitov.github.io/service-menu-app/demos/aqua-wellness/ |
-| Sage Studio | https://yuyitov.github.io/service-menu-app/demos/sage-studio/ |
-| Pulse Fitness Studio | https://yuyitov.github.io/service-menu-app/demos/pulse-fitness/ |
-| Café Terra | https://yuyitov.github.io/service-menu-app/demos/cafe-terra/ |
-| Pawsome Grooming | https://yuyitov.github.io/service-menu-app/demos/pawsome-grooming/ |
-| Iron & Ink Tattoo | https://yuyitov.github.io/service-menu-app/demos/iron-ink-tattoo/ |
-| Clarity Coaching Co. | https://yuyitov.github.io/service-menu-app/demos/clarity-coaching/ |
-| Horizon City Tours | https://yuyitov.github.io/service-menu-app/demos/horizon-tours/ |
+| Bella Spa | https://www.hmulink.com/demos/bella-spa/ |
+| Studio Blush | https://www.hmulink.com/demos/studio-blush/ |
+| North Barber | https://www.hmulink.com/demos/north-barber/ |
+| Glow Nails | https://www.hmulink.com/demos/glow-nails/ |
+| Aqua Wellness | https://www.hmulink.com/demos/aqua-wellness/ |
+| Sage Studio | https://www.hmulink.com/demos/sage-studio/ |
+| Pulse Fitness Studio | https://www.hmulink.com/demos/pulse-fitness/ |
+| Café Terra | https://www.hmulink.com/demos/cafe-terra/ |
+| Pawsome Grooming | https://www.hmulink.com/demos/pawsome-grooming/ |
+| Iron & Ink Tattoo | https://www.hmulink.com/demos/iron-ink-tattoo/ |
+| Clarity Coaching Co. | https://www.hmulink.com/demos/clarity-coaching/ |
+| Horizon City Tours | https://www.hmulink.com/demos/horizon-tours/ |
 
 El QR de cada demo está en `.../demos/<slug>/qr.svg` y codifica la URL pública de esa demo.
 

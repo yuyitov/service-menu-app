@@ -64,9 +64,8 @@ BRAND_STYLES = (
 )
 
 # Fallback base URL used only if a demo payload omits `public_url`.
-# Phase 3B: demos are published on GitHub Pages, so the fallback mirrors
-# the real public base (still no secrets and no private links).
-DEMO_BASE_URL = "https://yuyitov.github.io/service-menu-app/demos"
+# Phase 4E: demos are published on the custom domain (still no secrets and no private links).
+DEMO_BASE_URL = "https://www.hmulink.com/demos"
 
 # Required top-level fields for a minimally valid public payload.
 REQUIRED_FIELDS = (
@@ -382,7 +381,7 @@ def build_share(public_url: str) -> str:
 def build_footer() -> str:
     return (
         '<footer class="footer">'
-        'Pagina creada con Service Menu App - Demo'
+        'HMU Link - Demo'
         "</footer>"
     )
 

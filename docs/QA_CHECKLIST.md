@@ -106,20 +106,16 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] Copy adaptado por mercado (no traducción literal): `/es/` enfocado en
       WhatsApp/preguntas repetidas; `/` enfocado en polished page / not ready for a
       full website.
-- [ ] Cada página tiene title, meta description, canonical y hreflang
+- [x] Cada página tiene title, meta description, canonical y hreflang
       (es-MX / en-US / x-default) apuntando al dominio activo.
-- [ ] Las dos páginas son HTML/CSS estático: sin analytics/pixels, sin scripts de
+- [x] Las dos páginas son HTML/CSS estático: sin analytics/pixels, sin scripts de
       terceros, sin formularios reales.
-- [ ] Los 12 estilos aparecen en `/` y `/es/` con una captura real de su demo (no un
+- [x] Los 12 estilos aparecen en `/` y `/es/` con una captura real de su demo (no un
       mockup CSS abstracto) y link a la demo; las imágenes cargan sin 404.
-- [ ] Dominio custom: si `www.hmulink.com` está activo, `/`, `/es/`, las 12 demos
-      y al menos un `qr.svg` responden 200 en el dominio custom y HTTPS es válido; si no
-      está activo, se documenta como pendiente y todo sigue funcionando en
-      `yuyitov.github.io`.
-- [ ] Los QR codifican el dominio correcto según el estado del dominio custom (pendiente
-      de migrar a www.hmulink.com cuando esté activo).
-- [ ] Sin wildcard DNS; sin subdominios adicionales.
-- [ ] Las 12 demos y sus `qr.svg` siguen existiendo sin cambios funcionales.
+- [x] Dominio custom: `www.hmulink.com` está activo. `/`, `/es/`, las 12 demos
+      y todos los `qr.svg` responden 200 en el dominio custom y HTTPS es válido.
+- [x] Sin wildcard DNS; sin subdominios adicionales.
+- [x] Las 12 demos y sus `qr.svg` siguen existiendo sin cambios funcionales.
 
 ## Phase 4D — Identidad visual HMU Link
 
@@ -140,6 +136,26 @@ Pasos concretos para validar el generador estático de Phase 1:
 - [ ] El copy estratégico por mercado, los precios tentativos, los 6 estilos con sus
       demos y los avisos de checkout inactivo se mantienen sin cambios.
 - [ ] Logo final como asset sigue pendiente y está documentado.
+
+## Phase 4E — Migración a dominio custom
+
+- [x] Archivo `public/CNAME` creado con contenido exacto: `www.hmulink.com`
+- [x] Los 12 `public_url` en `data/demos/*.json` actualizados a `https://www.hmulink.com/demos/<slug>/`
+- [x] `DEMO_BASE_URL` en `generator/generate_service_menu.py` actualizado a `https://www.hmulink.com/demos`
+- [x] Footer de demos regenerado: dice "HMU Link - Demo" (no "Service Menu App - Demo")
+- [x] Los 12 demos regenerados: `python generator/generate_service_menu.py` exitoso
+- [x] Los 12 `qr.svg` regenerados y contienen xmlns válido
+- [x] Canonical de `/` es `https://www.hmulink.com/`
+- [x] Canonical de `/es/` es `https://www.hmulink.com/es/`
+- [x] hreflang es-MX apunta a `https://www.hmulink.com/es/`
+- [x] hreflang en-US apunta a `https://www.hmulink.com/`
+- [x] hreflang x-default apunta a `https://www.hmulink.com/`
+- [x] og:url y og:image actualizados en ambas páginas
+- [x] Sin referencias a `yuyitov.github.io` en archivos públicos HTML
+- [x] Sin referencias a `demo.servicemenu.example` ni antiguos URLs en payloads
+- [x] No hay `{{...}}` tokens sin interpolar en archivos públicos
+- [x] Sin secretos, sin datos reales de clientes
+- [x] MyGuest no fue tocado
 
 ## Phase 4F — Copy, densidad de info, 12 estilos, pricing único y animación
 

@@ -1,53 +1,57 @@
 {
-  "public_slug": "pawsome-grooming",
-  "public_url": "https://yuyitov.github.io/service-menu-app/demos/pawsome-grooming/",
-  "business_name": "Pawsome Grooming",
-  "short_description": "Spa y estética para tu mejor amigo 🐾",
-  "brand_style": "sunny-paws",
-  "primary_image_url": null,
-  "logo_url": null,
-  "service_categories": ["Baño y corte", "Spa canino", "Extras"],
-  "services": [
-    {
-      "category": "Baño y corte",
-      "name": "Baño básico (razas pequeñas)",
-      "price_label": "$280 MXN"
-    },
-    {
-      "category": "Baño y corte",
-      "name": "Corte + baño (razas medianas)",
-      "price_label": "$420 MXN"
-    },
-    {
-      "category": "Spa canino",
-      "name": "Hidratación + cepillado profundo",
-      "price_label": "$180 MXN"
-    },
-    {
-      "category": "Spa canino",
-      "name": "Aromaterapia relajante",
-      "price_label": "$120 MXN"
-    },
-    {
-      "category": "Extras",
-      "name": "Corte de uñas",
-      "price_label": "$80 MXN"
-    }
-  ],
-  "featured_package": {
-    "name": "Día de Spa Canino",
-    "description": "Baño + corte + spa + aromaterapia + premio sorpresa",
-    "price_label": "$650 MXN"
-  },
-  "whatsapp": "+52 55 4567 8901",
-  "instagram": "https://instagram.com/pawsomegrooming.demo",
-  "google_maps_url": "https://maps.google.com/?q=Pawsome+Grooming+Demo",
-  "address": "Av. Universidad 234, Col. Del Valle, CDMX",
-  "opening_hours_text": "Lun–Sáb 9:00–19:00 · Dom cerrado",
-  "google_reviews_url": "https://g.page/r/pawsome-grooming-demo/review",
-  "policies": [
-    "Cartilla de vacunación al día obligatoria.",
-    "Agenda tu cita con 24 h de anticipación.",
-    "Dueños pueden esperar en sala o recoger después."
-  ]
+    "public_slug":  "pawsome-grooming",
+    "public_url":  "https://www.hmulink.com/demos/pawsome-grooming/",
+    "business_name":  "Pawsome Grooming",
+    "short_description":  "Spa y estÃ©tica para tu mejor amigo ðŸ¾",
+    "brand_style":  "sunny-paws",
+    "primary_image_url":  null,
+    "logo_url":  null,
+    "service_categories":  [
+                               "BaÃ±o y corte",
+                               "Spa canino",
+                               "Extras"
+                           ],
+    "services":  [
+                     {
+                         "category":  "BaÃ±o y corte",
+                         "name":  "BaÃ±o bÃ¡sico (razas pequeÃ±as)",
+                         "price_label":  "$280 MXN"
+                     },
+                     {
+                         "category":  "BaÃ±o y corte",
+                         "name":  "Corte + baÃ±o (razas medianas)",
+                         "price_label":  "$420 MXN"
+                     },
+                     {
+                         "category":  "Spa canino",
+                         "name":  "HidrataciÃ³n + cepillado profundo",
+                         "price_label":  "$180 MXN"
+                     },
+                     {
+                         "category":  "Spa canino",
+                         "name":  "Aromaterapia relajante",
+                         "price_label":  "$120 MXN"
+                     },
+                     {
+                         "category":  "Extras",
+                         "name":  "Corte de uÃ±as",
+                         "price_label":  "$80 MXN"
+                     }
+                 ],
+    "featured_package":  {
+                             "name":  "DÃ­a de Spa Canino",
+                             "description":  "BaÃ±o + corte + spa + aromaterapia + premio sorpresa",
+                             "price_label":  "$650 MXN"
+                         },
+    "whatsapp":  "+52 55 4567 8901",
+    "instagram":  "https://instagram.com/pawsomegrooming.demo",
+    "google_maps_url":  "https://maps.google.com/?q=Pawsome+Grooming+Demo",
+    "address":  "Av. Universidad 234, Col. Del Valle, CDMX",
+    "opening_hours_text":  "Lunâ€“SÃ¡b 9:00â€“19:00 Â· Dom cerrado",
+    "google_reviews_url":  "https://g.page/r/pawsome-grooming-demo/review",
+    "policies":  [
+                     "Cartilla de vacunaciÃ³n al dÃ­a obligatoria.",
+                     "Agenda tu cita con 24 h de anticipaciÃ³n.",
+                     "DueÃ±os pueden esperar en sala o recoger despuÃ©s."
+                 ]
 }

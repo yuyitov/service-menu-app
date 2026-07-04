@@ -1,50 +1,53 @@
 {
-  "public_slug": "sage-studio",
-  "public_url": "https://yuyitov.github.io/service-menu-app/demos/sage-studio/",
-  "business_name": "Renacer — Sage Studio",
-  "short_description": "Yoga, meditación y terapias holísticas para tu día a día",
-  "brand_style": "sage-calm",
-  "primary_image_url": null,
-  "logo_url": null,
-  "service_categories": ["Clases", "Terapias"],
-  "services": [
-    {
-      "category": "Clases",
-      "name": "Hatha Yoga",
-      "description": "Clase grupal para todos los niveles",
-      "price_label": "$150 MXN / clase"
-    },
-    {
-      "category": "Clases",
-      "name": "Vinyasa Flow",
-      "price_label": "$180 MXN / clase"
-    },
-    {
-      "category": "Terapias",
-      "name": "Meditación guiada",
-      "description": "Individual, 45 minutos",
-      "price_label": "Consultar"
-    },
-    {
-      "category": "Terapias",
-      "name": "Masaje holístico",
-      "description": "Aromaterapia & sonido",
-      "price_label": "$700 MXN"
-    }
-  ],
-  "featured_package": {
-    "name": "Mes de Bienestar",
-    "description": "Clases ilimitadas + 1 terapia individual al mes",
-    "price_label": "Desde $1,200 MXN"
-  },
-  "whatsapp": "+52 55 4455 6677",
-  "instagram": "https://instagram.com/sagestudio.demo",
-  "google_maps_url": "https://maps.google.com/?q=Renacer+Sage+Studio+Demo",
-  "address": "Insurgentes Sur 800, Col. Del Valle, CDMX",
-  "opening_hours_text": "Lun–Vie 07:00–21:00 · Sáb 08:00–14:00 · Dom cerrado",
-  "google_reviews_url": "https://g.page/r/sage-studio-demo/review",
-  "policies": [
-    "Reserva tu lugar por WhatsApp antes de cada clase.",
-    "Trae tu propio tapete o renta uno en recepción."
-  ]
+    "public_slug":  "sage-studio",
+    "public_url":  "https://www.hmulink.com/demos/sage-studio/",
+    "business_name":  "Renacer â€” Sage Studio",
+    "short_description":  "Yoga, meditaciÃ³n y terapias holÃ­sticas para tu dÃ­a a dÃ­a",
+    "brand_style":  "sage-calm",
+    "primary_image_url":  null,
+    "logo_url":  null,
+    "service_categories":  [
+                               "Clases",
+                               "Terapias"
+                           ],
+    "services":  [
+                     {
+                         "category":  "Clases",
+                         "name":  "Hatha Yoga",
+                         "description":  "Clase grupal para todos los niveles",
+                         "price_label":  "$150 MXN / clase"
+                     },
+                     {
+                         "category":  "Clases",
+                         "name":  "Vinyasa Flow",
+                         "price_label":  "$180 MXN / clase"
+                     },
+                     {
+                         "category":  "Terapias",
+                         "name":  "MeditaciÃ³n guiada",
+                         "description":  "Individual, 45 minutos",
+                         "price_label":  "Consultar"
+                     },
+                     {
+                         "category":  "Terapias",
+                         "name":  "Masaje holÃ­stico",
+                         "description":  "Aromaterapia \u0026 sonido",
+                         "price_label":  "$700 MXN"
+                     }
+                 ],
+    "featured_package":  {
+                             "name":  "Mes de Bienestar",
+                             "description":  "Clases ilimitadas + 1 terapia individual al mes",
+                             "price_label":  "Desde $1,200 MXN"
+                         },
+    "whatsapp":  "+52 55 4455 6677",
+    "instagram":  "https://instagram.com/sagestudio.demo",
+    "google_maps_url":  "https://maps.google.com/?q=Renacer+Sage+Studio+Demo",
+    "address":  "Insurgentes Sur 800, Col. Del Valle, CDMX",
+    "opening_hours_text":  "Lunâ€“Vie 07:00â€“21:00 Â· SÃ¡b 08:00â€“14:00 Â· Dom cerrado",
+    "google_reviews_url":  "https://g.page/r/sage-studio-demo/review",
+    "policies":  [
+                     "Reserva tu lugar por WhatsApp antes de cada clase.",
+                     "Trae tu propio tapete o renta uno en recepciÃ³n."
+                 ]
 }

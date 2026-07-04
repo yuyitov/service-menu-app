@@ -147,6 +147,21 @@ el usuario.
   existente; `prefers-reduced-motion` sigue desactivando todo.
 - Pendiente de commit y revisión visual antes de publicar.
 
+## Phase 4E — Migración a dominio custom www.hmulink.com ✅
+
+- Configuración de Cloudflare DNS: CNAME `www → yuyitov.github.io` + A records apex.
+- Configuración de GitHub Pages custom domain: `www.hmulink.com` en Settings.
+- HTTPS y Enforce HTTPS: activados.
+- Archivo `public/CNAME` con `www.hmulink.com` creado.
+- Actualización de `public_url` en todos los payloads demo a `https://www.hmulink.com/demos/<slug>/`.
+- Actualización de `DEMO_BASE_URL` en `generator/generate_service_menu.py` a `https://www.hmulink.com/demos`.
+- Regeneración de todos los demos y QR codes.
+- Actualización de canonicals y hreflang en landing pages (`/` y `/es/`).
+- Actualización de og:url e og:image en metadatos.
+- Footer de demos rebrandizado: "HMU Link - Demo" (no "Service Menu App - Demo").
+- Documentación actualizada (README, ARCHITECTURE, QA_CHECKLIST).
+- Verificación: https://www.hmulink.com/ → HTTP 200, HTTPS válido, QRs codifican URLs correctas.
+
 ## Phase 5 — Stripe/Tally
 
 - Conectar Stripe Payment Link real y su webhook.

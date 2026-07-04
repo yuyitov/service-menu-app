@@ -122,11 +122,12 @@ para aprobar el diseño antes de escribir código de integración.
   `actions/deploy-pages`.
 - El deploy usa el `GITHUB_TOKEN` efímero del propio workflow con permisos mínimos
   (`contents: read`, `pages: write`, `id-token: write`). **No usa secrets configurados.**
-- URL base pública: `https://yuyitov.github.io/service-menu-app/`. Los `public_url` de los
-  12 payloads demo y sus QR apuntan a `.../demos/<slug>/`.
+- URL base pública: `https://www.hmulink.com/` (dominio custom activo desde Phase 4E).
+  Los `public_url` de los 12 payloads demo y sus QR apuntan a
+  `https://www.hmulink.com/demos/<slug>/`.
 - `generate-demos.yml` se mantiene como workflow de **validación** independiente en
   push/PR; `pages.yml` es el único que despliega.
-- Sin dominio custom todavía (fase posterior).
+- Archivo `public/CNAME` contiene `www.hmulink.com` para instrucciones a GitHub Pages.
 
 ## Landing por idioma HMU Link (Phase 4C, reestructurada)
 
@@ -143,35 +144,34 @@ para aprobar el diseño antes de escribir código de integración.
   Incluye pills de filtro por categoría de negocio (JS vanilla, sin recargar página).
 - Sigue sin haber backend dinámico: todo es HTML/CSS estático publicado por `pages.yml`.
 
-## Dominio custom hmulink.com (Phase 4C)
+## Dominio custom hmulink.com (Phase 4E, activo)
 
-- Dominio comprado en Cloudflare: `hmulink.com`. Dominio principal deseado:
-  `www.hmulink.com` (apex redirige a www). Sin wildcard DNS y sin subdominios
-  adicionales por ahora.
-- **Estado: pendiente.** El DNS de la zona aún no tiene registros para `www` ni A records
-  en el apex. El custom domain **no** se configura en GitHub Pages hasta que el DNS
-  exista, porque al configurarlo GitHub redirige `yuyitov.github.io/service-menu-app/` al
-  dominio custom y las demos/QR quedarían rotas mientras el DNS no propague.
-- Orden de activación: (1) crear en Cloudflare el CNAME `www → yuyitov.github.io`
-  (DNS only) y los A records del apex de GitHub Pages; (2) configurar
-  `www.hmulink.com` como custom domain del repo (Settings → Pages o
-  `gh api -X PUT repos/yuyitov/service-menu-app/pages -f cname=www.hmulink.com`);
-  (3) esperar validación DNS + certificado HTTPS de GitHub; (4) activar "Enforce HTTPS";
-  (5) actualizar `public_url` de las 12 demos, `DEMO_BASE_URL`, canonicals/hreflang y
-  regenerar QRs.
-- Cuando el dominio esté activo, GitHub Pages redirige automáticamente las URLs
-  `yuyitov.github.io/service-menu-app/...` al dominio custom, así los QR viejos no se
-  rompen.
+- Dominio comprado en Cloudflare: `hmulink.com`. Dominio principal activo:
+  `www.hmulink.com` (apex redirige a www).
+- **Estado: activo desde Phase 4E.** El DNS está configurado:
+  - CNAME `www → yuyitov.github.io` (DNS only, sin proxy)
+  - A records del apex apuntan a GitHub Pages
+  - GitHub Pages custom domain: `www.hmulink.com` configurado
+  - HTTPS: activado y forzado
+  - Certificado TLS válido
+- Cambios realizados en Phase 4E:
+  - Archivo `public/CNAME` creado con `www.hmulink.com`
+  - `public_url` de las 12 demos actualizado a `https://www.hmulink.com/demos/<slug>/`
+  - `DEMO_BASE_URL` en `generator/generate_service_menu.py` actualizado
+  - Canonicals y hreflang en landing pages actualizados
+  - QR codes regenerados con nuevas URLs
+- GitHub Pages redirige automáticamente las URLs antiguas `yuyitov.github.io/service-menu-app/...`
+  al dominio custom.
 
-## Landing comercial pública (Phase 4)
+## Landing comercial pública (Phase 4, publicado en dominio custom Phase 4E)
 
-- La landing comercial vive en `public/index.html` y se publica en la **raíz** de GitHub
-  Pages (`https://yuyitov.github.io/service-menu-app/`) por el mismo workflow `pages.yml`
-  que ya publica toda la carpeta `public/` — no requirió cambios de workflow.
+- La landing comercial vive en `public/index.html` y se publica en la **raíz** del sitio
+  (`https://www.hmulink.com/`) por el mismo workflow `pages.yml` que ya publica toda la
+  carpeta `public/` — no requirió cambios de workflow.
 - Es **estática y pública**: HTML/CSS puro, sin JavaScript, sin fonts ni imágenes
   externas, sin analytics y sin formularios reales. No se genera con el generador de
   demos; es un archivo mantenido a mano.
-- Enlaza las 6 demos públicas y muestra pricing tentativo. **No** integra Stripe, Tally,
+- Enlaza las 12 demos públicas y muestra pricing tentativo. **No** integra Stripe, Tally,
   Worker, KV ni email: el checkout se activa en una fase posterior.
 
 ## Separación total respecto a MyGuest

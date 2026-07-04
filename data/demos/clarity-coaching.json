@@ -1,51 +1,55 @@
 {
-  "public_slug": "clarity-coaching",
-  "public_url": "https://yuyitov.github.io/service-menu-app/demos/clarity-coaching/",
-  "business_name": "Clarity Coaching Co.",
-  "short_description": "Claridad y estrategia para tu siguiente paso profesional",
-  "brand_style": "clarity-editorial",
-  "primary_image_url": null,
-  "logo_url": null,
-  "service_categories": ["Coaching individual", "Programas", "Talleres"],
-  "services": [
-    {
-      "category": "Coaching individual",
-      "name": "Sesión inicial de diagnóstico",
-      "description": "60 minutos, define objetivos y plan de trabajo",
-      "price_label": "$900 MXN"
-    },
-    {
-      "category": "Coaching individual",
-      "name": "Sesión de seguimiento",
-      "price_label": "$750 MXN"
-    },
-    {
-      "category": "Programas",
-      "name": "Programa de 8 sesiones",
-      "description": "Acompañamiento continuo durante 2 meses",
-      "price_label": "$5,200 MXN"
-    },
-    {
-      "category": "Talleres",
-      "name": "Taller grupal: Claridad de carrera",
-      "description": "3 horas, grupos pequeños",
-      "price_label": "$650 MXN"
-    }
-  ],
-  "featured_package": {
-    "name": "Programa Claridad Total",
-    "description": "Diagnóstico + 8 sesiones + plan de acción por escrito",
-    "price_label": "$5,900 MXN"
-  },
-  "whatsapp": "+52 55 6789 0123",
-  "instagram": "https://instagram.com/claritycoaching.demo",
-  "google_maps_url": "https://maps.google.com/?q=Clarity+Coaching+Demo",
-  "address": "Sesiones en línea o en Polanco, CDMX (con cita)",
-  "opening_hours_text": "Lun–Vie 9:00–18:00, con cita previa",
-  "google_reviews_url": "https://g.page/r/clarity-coaching-demo/review",
-  "policies": [
-    "Cancelaciones con 24 h de anticipación.",
-    "Sesiones disponibles en línea o presenciales.",
-    "Confidencialidad total en todas las sesiones."
-  ]
+    "public_slug":  "clarity-coaching",
+    "public_url":  "https://www.hmulink.com/demos/clarity-coaching/",
+    "business_name":  "Clarity Coaching Co.",
+    "short_description":  "Claridad y estrategia para tu siguiente paso profesional",
+    "brand_style":  "clarity-editorial",
+    "primary_image_url":  null,
+    "logo_url":  null,
+    "service_categories":  [
+                               "Coaching individual",
+                               "Programas",
+                               "Talleres"
+                           ],
+    "services":  [
+                     {
+                         "category":  "Coaching individual",
+                         "name":  "SesiÃ³n inicial de diagnÃ³stico",
+                         "description":  "60 minutos, define objetivos y plan de trabajo",
+                         "price_label":  "$900 MXN"
+                     },
+                     {
+                         "category":  "Coaching individual",
+                         "name":  "SesiÃ³n de seguimiento",
+                         "price_label":  "$750 MXN"
+                     },
+                     {
+                         "category":  "Programas",
+                         "name":  "Programa de 8 sesiones",
+                         "description":  "AcompaÃ±amiento continuo durante 2 meses",
+                         "price_label":  "$5,200 MXN"
+                     },
+                     {
+                         "category":  "Talleres",
+                         "name":  "Taller grupal: Claridad de carrera",
+                         "description":  "3 horas, grupos pequeÃ±os",
+                         "price_label":  "$650 MXN"
+                     }
+                 ],
+    "featured_package":  {
+                             "name":  "Programa Claridad Total",
+                             "description":  "DiagnÃ³stico + 8 sesiones + plan de acciÃ³n por escrito",
+                             "price_label":  "$5,900 MXN"
+                         },
+    "whatsapp":  "+52 55 6789 0123",
+    "instagram":  "https://instagram.com/claritycoaching.demo",
+    "google_maps_url":  "https://maps.google.com/?q=Clarity+Coaching+Demo",
+    "address":  "Sesiones en lÃ­nea o en Polanco, CDMX (con cita)",
+    "opening_hours_text":  "Lunâ€“Vie 9:00â€“18:00, con cita previa",
+    "google_reviews_url":  "https://g.page/r/clarity-coaching-demo/review",
+    "policies":  [
+                     "Cancelaciones con 24 h de anticipaciÃ³n.",
+                     "Sesiones disponibles en lÃ­nea o presenciales.",
+                     "Confidencialidad total en todas las sesiones."
+                 ]
 }

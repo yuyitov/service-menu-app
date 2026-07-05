@@ -254,15 +254,6 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .btn:active { transform: scale(0.96); }
 .btn--secondary { background: var(--card); border: 2px solid var(--ocean); color: var(--ocean-deep); }
 .btn--secondary:hover { background: var(--ocean-soft); transform: translateY(-2px); }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 0.76rem; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase;
-  color: var(--tangerine-ink); background: var(--tangerine-soft);
-  border: 2px solid var(--tangerine); border-radius: 999px; padding: 7px 16px;
-  box-shadow: 0 3px 0 var(--tangerine);
-}
-.hero-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tangerine); animation: pulse 2s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: 0.5; } }
 .hero-chips { list-style: none; display: flex; gap: 10px; flex-wrap: wrap; margin-top: 26px; }
 .hero-chips li {
   font-size: 0.85rem; font-weight: 600; color: var(--pepper);
@@ -618,7 +609,6 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <span class="blob blob--banana" aria-hidden="true"></span>
     <span class="blob blob--pink" aria-hidden="true"></span>
     <div class="hero-copy">
-      <span class="hero-badge rise" style="--d:.05s"><span class="dot" aria-hidden="true"></span>Disponible ahora · México</span>
       <h1 class="kinetic"><span class="kw" style="--i:0">Todo</span> <span class="kw" style="--i:1">lo</span> <span class="kw" style="--i:2">que</span> <span class="kw" style="--i:3">tus</span> <span class="kw" style="--i:4">clientes</span> <span class="kw" style="--i:5">preguntan</span> <span class="kw" style="--i:6">por</span> <span class="kw kw-a" style="--i:7">llamada,</span> <span class="kw kw-b" style="--i:8">WhatsApp</span> <span class="kw" style="--i:9">o</span> <span class="kw kw-c" style="--i:10">DM</span> <span class="kw" style="--i:11">—</span> <span class="kw" style="--i:12"><span class="hl">en un solo link</span></span><span class="kw" style="--i:13">.</span></h1>
       <p class="slogan rise" style="--d:.3s">Conecta tu negocio.</p>
       <p class="sub rise" style="--d:.4s">HMU Link crea una página digital para que tus clientes vean tus servicios, precios, promociones y te contacten o reserven desde un solo link.</p>
@@ -1086,7 +1076,6 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 
     /* Act 1: header, badge, and editorial kinetic headline */
     tl.from('.top', { y: -60, autoAlpha: 0, duration: 0.55 }, 0);
-    tl.fromTo('.hero-badge', { y: -40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, ease: 'back.out(2.4)' }, 0.15);
     tl.fromTo('.kinetic .kw', { y: 70, autoAlpha: 0, rotation: 5 }, { y: 0, autoAlpha: 1, rotation: 0, duration: 0.75, ease: 'back.out(1.6)', stagger: 0.055 }, 0.3);
     tl.to('.hl', { backgroundSize: '100% 100%', duration: 0.5, ease: 'power2.inOut' }, 1.05);
     tl.fromTo('.slogan, .hero .sub', { y: 26, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, stagger: 0.12 }, 1.0);

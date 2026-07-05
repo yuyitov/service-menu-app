@@ -2,7 +2,7 @@
     "public_slug":  "north-barber",
     "public_url":  "https://www.hmulink.com/demos/north-barber/",
     "business_name":  "North Barber Co.",
-    "short_description":  "Cortes clÃ¡sicos y grooming para el hombre moderno",
+    "short_description":  "Cortes clásicos y grooming para el hombre moderno",
     "brand_style":  "charcoal-clean",
     "primary_image_url":  null,
     "logo_url":  null,
@@ -14,13 +14,13 @@
     "services":  [
                      {
                          "category":  "Cortes",
-                         "name":  "Corte clÃ¡sico",
-                         "description":  "Tijera \u0026 mÃ¡quina, incluye lavado",
+                         "name":  "Corte clásico",
+                         "description":  "Tijera \u0026 máquina, incluye lavado",
                          "price_label":  "$220 MXN"
                      },
                      {
                          "category":  "Cortes",
-                         "name":  "Corte + diseÃ±o (fade)",
+                         "name":  "Corte + diseño (fade)",
                          "price_label":  "$280 MXN"
                      },
                      {
@@ -31,7 +31,7 @@
                      },
                      {
                          "category":  "Extras",
-                         "name":  "Corte de niÃ±o",
+                         "name":  "Corte de niño",
                          "price_label":  "$180 MXN"
                      }
                  ],
@@ -44,10 +44,10 @@
     "instagram":  "https://instagram.com/northbarber.demo",
     "google_maps_url":  "https://maps.google.com/?q=North+Barber+Co+Demo",
     "address":  "Calzada del Valle 300, San Pedro, Monterrey",
-    "opening_hours_text":  "Lunâ€“SÃ¡b 11:00â€“20:00 Â· Dom cerrado",
+    "opening_hours_text":  "Lun–Sáb 11:00–20:00 · Dom cerrado",
     "google_reviews_url":  "https://g.page/r/north-barber-demo/review",
     "policies":  [
                      "Atendemos por orden de llegada y con cita.",
-                     "Tolerancia de 10 min; despuÃ©s se reagenda."
+                     "Tolerancia de 10 min; después se reagenda."
                  ]
 }

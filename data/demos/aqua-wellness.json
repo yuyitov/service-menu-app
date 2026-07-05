@@ -26,12 +26,12 @@
                      {
                          "category":  "Masajes",
                          "name":  "Masaje con aromaterapia",
-                         "description":  "60 min de relajaciÃ³n profunda",
+                         "description":  "60 min de relajación profunda",
                          "price_label":  "$850 MXN"
                      },
                      {
                          "category":  "Bienestar",
-                         "name":  "SesiÃ³n de respiraciÃ³n \u0026 mindfulness",
+                         "name":  "Sesión de respiración \u0026 mindfulness",
                          "price_label":  "Consultar"
                      }
                  ],
@@ -43,11 +43,11 @@
     "whatsapp":  "+52 55 7788 9900",
     "instagram":  "https://instagram.com/aquawellness.demo",
     "google_maps_url":  "https://maps.google.com/?q=Aqua+Wellness+Spa+Demo",
-    "address":  "Blvd. de los Lagos 55, Zona RÃ­o, Tijuana",
-    "opening_hours_text":  "Lunâ€“Dom 09:00â€“21:00",
+    "address":  "Blvd. de los Lagos 55, Zona Río, Tijuana",
+    "opening_hours_text":  "Lun–Dom 09:00–21:00",
     "google_reviews_url":  null,
     "policies":  [
-                     "Reserva tu circuito de aguas con anticipaciÃ³n.",
-                     "Trae traje de baÃ±o y sandalias."
+                     "Reserva tu circuito de aguas con anticipación.",
+                     "Trae traje de baño y sandalias."
                  ]
 }

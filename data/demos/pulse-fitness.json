@@ -2,25 +2,25 @@
     "public_slug":  "pulse-fitness",
     "public_url":  "https://www.hmulink.com/demos/pulse-fitness/",
     "business_name":  "Pulse Fitness Studio",
-    "short_description":  "Entrena fuerte, entrena con propÃ³sito ðŸ’ª",
+    "short_description":  "Entrena fuerte, entrena con propósito 💪",
     "brand_style":  "electric-slate",
     "primary_image_url":  null,
     "logo_url":  null,
     "service_categories":  [
-                               "MembresÃ­as",
+                               "Membresías",
                                "Clases grupales",
                                "Entrenamiento personal"
                            ],
     "services":  [
                      {
-                         "category":  "MembresÃ­as",
-                         "name":  "MembresÃ­a mensual",
+                         "category":  "Membresías",
+                         "name":  "Membresía mensual",
                          "description":  "Acceso ilimitado a piso de pesas y cardio",
                          "price_label":  "$650 MXN/mes"
                      },
                      {
-                         "category":  "MembresÃ­as",
-                         "name":  "Pase de dÃ­a",
+                         "category":  "Membresías",
+                         "name":  "Pase de día",
                          "price_label":  "$120 MXN"
                      },
                      {
@@ -36,25 +36,25 @@
                      },
                      {
                          "category":  "Entrenamiento personal",
-                         "name":  "SesiÃ³n 1 a 1",
+                         "name":  "Sesión 1 a 1",
                          "description":  "60 minutos con coach certificado",
                          "price_label":  "Desde $450 MXN"
                      }
                  ],
     "featured_package":  {
-                             "name":  "Pack TransformaciÃ³n 3 meses",
-                             "description":  "MembresÃ­a + 8 sesiones de entrenamiento personal + plan de nutriciÃ³n",
+                             "name":  "Pack Transformación 3 meses",
+                             "description":  "Membresía + 8 sesiones de entrenamiento personal + plan de nutrición",
                              "price_label":  "$3,200 MXN"
                          },
     "whatsapp":  "+52 55 2345 6789",
     "instagram":  "https://instagram.com/pulsefitness.demo",
     "google_maps_url":  "https://maps.google.com/?q=Pulse+Fitness+Studio+Demo",
-    "address":  "Av. Insurgentes Sur 456, Col. NÃ¡poles, CDMX",
-    "opening_hours_text":  "Lunâ€“Vie 6:00â€“22:00 Â· SÃ¡b 8:00â€“14:00 Â· Dom cerrado",
+    "address":  "Av. Insurgentes Sur 456, Col. Nápoles, CDMX",
+    "opening_hours_text":  "Lun–Vie 6:00–22:00 · Sáb 8:00–14:00 · Dom cerrado",
     "google_reviews_url":  "https://g.page/r/pulse-fitness-demo/review",
     "policies":  [
                      "Trae tu propia toalla y botella de agua.",
-                     "Cancelaciones de clases con 2 h de anticipaciÃ³n.",
-                     "Congelamiento de membresÃ­a disponible por vacaciones."
+                     "Cancelaciones de clases con 2 h de anticipación.",
+                     "Congelamiento de membresía disponible por vacaciones."
                  ]
 }

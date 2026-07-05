@@ -476,6 +476,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .price-card h3 { color: #ffffff; font-size: 1.3rem; }
 .price-card .amount { font-family: var(--font-display); font-size: 2.8rem; font-weight: 700; color: var(--banana); line-height: 1; }
 .price-card .amount small { font-size: 0.95rem; font-weight: 600; color: #bfe0cd; font-family: var(--font-body); }
+.price-card .amount-note { margin: 8px 0 0; font-size: 0.85rem; color: #bfe0cd; }
 .price-card ul { list-style: none; text-align: left; align-self: stretch; }
 .price-card li { padding: 7px 0 7px 26px; position: relative; font-size: 0.95rem; color: #cfe9da; }
 .price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--avocado); font-weight: 800; }
@@ -505,22 +506,6 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .steps li:nth-child(6n+5)::before { background: var(--avocado); color: var(--pepper-ink); }
 .steps li:nth-child(6n+6)::before { background: var(--pepper); color: #fff; }
 .steps li b { font-weight: 700; }
-
-/* Early access poster */
-.early-shell { padding: 26px 14px 40px; }
-.early {
-  background:
-    radial-gradient(circle at 12% 18%, rgba(244, 120, 176, 0.16) 0 8%, transparent 9%),
-    radial-gradient(circle at 88% 26%, rgba(0, 160, 181, 0.14) 0 6%, transparent 7%),
-    radial-gradient(circle at 22% 82%, rgba(255, 169, 52, 0.16) 0 7%, transparent 8%),
-    radial-gradient(circle at 80% 84%, rgba(152, 197, 78, 0.18) 0 6%, transparent 7%),
-    linear-gradient(135deg, var(--bubblegum-soft) 0%, var(--tangerine-soft) 55%, var(--banana-soft) 100%);
-  border-radius: 44px; text-align: center; padding: 80px 24px; overflow: hidden; position: relative;
-}
-.early .mascot-poster { display: block; width: 168px; height: auto; margin: 0 auto 10px; filter: drop-shadow(0 14px 26px rgba(31, 45, 39, 0.22)); }
-.early h2 { max-width: 22ch; margin: 14px auto 0; font-size: clamp(1.8rem, 4vw, 2.7rem); }
-.early p { color: var(--muted); max-width: 54ch; margin: 16px auto 0; font-size: 1.04rem; }
-.early .cta-row { justify-content: center; margin-top: 32px; }
 
 /* FAQ */
 .faq details {
@@ -633,18 +618,18 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <span class="blob blob--banana" aria-hidden="true"></span>
     <span class="blob blob--pink" aria-hidden="true"></span>
     <div class="hero-copy">
-      <span class="hero-badge rise" style="--d:.05s"><span class="dot" aria-hidden="true"></span>Acceso anticipado abierto · México</span>
-      <h1 class="kinetic"><span class="kw" style="--i:0">Todo</span> <span class="kw" style="--i:1">lo</span> <span class="kw" style="--i:2">que</span> <span class="kw" style="--i:3">te</span> <span class="kw" style="--i:4">preguntan</span> <span class="kw" style="--i:5">por</span> <span class="kw" style="--i:6">WhatsApp,</span> <span class="kw" style="--i:7"><span class="hl">en un solo link</span></span><span class="kw" style="--i:8">.</span></h1>
+      <span class="hero-badge rise" style="--d:.05s"><span class="dot" aria-hidden="true"></span>Disponible ahora · México</span>
+      <h1 class="kinetic"><span class="kw" style="--i:0">Todo</span> <span class="kw" style="--i:1">lo</span> <span class="kw" style="--i:2">que</span> <span class="kw" style="--i:3">tus</span> <span class="kw" style="--i:4">clientes</span> <span class="kw" style="--i:5">preguntan</span> <span class="kw" style="--i:6">por</span> <span class="kw kw-a" style="--i:7">llamada,</span> <span class="kw kw-b" style="--i:8">WhatsApp</span> <span class="kw" style="--i:9">o</span> <span class="kw kw-c" style="--i:10">DM</span> <span class="kw" style="--i:11">—</span> <span class="kw" style="--i:12"><span class="hl">en un solo link</span></span><span class="kw" style="--i:13">.</span></h1>
       <p class="slogan rise" style="--d:.3s">Conecta tu negocio.</p>
       <p class="sub rise" style="--d:.4s">HMU Link crea una página digital para que tus clientes vean tus servicios, precios, promociones y te contacten o reserven desde un solo link.</p>
       <div class="cta-row rise" style="--d:.5s">
         <a class="btn btn--primary" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Quiero mi HMU Link <span class="arr" aria-hidden="true">→</span></a>
-        <a class="btn btn--secondary" href="#estilos">Ver demos reales</a>
+        <a class="btn btn--secondary" href="#estilos">Ver ejemplos de páginas</a>
       </div>
       <ul class="hero-chips rise" style="--d:.62s">
-        <li>Sin app</li>
+        <li>Sin descargar apps</li>
         <li>Sin mensualidades</li>
-        <li>Listo en días</li>
+        <li>Listo el mismo día</li>
       </ul>
     </div>
     <div class="hero-visual rise" style="--d:.35s" aria-hidden="true">
@@ -681,12 +666,12 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track">
     <div class="ticker-set">
-      <span>Un solo link</span><i>✦</i><span>Sin app</span><i>✦</i><span>QR real</span><i>✦</i>
-      <span>WhatsApp directo</span><i>✦</i><span>Precios claros</span><i>✦</i><span>Listo en días</span><i>✦</i>
+      <span>Un solo link</span><i>✦</i><span>Sin descargar apps</span><i>✦</i><span>Código QR</span><i>✦</i>
+      <span>WhatsApp directo</span><i>✦</i><span>Precios claros</span><i>✦</i><span>Listo el mismo día</span><i>✦</i>
     </div>
     <div class="ticker-set">
-      <span>Un solo link</span><i>✦</i><span>Sin app</span><i>✦</i><span>QR real</span><i>✦</i>
-      <span>WhatsApp directo</span><i>✦</i><span>Precios claros</span><i>✦</i><span>Listo en días</span><i>✦</i>
+      <span>Un solo link</span><i>✦</i><span>Sin descargar apps</span><i>✦</i><span>Código QR</span><i>✦</i>
+      <span>WhatsApp directo</span><i>✦</i><span>Precios claros</span><i>✦</i><span>Listo el mismo día</span><i>✦</i>
     </div>
   </div>
 </div>
@@ -739,15 +724,15 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 <section class="alt" id="incluye">
   <div class="wrap">
     <span class="kicker" data-reveal>Alcance claro</span>
-    <h2 data-reveal>Qué incluye (y qué no)</h2>
+    <h2 data-reveal>Qué incluye</h2>
     <p class="lead" data-reveal>Preferimos ser directos: esto es exactamente lo que recibes, sin letras chicas.</p>
     <div class="chip-grid" data-stagger>
       <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Página digital pública</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Link + código QR real compartible</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Link + código QR compartible</span>
       <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Botones WhatsApp, Instagram, Maps y Reviews</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Servicios organizados por categoría</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Tus servicios, publicados tal cual los envías</span>
       <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Promoción o paquete destacado</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>1 corrección incluida</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>1 modificación incluida</span>
     </div>
     <p class="not-included" data-reveal>Sin dashboards, sin logins, sin sistema de pagos o reservas integrado — tus clientes te contactan directo por WhatsApp, Instagram o Maps.</p>
   </div>
@@ -758,7 +743,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
   <div class="wrap">
     <span class="blob blob--pink" aria-hidden="true" style="width: 260px; height: 230px; top: -50px; right: -110px;"></span>
     <span class="kicker" data-reveal>Estilos visuales</span>
-    <h2 data-reveal>12 estilos cerrados, cada uno con demo real</h2>
+    <h2 data-reveal>12 estilos para elegir, cada uno con demo real</h2>
     <p class="lead" data-reveal>Eliges uno de estos 12 estilos y tu página se ve profesional desde el primer día. Filtra por el tipo de negocio que tienes, o abre cualquier demo: son páginas reales publicadas, con datos ficticios.</p>
     <div class="filter-pills" data-reveal role="group" aria-label="Filtrar estilos por categoría">
       <button class="pill is-active" data-filter="all" type="button">Todos</button>
@@ -888,22 +873,23 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       <span class="blob blob--pink" aria-hidden="true"></span>
       <span class="kicker" data-reveal>Precio de lanzamiento</span>
       <h2 data-reveal>Pago único, sin mensualidades</h2>
-      <p class="lead" data-reveal>Pago único, disponible ahora. El cobro se procesa en dólares (USD).</p>
+      <p class="lead" data-reveal>Pago único, disponible ahora.</p>
       <div class="price-single" data-reveal>
         <div class="price-card">
           <h3>Tu HMU Link</h3>
-          <div class="amount"><small>USD</small> $39</div>
+          <div class="amount"><small>MXN aprox.</small> $680</div>
+          <p class="amount-note">El cobro se procesa en dólares: $39 USD exactos.</p>
           <ul>
             <li>1 página digital publicada</li>
             <li>1 estilo visual a elegir</li>
             <li>Paquete o promoción destacada</li>
-            <li>Código QR real + link compartible</li>
-            <li>1 corrección incluida</li>
+            <li>Código QR + link compartible</li>
+            <li>1 modificación incluida</li>
           </ul>
           <a class="btn btn--primary" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Quiero mi HMU Link <span aria-hidden="true">→</span></a>
         </div>
       </div>
-      <p class="fine" data-reveal>Pago único por la creación y publicación de tu página. ¿Necesitas un cambio después? Las correcciones extra cuestan solo $3 USD.</p>
+      <p class="fine" data-reveal>Pago único por la creación y publicación de tu página. ¿Necesitas un cambio después? Las modificaciones extra cuestan aprox. $40 MXN ($3 USD).</p>
     </div>
   </section>
 </div>
@@ -920,25 +906,10 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       <li>Llenas el formulario con tus servicios, precios y datos.</li>
       <li>Generamos tu página.</li>
       <li><b>Recibes tu link y tu código QR por correo</b>, listos para compartir.</li>
-      <li>Usas tu corrección incluida cuando la necesites.</li>
+      <li>Usas tu modificación incluida cuando la necesites.</li>
     </ol>
   </div>
 </section>
-
-<!-- Acceso anticipado -->
-<div class="early-shell" id="acceso-anticipado">
-  <section class="early">
-    <img class="mascot-poster" src="../assets/brand/mascot-480.png" alt="Linky, la mascota de HMU Link" width="480" height="407" loading="lazy" data-reveal>
-    <span class="hero-badge" data-reveal><span class="dot" aria-hidden="true"></span>Acceso anticipado · Abierto</span>
-    <h2 data-reveal>Tu negocio, en un link que se ve increíble.</h2>
-    <p data-reveal>Consigue tu HMU Link hoy: paga una sola vez, llena un formulario breve con los datos de tu negocio, y construimos y publicamos tu página.</p>
-    <p data-reveal>¿Quieres ver el resultado primero? Explora las demos y ve cómo se vería tu negocio.</p>
-    <div class="cta-row" data-reveal>
-      <a class="btn btn--primary" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Quiero mi HMU Link <span class="arr" aria-hidden="true">→</span></a>
-      <a class="btn btn--secondary" href="#estilos">Ver todas las demos</a>
-    </div>
-  </section>
-</div>
 
 <!-- FAQ -->
 <section class="alt faq" id="faq">
@@ -965,7 +936,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </details>
       <details>
         <summary>¿Puedo cambiar precios después?</summary>
-        <div class="fa">Sí. Tu paquete incluye una corrección sin costo. Después de usarla, los cambios adicionales se cobran aparte como corrección extra.</div>
+        <div class="fa">Sí. Tu paquete incluye una modificación sin costo. Después de usarla, los cambios adicionales se cobran aparte como modificación extra.</div>
       </details>
       <details>
         <summary>¿Incluye reservas?</summary>
@@ -973,7 +944,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </details>
       <details>
         <summary>¿Puedo elegir colores?</summary>
-        <div class="fa">Eliges entre 12 estilos visuales cerrados, diseñados para verse profesionales en cualquier negocio. No hay selección libre de colores: así garantizamos que tu página siempre se vea bien.</div>
+        <div class="fa">Eliges entre 12 estilos visuales, diseñados para verse profesionales en cualquier negocio. No hay selección libre de colores: así garantizamos que tu página siempre se vea bien.</div>
       </details>
       <details>
         <summary>¿Sirve para barberías?</summary>

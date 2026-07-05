@@ -1,24 +1,24 @@
 {
     "public_slug":  "cafe-terra",
     "public_url":  "https://www.hmulink.com/demos/cafe-terra/",
-    "business_name":  "CafÃ© Terra",
-    "short_description":  "CafÃ© de especialidad y cocina de temporada ðŸŒ¿",
+    "business_name":  "Café Terra",
+    "short_description":  "Café de especialidad y cocina de temporada 🌿",
     "brand_style":  "terracotta-warm",
     "primary_image_url":  null,
     "logo_url":  null,
     "service_categories":  [
-                               "CafÃ©",
+                               "Café",
                                "Desayunos",
                                "Postres"
                            ],
     "services":  [
                      {
-                         "category":  "CafÃ©",
+                         "category":  "Café",
                          "name":  "Espresso",
                          "price_label":  "$45 MXN"
                      },
                      {
-                         "category":  "CafÃ©",
+                         "category":  "Café",
                          "name":  "Latte de temporada",
                          "description":  "Con jarabe artesanal del mes",
                          "price_label":  "$68 MXN"
@@ -42,14 +42,14 @@
                  ],
     "featured_package":  {
                              "name":  "Brunch de fin de semana",
-                             "description":  "Bebida + platillo principal + postre, sÃ¡bados y domingos",
+                             "description":  "Bebida + platillo principal + postre, sábados y domingos",
                              "price_label":  "$220 MXN"
                          },
     "whatsapp":  "+52 55 3456 7890",
     "instagram":  "https://instagram.com/cafeterra.demo",
     "google_maps_url":  "https://maps.google.com/?q=Cafe+Terra+Demo",
     "address":  "Calle Orizaba 88, Col. Roma Norte, CDMX",
-    "opening_hours_text":  "Marâ€“Dom 8:00â€“18:00 Â· Lun cerrado",
+    "opening_hours_text":  "Mar–Dom 8:00–18:00 · Lun cerrado",
     "google_reviews_url":  "https://g.page/r/cafe-terra-demo/review",
     "policies":  [
                      "Reservaciones para grupos de 6+ personas.",

@@ -304,7 +304,8 @@ def build_hero(payload: dict, s: dict) -> str:
     # Placeholder hero: labeled gradient band, never a broken image.
     return (
         '<div class="hero hero--placeholder" role="img" '
-        f'aria-label="{alt}"><span class="hero__ph-text">{s["hero_placeholder"]}</span></div>'
+        f'aria-label="{alt}"><span class="hero__ph-icon" aria-hidden="true">📷</span>'
+        f'<span class="hero__ph-text">{s["hero_placeholder"]}</span></div>'
     )
 
 

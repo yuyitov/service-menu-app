@@ -508,22 +508,6 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .steps li:nth-child(6n+6)::before { background: var(--pepper); color: #fff; }
 .steps li b { font-weight: 700; }
 
-/* Early access poster */
-.early-shell { padding: 26px 14px 40px; }
-.early {
-  background:
-    radial-gradient(circle at 12% 18%, rgba(244, 120, 176, 0.16) 0 8%, transparent 9%),
-    radial-gradient(circle at 88% 26%, rgba(0, 160, 181, 0.14) 0 6%, transparent 7%),
-    radial-gradient(circle at 22% 82%, rgba(255, 169, 52, 0.16) 0 7%, transparent 8%),
-    radial-gradient(circle at 80% 84%, rgba(152, 197, 78, 0.18) 0 6%, transparent 7%),
-    linear-gradient(135deg, var(--bubblegum-soft) 0%, var(--tangerine-soft) 55%, var(--banana-soft) 100%);
-  border-radius: 44px; text-align: center; padding: 80px 24px; overflow: hidden; position: relative;
-}
-.early .mascot-poster { display: block; width: 168px; height: auto; margin: 0 auto 10px; filter: drop-shadow(0 14px 26px rgba(31, 45, 39, 0.22)); }
-.early h2 { max-width: 22ch; margin: 14px auto 0; font-size: clamp(1.8rem, 4vw, 2.7rem); }
-.early p { color: var(--muted); max-width: 54ch; margin: 16px auto 0; font-size: 1.04rem; }
-.early .cta-row { justify-content: center; margin-top: 32px; }
-
 /* FAQ */
 .faq details {
   background: var(--card); border: 1.5px solid var(--line); border-radius: 18px;
@@ -585,7 +569,6 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
   .b1 { top: 1%; left: 0; }
   .b4 { bottom: 1%; right: 0; }
   .mascot { width: 106px; left: -8px; bottom: -10px; }
-  .early .mascot-poster { width: 130px; }
 }
 
 /* GSAP takes over the entrance choreography when it loads (progressive enhancement):
@@ -639,7 +622,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <span class="blob blob--ocean" aria-hidden="true"></span>
     <span class="blob blob--pink" aria-hidden="true"></span>
     <div class="hero-copy">
-      <span class="hero-badge rise" style="--d:.05s"><span class="dot" aria-hidden="true"></span>Early access open · USA &amp; Canada</span>
+      <span class="hero-badge rise" style="--d:.05s"><span class="dot" aria-hidden="true"></span>Now available · USA &amp; Canada</span>
       <h1 class="kinetic"><span class="kw" style="--i:0">Everything</span> <span class="kw" style="--i:1">your</span> <span class="kw" style="--i:2">clients</span> <span class="kw" style="--i:3">ask</span> <span class="kw" style="--i:4">by</span> <span class="kw kw-a" style="--i:5">call,</span> <span class="kw kw-b" style="--i:6">text,</span> <span class="kw" style="--i:7">or</span> <span class="kw kw-c" style="--i:8">DM</span> <span class="kw" style="--i:9">—</span> <span class="kw" style="--i:10"><span class="hl">in one link</span></span><span class="kw" style="--i:11">.</span></h1>
       <p class="slogan rise" style="--d:.3s">Connect your business.</p>
       <p class="sub rise" style="--d:.4s">HMU Link creates mobile-friendly service pages for local businesses to show services, prices, promotions, and contact options — from a call, a text, Instagram, Google, or a QR code.</p>
@@ -648,9 +631,9 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <a class="btn btn--secondary" href="#styles">View live examples</a>
       </div>
       <ul class="hero-chips rise" style="--d:.62s">
-        <li>No app</li>
+        <li>No app to download</li>
         <li>No subscriptions</li>
-        <li>Live in days</li>
+        <li>Ready same day</li>
       </ul>
     </div>
     <div class="hero-visual rise" style="--d:.35s" aria-hidden="true">
@@ -687,12 +670,12 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track">
     <div class="ticker-set">
-      <span>One link</span><i>✦</i><span>No app</span><i>✦</i><span>Real QR</span><i>✦</i>
-      <span>Instagram-ready</span><i>✦</i><span>Clear prices</span><i>✦</i><span>Live in days</span><i>✦</i>
+      <span>One link</span><i>✦</i><span>No app to download</span><i>✦</i><span>QR code</span><i>✦</i>
+      <span>Instagram-ready</span><i>✦</i><span>Clear prices</span><i>✦</i><span>Ready same day</span><i>✦</i>
     </div>
     <div class="ticker-set">
-      <span>One link</span><i>✦</i><span>No app</span><i>✦</i><span>Real QR</span><i>✦</i>
-      <span>Instagram-ready</span><i>✦</i><span>Clear prices</span><i>✦</i><span>Live in days</span><i>✦</i>
+      <span>One link</span><i>✦</i><span>No app to download</span><i>✦</i><span>QR code</span><i>✦</i>
+      <span>Instagram-ready</span><i>✦</i><span>Clear prices</span><i>✦</i><span>Ready same day</span><i>✦</i>
     </div>
   </div>
 </div>
@@ -745,15 +728,15 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 <section class="alt" id="included">
   <div class="wrap">
     <span class="kicker" data-reveal>Clear scope</span>
-    <h2 data-reveal>What's included (and what's not)</h2>
+    <h2 data-reveal>What's included</h2>
     <p class="lead" data-reveal>We'd rather be upfront: this is exactly what you get, no fine print.</p>
     <div class="chip-grid" data-stagger>
       <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Public service page</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Shareable link + real QR code</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Shareable link + QR code</span>
       <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>WhatsApp, Instagram, Maps &amp; Reviews buttons</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Services organized by category</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Your services, listed exactly as you send them</span>
       <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>Featured promo or package</span>
-      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>1 free revision included</span>
+      <span class="chip"><svg class="chip-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg>1 modification included</span>
     </div>
     <p class="not-included" data-reveal>No dashboards, no logins, no built-in payments or booking system — your clients reach you directly through WhatsApp, Instagram, or Maps.</p>
   </div>
@@ -903,13 +886,13 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
             <li>1 published service page</li>
             <li>1 visual style of your choice</li>
             <li>Featured promotion or package</li>
-            <li>Real QR code + shareable link</li>
-            <li>1 revision included</li>
+            <li>QR code + shareable link</li>
+            <li>1 modification included</li>
           </ul>
           <a class="btn btn--primary" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Get my HMU Link <span class="arr" aria-hidden="true">→</span></a>
         </div>
       </div>
-      <p class="fine" data-reveal>One-time payment for creating and publishing your page. Need a change later? Extra revisions are just $3.</p>
+      <p class="fine" data-reveal>One-time payment for creating and publishing your page. Need a change later? Extra modifications are just $3.</p>
     </div>
   </section>
 </div>
@@ -926,25 +909,10 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       <li>You fill out the form with your services, prices, and details.</li>
       <li>We generate your page.</li>
       <li><b>You get your link and QR code by email</b>, ready to share.</li>
-      <li>Use your included revision whenever you need it.</li>
+      <li>Use your included modification whenever you need it.</li>
     </ol>
   </div>
 </section>
-
-<!-- Early access -->
-<div class="early-shell" id="early-access">
-  <section class="early">
-    <img class="mascot-poster" src="assets/brand/mascot-480.png" alt="Linky, the HMU Link mascot" width="480" height="407" loading="lazy" data-reveal>
-    <span class="hero-badge" data-reveal><span class="dot" aria-hidden="true"></span>Early access · Now open</span>
-    <h2 data-reveal>Your business, in a link that looks amazing.</h2>
-    <p data-reveal>Get your HMU Link today: pay once, fill out a short form with your business details, and we'll build and publish your page.</p>
-    <p data-reveal>Want to see the result first? Browse the live examples and picture your business in one of them.</p>
-    <div class="cta-row" data-reveal>
-      <a class="btn btn--primary" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Get my HMU Link <span class="arr" aria-hidden="true">→</span></a>
-      <a class="btn btn--secondary" href="#styles">See all 6 examples</a>
-    </div>
-  </section>
-</div>
 
 <!-- FAQ -->
 <section class="alt faq" id="faq">
@@ -971,7 +939,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </details>
       <details>
         <summary>Can I change my prices later?</summary>
-        <div class="fa">Yes. Your package includes one free revision. After that, additional changes are billed separately as extra revisions.</div>
+        <div class="fa">Yes. Your package includes one free modification. After that, additional changes are billed separately as extra modifications.</div>
       </details>
       <details>
         <summary>Does it include booking?</summary>

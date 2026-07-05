@@ -72,7 +72,10 @@ jobs:
 
       - name: Verify no obvious secrets committed
         run: |
-          if grep -rniE "api[_-]?key|secret_key|password|bearer |sk_live_|sk_test_|-----BEGIN" \
+          # Matches secret-shaped VALUES (Stripe/OpenAI key prefixes, PEM
+          # headers), not mere mentions of words like "api_key" or "bearer"
+          # that legitimately appear in code/comments/docstrings.
+          if grep -rnE "sk_live_[A-Za-z0-9]+|sk_test_[A-Za-z0-9]+|rk_live_[A-Za-z0-9]+|sk-proj-[A-Za-z0-9_-]{10,}|sk-[A-Za-z0-9]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----" \
                generator/ data/ public/ ; then
             echo "Posible secreto detectado."
             exit 1

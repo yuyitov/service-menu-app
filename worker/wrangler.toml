@@ -42,5 +42,7 @@ GITHUB_ACTIONS_EVENT = "new-hmu-service-menu"
 TALLY_FORM_URL_EN    = "https://tally.so/r/yPkN5X?order_id="
 TALLY_FORM_URL_ES    = "https://tally.so/r/MeyDpk?order_id="
 FROM_EMAIL           = "HMU Link <hello@hmulink.com>"
+# hello@ no es buzón real; las respuestas (p.ej. corrección gratuita) van aquí.
+REPLY_TO_EMAIL       = "veronica.perezarroyo@gmail.com"
 PUBLIC_BOOK_BASE_URL = "https://www.hmulink.com"
 

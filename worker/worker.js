@@ -467,7 +467,6 @@ async function handleNotify(request, env) {
 
   const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
   const pageUrl = `${baseUrl}/links/${slug}/`;
-  const correctionUrl = `${baseUrl}/correct/${slug}?token=${encodeURIComponent(correctionToken)}`;
 
   // Save correction token
   try {
@@ -509,8 +508,7 @@ async function handleNotify(request, env) {
       subject: 'Your HMU Link service menu is ready! 🎉',
       html: buildDeliveryEmail({
         pageUrl,
-        slug,
-        correctionUrl
+        slug
       })
     });
   } catch (err) {
@@ -570,11 +568,13 @@ async function handleCorrectionsSubmission(normalized, env) {
     console.error('correction token update failed:', safeError(err));
   }
 
-  // Dispatch GitHub Actions to regenerate page with corrections
+  // Dispatch GitHub Actions to regenerate page with corrections.
+  // OJO: NO incluir order_id en client_payload — GitHub imprime el env de
+  // cada step en logs públicos (misma regla que el flujo principal); el
+  // order_id se resuelve desde KV vía correction_token cuando haga falta.
   try {
     await dispatchGitHubAction(env, {
       submission_id: normalized.submission_id,
-      order_id: orderId,
       is_correction: true,
       correction_token: correctionToken
     });
@@ -692,6 +692,26 @@ async function sendEmail({ env, to, subject, html }) {
   }
 
   const fromEmail = (env.FROM_EMAIL || 'hello@hmulink.com').split('<').pop().replace('>', '').trim();
+  // hello@hmulink.com no es un buzón real: las respuestas del cliente
+  // (incluida la solicitud de corrección gratuita) deben llegar a un correo
+  // monitoreado, no rebotar.
+  const replyTo = (env.REPLY_TO_EMAIL || '').trim();
+
+  const body = {
+    personalizations: [
+      {
+        to: [{ email: to }],
+        subject
+      }
+    ],
+    from: { email: fromEmail },
+    content: [
+      { type: 'text/html', value: html }
+    ]
+  };
+  if (replyTo) {
+    body.reply_to = { email: replyTo };
+  }
 
   const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
     method: 'POST',
@@ -699,18 +719,7 @@ async function sendEmail({ env, to, subject, html }) {
       'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      personalizations: [
-        {
-          to: [{ email: to }],
-          subject
-        }
-      ],
-      from: { email: fromEmail },
-      content: [
-        { type: 'text/html', value: html }
-      ]
-    })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
@@ -1037,7 +1046,10 @@ function buildPostPaymentEmail({ formUrlEN, formUrlES }) {
   `;
 }
 
-function buildDeliveryEmail({ pageUrl, slug, correctionUrl }) {
+// La corrección gratuita se pide respondiendo al correo (reply_to va al buzón
+// real). El flujo automatizado con correction_token queda para v2 — el token
+// se sigue generando y guardando en KV para cuando exista.
+function buildDeliveryEmail({ pageUrl, slug }) {
   return `
 <!DOCTYPE html>
 <html>
@@ -1067,8 +1079,7 @@ function buildDeliveryEmail({ pageUrl, slug, correctionUrl }) {
 
     <div style="margin: 30px 0; padding: 20px; background: #fff9e6; border-left: 4px solid #ffa934; border-radius: 4px;">
       <p style="margin: 0 0 15px 0; color: #333; font-weight: 500;">✏️ Incluido: Una corrección gratuita</p>
-      <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tienes derecho a una corrección gratuita.</p>
-      <a href="${correctionUrl}" style="display: inline-block; background: #ffa934; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px;">Solicitar Corrección</a>
+      <p style="margin: 0; color: #666; font-size: 14px;">Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tienes derecho a una corrección gratuita: <strong>simplemente responde a este correo</strong> con los cambios que quieras y los aplicamos por ti.</p>
     </div>
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">

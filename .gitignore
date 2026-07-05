@@ -13,6 +13,9 @@ venv/
 .env.*
 *.local
 
+# Wrangler local state (puede contener info de la cuenta Cloudflare)
+worker/.wrangler/
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db

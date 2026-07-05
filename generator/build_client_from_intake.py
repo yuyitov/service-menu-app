@@ -39,6 +39,7 @@ import re
 import subprocess
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -57,17 +58,35 @@ IMAGE_EXT_BY_CONTENT_TYPE = {
     "image/webp": ".webp",
 }
 MAX_IMAGE_BYTES = 8 * 1024 * 1024  # 8 MB
+# Defensa en profundidad: solo se descargan imágenes hospedadas por Tally
+# (los FILE_UPLOAD del intake viven ahí). Cualquier otro host se ignora.
+ALLOWED_IMAGE_HOSTS_SUFFIX = (".tally.so",)
+
+
+def _allowed_image_url(url: str) -> bool:
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except ValueError:
+        return False
+    if parsed.scheme != "https" or not parsed.hostname:
+        return False
+    host = parsed.hostname.lower()
+    return host == "tally.so" or host.endswith(ALLOWED_IMAGE_HOSTS_SUFFIX)
 
 
 def download_image(url: str, dest_dir: Path, basename: str) -> str | None:
     """Download a Tally-hosted image and publish it under dest_dir.
 
-    Returns the published filename, or None if the URL is empty, the
-    content-type isn't an allowed image format, or the download fails.
-    Never raises: an image problem should not block page generation.
+    Returns the published filename, or None if the URL is empty, the host
+    isn't Tally's storage, the content-type isn't an allowed image format,
+    or the download fails. Never raises: an image problem should not block
+    page generation.
     """
     url = (url or "").strip()
     if not url:
+        return None
+    if not _allowed_image_url(url):
+        print(f"WARN: image skipped, host not allowed: {url}", file=sys.stderr)
         return None
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "hmulink-generator/1.0"})

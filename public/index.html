@@ -279,35 +279,8 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   background: var(--ink); border-radius: 0 0 14px 14px; margin: 0 auto;
   position: relative; z-index: 3;
 }
-.screen { padding: 10px 16px 20px; font-size: 0.72rem; margin-top: -8px; }
-.m-head { text-align: center; padding: 14px 0 10px; }
-.m-ava {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 46px; height: 46px; font-size: 1.35rem;
-  background: var(--ocean-soft); border: 2px solid var(--ocean); border-radius: 50%;
-}
-.m-name { display: block; font-family: var(--font-display); font-weight: 680; font-size: 1.02rem; margin-top: 7px; }
-.m-sub { display: block; color: var(--muted); font-size: 0.68rem; }
-.m-promo {
-  background: var(--banana-soft); border: 1.5px dashed var(--tangerine);
-  color: var(--tangerine-ink); font-weight: 700;
-  border-radius: 12px; padding: 7px 10px; text-align: center; margin: 8px 0 12px;
-  animation: promo-pop 3.2s ease-in-out infinite;
-}
-@keyframes promo-pop { 0%, 88%, 100% { transform: scale(1); } 94% { transform: scale(1.04); } }
-.m-cat { font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.6rem; color: var(--ocean-deep); margin-bottom: 5px; }
-.m-row {
-  display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  padding: 7px 0; border-bottom: 1px solid var(--line);
-}
-.m-row span { color: var(--ink); font-weight: 500; }
-.m-row b { color: var(--pepper); font-weight: 800; }
-.m-wa {
-  margin-top: 13px; background: var(--avocado); color: var(--pepper-ink);
-  font-weight: 800; text-align: center; border-radius: 999px; padding: 9px;
-  box-shadow: 0 3px 0 var(--avocado-deep); font-size: 0.75rem;
-}
-.m-foot { display: flex; justify-content: space-around; color: var(--muted); font-size: 0.64rem; margin-top: 11px; }
+.screen { padding: 0; margin-top: -8px; }
+.m-shot { display: block; width: 100%; height: auto; }
 
 /* Linky mascot peeking beside the phone */
 .mascot {
@@ -568,8 +541,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 .gsap-on .rise,
 .gsap-on .kinetic .kw,
 .gsap-on .bubble,
-.gsap-on .hl,
-.gsap-on .m-promo { animation: none; }
+.gsap-on .hl { animation: none; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -631,22 +603,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <div class="bubble bubble--q b1">🙋 “Hi! Do you have a price list?”</div>
         <div class="bubble bubble--q b2">“How late are you open today?”</div>
         <div class="bubble b3"><i></i><i></i><i></i></div>
-        <div class="bubble b4">✨ hmu.link/luna-studio</div>
+        <div class="bubble b4">✨ hmu.link/aqua-wellness</div>
         <div class="phone-wrap">
           <div class="phone">
             <div class="screen">
-              <div class="m-head">
-                <span class="m-ava">💇</span>
-                <span class="m-name">Luna Beauty Studio</span>
-                <span class="m-sub">Hair · Nails · Lashes · Austin, TX</span>
-              </div>
-              <div class="m-promo">🎉 This month: 20% off color</div>
-              <div class="m-cat">Services</div>
-              <div class="m-row"><span>Cut + style</span><b>$45</b></div>
-              <div class="m-row"><span>Full color</span><b>$120</b></div>
-              <div class="m-row"><span>Gel manicure</span><b>$45</b></div>
-              <div class="m-wa">💬 Message us</div>
-              <div class="m-foot"><span>📍 South Congress</span><span>⭐ 4.9</span><span>🕐 10–8</span></div>
+              <img class="m-shot" src="assets/hero-phone-aqua.jpg" alt="Aqua Wellness Spa — a real HMU Link page" width="680" height="1452" loading="lazy">
             </div>
           </div>
         </div>
@@ -1087,14 +1048,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 
     /* Act 2: the phone rises and its screen builds itself, prices counting up */
     tl.fromTo('.hero-visual', { y: 160, autoAlpha: 0, rotationX: 16, transformPerspective: 900 }, { y: 0, autoAlpha: 1, rotationX: 0, duration: 0.95 }, 0.75);
-    tl.fromTo(['.m-ava', '.m-name', '.m-sub'], { scale: 0.4, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.45, ease: 'back.out(2)', stagger: 0.08 }, 1.1);
-    tl.fromTo('.m-promo', { y: -18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.4, ease: 'back.out(2)' }, 1.4);
-    tl.fromTo(['.m-cat', '.m-row', '.m-wa', '.m-foot'], { x: -24, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.45, stagger: 0.08 }, 1.5);
-    doc.querySelectorAll('.m-row b').forEach(function (el, i) {
-      var target = parseInt(el.textContent.replace(/[^0-9]/g, ''), 10) || 0;
-      var o = { v: 0 };
-      tl.to(o, { v: target, duration: 0.7, ease: 'power2.out', onUpdate: function () { el.textContent = '$' + Math.round(o.v); } }, 1.55 + i * 0.08);
-    });
+    tl.fromTo('.m-shot', { autoAlpha: 0, scale: 1.05, y: 14 }, { autoAlpha: 1, scale: 1, y: 0, duration: 0.7, ease: 'power2.out' }, 1.15);
 
     /* Act 3: the chaos — question bubbles fly in like falling notifications */
     tl.fromTo('.b1', { x: -180, y: -140, rotation: -14, scale: 0.4, autoAlpha: 0 }, { x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.7, ease: 'back.out(1.7)' }, 1.75);
@@ -1109,7 +1063,6 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 
     /* Idle life after the entrance */
     gsap.to('.mascot', { rotation: 4, duration: 2.6, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 4 });
-    gsap.to('.m-promo', { scale: 1.04, duration: 0.35, yoyo: true, repeat: -1, repeatDelay: 2.6, ease: 'sine.inOut', delay: 4.2 });
 
     /* Mouse depth: layers shift at different rates (x only; y belongs to the scroll scrub) */
     var hero = doc.querySelector('.hero');

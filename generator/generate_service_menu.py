@@ -112,12 +112,16 @@ STRINGS = {
         "visit_eyebrow": "Detalles",
         "visit_title_html": "Planea tu <em>visita</em>",
         "hours_title": "Horarios",
+        "client_care_title": "Atencion",
+        "reservations_title": "Reservaciones",
         "address_title": "Dónde estamos",
         "address_map": "Ver en Google Maps",
         "location_label": "Ubicacion",
         "service_area_title": "Area de servicio",
         "policies_title": "Políticas",
         "links_title": "Enlaces",
+        "faq_eyebrow": "FAQ",
+        "faq_title_html": "Preguntas <em>frecuentes</em>",
         "share_eyebrow": "Comparte",
         "share_title_html": "Llévanos <em>contigo</em>",
         "share_lead": "Escanea el código o comparte el link directo.",
@@ -142,12 +146,16 @@ STRINGS = {
         "visit_eyebrow": "Details",
         "visit_title_html": "Plan your <em>visit</em>",
         "hours_title": "Hours",
+        "client_care_title": "How we work",
+        "reservations_title": "Reservations",
         "address_title": "Where we are",
         "address_map": "View on Google Maps",
         "location_label": "Location",
         "service_area_title": "Service area",
         "policies_title": "Policies",
         "links_title": "Links",
+        "faq_eyebrow": "FAQ",
+        "faq_title_html": "Common <em>questions</em>",
         "share_eyebrow": "Share",
         "share_title_html": "Take us <em>with you</em>",
         "share_lead": "Scan the code or share the direct link.",
@@ -308,6 +316,8 @@ def _content_text(block: dict) -> str:
         block.get("short_description", ""),
         block.get("opening_hours_text", ""),
         block.get("service_area_text", ""),
+        block.get("client_care_text", ""),
+        block.get("reservations_text", ""),
     ]
     parts.extend(block.get("service_categories") or [])
     for svc in block.get("services") or []:
@@ -320,6 +330,9 @@ def _content_text(block: dict) -> str:
                 ]
             )
     parts.extend(block.get("policies") or [])
+    for item in block.get("faq") or []:
+        if isinstance(item, dict):
+            parts.extend([item.get("question", ""), item.get("answer", "")])
     featured = block.get("featured_package")
     if isinstance(featured, dict):
         parts.extend(
@@ -805,6 +818,20 @@ def build_info(payload: dict, s: dict) -> str:
             f'<p>{esc(service_area)}</p></div>'
         )
 
+    client_care = str(payload.get("client_care_text", "") or "").strip()
+    if client_care:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["client_care_title"]}</h3>'
+            f'<p>{esc(client_care)}</p></div>'
+        )
+
+    reservations = str(payload.get("reservations_text", "") or "").strip()
+    if reservations:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["reservations_title"]}</h3>'
+            f'<p>{esc(reservations)}</p></div>'
+        )
+
     address_body = _address_row_body(payload, s)
     if address_body:
         rows.append(
@@ -840,6 +867,32 @@ def build_info(payload: dict, s: dict) -> str:
         f'<p class="eyebrow" data-reveal>{s["visit_eyebrow"]}</p>'
         f'<h2 data-reveal>{s["visit_title_html"]}</h2>'
         f'<div class="info-grid">{"".join(rows)}</div>'
+        "</div></section>"
+    )
+
+
+def build_faq(payload: dict, s: dict) -> str:
+    """Simple FAQ section for conversion-critical practical questions."""
+    faq = payload.get("faq") or []
+    items = []
+    for item in faq:
+        if not isinstance(item, dict):
+            continue
+        question = str(item.get("question", "") or "").strip()
+        answer = str(item.get("answer", "") or "").strip()
+        if not question or not answer:
+            continue
+        items.append(
+            '<div class="faq-item" data-reveal>'
+            f'<h3>{esc(question)}</h3><p>{esc(answer)}</p></div>'
+        )
+    if not items:
+        return ""
+    return (
+        '<section class="section" data-theme="base"><div class="shell">'
+        f'<p class="eyebrow" data-reveal>{s["faq_eyebrow"]}</p>'
+        f'<h2 data-reveal>{s["faq_title_html"]}</h2>'
+        f'<div class="faq-list">{"".join(items)}</div>'
         "</div></section>"
     )
 
@@ -955,6 +1008,7 @@ def render_view(
         "{{SERVICES_BLOCK}}": build_services(view, s),
         "{{FEATURED_BLOCK}}": build_featured(view, s),
         "{{INFO_BLOCK}}": build_info(view, s),
+        "{{FAQ_BLOCK}}": build_faq(view, s),
         "{{SHARE_BLOCK}}": build_share(share_url, s, qr_src),
         "{{FOOTER_BLOCK}}": build_footer(view, footer_text),
         "{{DOCK_BLOCK}}": build_dock(view, s),
@@ -977,6 +1031,7 @@ def client_lang_view(payload: dict, lang: str) -> dict:
         for key in (
             "business_name",
             "brand_style",
+            "business_type",
             "logo_url",
             "primary_image_url",
             "whatsapp",

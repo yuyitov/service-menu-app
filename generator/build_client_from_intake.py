@@ -240,6 +240,49 @@ def parse_policies(policies_text: str) -> list[str]:
     return out
 
 
+def _strip_qa_label(value: str) -> str:
+    return re.sub(r"(?i)^\s*(?:q|a|pregunta|respuesta|question|answer)\s*[:.-]\s*", "", value).strip()
+
+
+def parse_faq(faq_text: str) -> list[dict]:
+    """Parse FAQ text from flexible Q/A blocks."""
+    text = (faq_text or "").strip()
+    if not text:
+        return []
+    blocks = [b.strip() for b in re.split(r"\n\s*\n+", text) if b.strip()]
+    if len(blocks) == 1:
+        lines = [clean_line(line) for line in text.splitlines() if clean_line(line)]
+        if len(lines) >= 4:
+            blocks = ["\n".join(lines[i : i + 2]) for i in range(0, len(lines), 2)]
+
+    out = []
+    for block in blocks:
+        lines = [clean_line(line) for line in block.splitlines()]
+        lines = [_strip_qa_label(line) for line in lines if line]
+        if not lines:
+            continue
+        question = ""
+        answer = ""
+        if len(lines) == 1:
+            line = lines[0]
+            qmark = line.find("?")
+            if qmark > 0 and qmark < len(line) - 1:
+                question = line[: qmark + 1]
+                answer = line[qmark + 1 :].strip(" -:|")
+            else:
+                parts = re.split(r"\s+[-–—|]\s+|\s*:\s+", line, maxsplit=1)
+                if len(parts) == 2:
+                    question, answer = parts
+        else:
+            question = lines[0]
+            answer = " ".join(lines[1:])
+        question = _strip_qa_label(question)[:160]
+        answer = _strip_qa_label(answer)[:400]
+        if question and answer:
+            out.append({"question": question, "answer": answer})
+    return out[:8]
+
+
 def parse_featured(featured_text: str) -> dict | None:
     lines = [clean_line(l) for l in (featured_text or "").splitlines()]
     lines = [l for l in lines if l]
@@ -526,9 +569,13 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         "short_description": src["short_description"],
         "opening_hours_text": src["opening_hours_text"],
         "service_area_text": src.get("service_area_text", ""),
+        "client_care_text": src.get("client_care_text", ""),
+        "reservations_text": src.get("reservations_text", ""),
         "service_categories": src.get("service_categories", []),
         "service_names": [s["name"] for s in src["services"]],
         "policies": src["policies"],
+        "faq_questions": [item["question"] for item in src.get("faq", [])],
+        "faq_answers": [item["answer"] for item in src.get("faq", [])],
     }
     if "featured_package" in src:
         fields["featured_name"] = src["featured_package"]["name"]
@@ -545,6 +592,10 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         tgt["opening_hours_text"] = translated["opening_hours_text"][:200]
     if isinstance(translated.get("service_area_text"), str) and translated["service_area_text"].strip():
         tgt["service_area_text"] = translated["service_area_text"][:200]
+    if isinstance(translated.get("client_care_text"), str) and translated["client_care_text"].strip():
+        tgt["client_care_text"] = translated["client_care_text"][:200]
+    if isinstance(translated.get("reservations_text"), str) and translated["reservations_text"].strip():
+        tgt["reservations_text"] = translated["reservations_text"][:200]
 
     names = translated.get("service_names")
     if isinstance(names, list) and len(names) == len(tgt["services"]):
@@ -568,6 +619,21 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
     if isinstance(pols, list) and len(pols) == len(tgt["policies"]):
         if all(isinstance(p, str) for p in pols):
             tgt["policies"] = [p[:200] for p in pols]
+
+    faq_questions = translated.get("faq_questions")
+    faq_answers = translated.get("faq_answers")
+    faq = tgt.get("faq", [])
+    if (
+        isinstance(faq_questions, list)
+        and isinstance(faq_answers, list)
+        and len(faq_questions) == len(faq)
+        and len(faq_answers) == len(faq)
+    ):
+        for item, question, answer in zip(faq, faq_questions, faq_answers):
+            if isinstance(item, dict) and isinstance(question, str) and question.strip():
+                item["question"] = question[:160]
+            if isinstance(item, dict) and isinstance(answer, str) and answer.strip():
+                item["answer"] = answer[:400]
 
     if "featured_package" in tgt:
         if isinstance(translated.get("featured_name"), str) and translated["featured_name"].strip():
@@ -607,6 +673,7 @@ def main() -> int:
         fail("intake has no parseable services — manual review required")
 
     policies = parse_policies(payload.get("policies_text", ""))
+    faq = parse_faq(payload.get("faq_text", ""))
     featured = parse_featured(payload.get("featured_text", ""))
     if featured and price_policy == "hide":
         featured.pop("price_label", None)
@@ -614,6 +681,8 @@ def main() -> int:
     short_description = str(payload.get("short_description", "")).strip() or str(payload.get("business_name", "")).strip()
     hours = str(payload.get("opening_hours_text", "")).strip() or "Consultar horarios / Ask us for hours"
     service_area = str(payload.get("service_area_text", "")).strip()
+    client_care = str(payload.get("client_care_text", "")).strip()
+    reservations = str(payload.get("reservations_text", "")).strip()
     address = str(payload.get("address", "")).strip()
 
     def content_block(lang: str) -> dict:
@@ -625,10 +694,13 @@ def main() -> int:
             "address": address[:200],
             "opening_hours_text": hours[:200],
             "service_area_text": service_area[:200],
+            "client_care_text": client_care[:200],
+            "reservations_text": reservations[:200],
             "price_display": price_policy,
             "service_categories": list(categories_es if lang == "es" else categories_en),
             "services": [dict(s) for s in (services_es if lang == "es" else services_en)],
             "policies": list(policies),
+            "faq": [dict(item) for item in faq],
         }
         if featured:
             block["featured_package"] = dict(featured)
@@ -644,6 +716,7 @@ def main() -> int:
         "public_slug": slug,
         "default_language": default_language,
         "brand_style": payload.get("brand_style", "warm-sand"),
+        "business_type": str(payload.get("business_type", "")).strip()[:80] or None,
         "business_name": str(payload.get("business_name", "")).strip()[:120],
         "logo_url": f"{CLIENT_BASE_URL}/{slug}/assets/{logo_file}" if logo_file else None,
         "primary_image_url": f"{CLIENT_BASE_URL}/{slug}/assets/{hero_file}" if hero_file else None,

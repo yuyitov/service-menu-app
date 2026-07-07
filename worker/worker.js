@@ -964,6 +964,7 @@ function buildHmuPublicPayload(normalized, orderId) {
     brand_style: brandStyle,
     style_unmapped: styleUnmapped,
     business_name: businessName,
+    business_type: answerAny(a, ['business_type', 'tipo_de_negocio']),
     short_description: answerAny(a, [
       'describe_your_business_in_1_2_sentences',
       'describe_tu_negocio_en_1_2_frases'
@@ -1001,6 +1002,19 @@ function buildHmuPublicPayload(normalized, orderId) {
     address: answerAny(a, ['location_1_public_address', 'ubicacion_1_direccion_publica']),
     location_1_notes: answerAny(a, ['location_1_notes', 'ubicacion_1_notas']),
     service_area_text: answerAny(a, ['where_do_you_offer_your_services', 'donde_ofreces_tus_servicios']),
+    client_care_text: answerAny(a, [
+      'how_do_you_serve_your_clients',
+      'how_do_you_work_with_clients',
+      'how_do_you_attend_to_your_clients',
+      'como_atiendes_a_tus_clientes'
+    ]),
+    reservations_text: answerAny(a, [
+      'do_you_accept_reservations',
+      'do_you_accept_bookings',
+      'accept_reservations',
+      'si_aceptas_reservaciones',
+      'aceptas_reservaciones'
+    ]),
     opening_hours_text: answerAny(a, ['what_are_your_business_hours', 'cuales_son_tus_horarios_de_atencion']),
     service_categories_text: answerAny(a, ['how_do_you_group_your_services', 'como_agrupas_tus_servicios']),
     price_display: answerAny(a, [
@@ -1008,6 +1022,12 @@ function buildHmuPublicPayload(normalized, orderId) {
       'como_deben_aparecer_los_precios_en_tu_pagina_publica'
     ]),
     services_text: answerAny(a, ['list_your_services_with_prices', 'lista_tus_servicios_con_precios']),
+    faq_text: answerAny(a, [
+      'faq',
+      'frequently_asked_questions',
+      'common_questions',
+      'preguntas_frecuentes'
+    ]),
     featured_text: answerAny(a, [
       'featured_package_promo_or_signature_offer',
       'paquete_destacado_promocion_u_oferta_especial'

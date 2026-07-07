@@ -3,6 +3,7 @@
   "public_slug": "example-business",
   "default_language": "es",
   "brand_style": "warm-sand",
+  "business_type": "wellness",
   "business_name": "Example Business Name",
   "logo_url": null,
   "primary_image_url": null,
@@ -41,6 +42,8 @@
       "address": "Calle Ejemplo 123, Colonia Centro, Ciudad",
       "opening_hours_text": "Lun-Sab 10:00-19:00 · Dom cerrado",
       "service_area_text": "Atendemos en sucursal y a domicilio dentro de la ciudad.",
+      "client_care_text": "Atendemos con cita previa y tambien aceptamos visitas sin cita segun disponibilidad.",
+      "reservations_text": "Reserva por WhatsApp o por el enlace de reservas.",
       "price_display": "show",
       "service_categories": ["Categoria A", "Categoria B"],
       "services": [
@@ -64,6 +67,12 @@
       "policies": [
         "Politica de ejemplo 1.",
         "Politica de ejemplo 2."
+      ],
+      "faq": [
+        {
+          "question": "Pregunta frecuente de ejemplo?",
+          "answer": "Respuesta breve y clara para el cliente."
+        }
       ]
     },
     "en": {
@@ -71,6 +80,8 @@
       "address": "123 Example St, Downtown, City",
       "opening_hours_text": "Mon-Sat 10:00-19:00 · Sun closed",
       "service_area_text": "We serve clients in-studio and at home within the city.",
+      "client_care_text": "We work by appointment and also welcome walk-ins depending on availability.",
+      "reservations_text": "Book through WhatsApp or the booking link.",
       "price_display": "show",
       "service_categories": ["Category A", "Category B"],
       "services": [
@@ -94,6 +105,12 @@
       "policies": [
         "Example policy 1.",
         "Example policy 2."
+      ],
+      "faq": [
+        {
+          "question": "Example frequently asked question?",
+          "answer": "A short, clear answer for the client."
+        }
       ]
     }
   }

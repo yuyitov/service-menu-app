@@ -89,6 +89,7 @@ CLIENT_LANGS = ("es", "en")
 
 # URL schemes we are willing to emit into href attributes.
 _ALLOWED_SCHEMES = ("http://", "https://")
+PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "email")
 
 # UI strings per language (WOW editorial template). Values marked *_html may
 # contain trusted inline markup (<em>) and are injected without re-escaping.
@@ -99,15 +100,15 @@ STRINGS = {
         "btn_phone": "Llamar",
         "btn_email": "Enviar correo",
         "btn_website": "Sitio web",
-        "btn_booking": "Reservar en línea",
-        "view_menu": "Ver el menú",
+        "btn_booking": "Reservar en linea",
+        "view_menu": "Ver servicios",
         "scroll_hint": "Desliza",
         "services_eyebrow": "Servicios",
-        "menu_title_html": "El <em>menú</em>",
+        "menu_title_html": "Nuestros <em>servicios</em>",
         "services_fallback": "Servicios",
         "featured_badge": "Destacado",
-        "visit_eyebrow": "Visítanos",
-        "visit_title_html": "Encuéntra<em>nos</em>",
+        "visit_eyebrow": "Detalles",
+        "visit_title_html": "Planea tu <em>visita</em>",
         "hours_title": "Horarios",
         "address_title": "Dónde estamos",
         "address_map": "Ver en Google Maps",
@@ -126,14 +127,14 @@ STRINGS = {
         "btn_email": "Send an email",
         "btn_website": "Website",
         "btn_booking": "Book online",
-        "view_menu": "See the menu",
+        "view_menu": "See services",
         "scroll_hint": "Scroll",
         "services_eyebrow": "Services",
-        "menu_title_html": "The <em>menu</em>",
+        "menu_title_html": "Our <em>services</em>",
         "services_fallback": "Services",
         "featured_badge": "Featured",
-        "visit_eyebrow": "Visit us",
-        "visit_title_html": "Find <em>us</em>",
+        "visit_eyebrow": "Details",
+        "visit_title_html": "Plan your <em>visit</em>",
         "hours_title": "Hours",
         "address_title": "Where we are",
         "address_map": "View on Google Maps",
@@ -174,6 +175,37 @@ def safe_href(value):
     if not raw.lower().startswith(_ALLOWED_SCHEMES):
         return None
     return html.escape(raw, quote=True)
+
+
+def normalize_primary_cta(value):
+    """Return a supported preferred CTA kind, if the payload provides one."""
+    v = str(value or "").strip().lower()
+    if not v:
+        return None
+    normalized = re.sub(r"[^a-z0-9]+", "_", v).strip("_")
+    aliases = {
+        "wa": "whatsapp",
+        "wpp": "whatsapp",
+        "whats": "whatsapp",
+        "whatsapp": "whatsapp",
+        "telefono": "phone",
+        "phone": "phone",
+        "call": "phone",
+        "llamar": "phone",
+        "booking": "booking",
+        "book": "booking",
+        "reservation": "booking",
+        "reservas": "booking",
+        "reservar": "booking",
+        "website": "website",
+        "web": "website",
+        "sitio_web": "website",
+        "site": "website",
+        "email": "email",
+        "mail": "email",
+        "correo": "email",
+    }
+    return aliases.get(normalized)
 
 
 def whatsapp_href(value):
@@ -308,7 +340,7 @@ def validate_client(payload: dict) -> None:
     if not str(payload.get("business_name", "")).strip():
         raise ValidationError("Cliente: falta business_name.")
 
-    contact_keys = ("whatsapp", "phone", "public_email", "booking_url")
+    contact_keys = ("whatsapp", "phone", "public_email", "booking_url", "website")
     if not any(str(payload.get(k, "") or "").strip() for k in contact_keys):
         raise ValidationError(
             "Cliente: se requiere al menos un contacto publico "
@@ -411,34 +443,51 @@ def build_hero_kicker(payload: dict) -> str:
     return f'<p class="hero__kicker" id="hk">{esc(text)}</p>' if text else ""
 
 
-def _primary_contact(payload: dict, s: dict):
-    """First available contact becomes the primary CTA (hero + fixed dock)."""
+def _contact_options(payload: dict, s: dict) -> dict:
+    """Available public contact links keyed by CTA kind."""
+    options = {}
     wa = whatsapp_href(payload.get("whatsapp"))
     if wa:
-        return "whatsapp", esc(wa), s["btn_whatsapp"]
+        options["whatsapp"] = (esc(wa), s["btn_whatsapp"])
     tel = tel_href(payload.get("phone"))
     if tel:
-        return "phone", esc(tel), s["btn_phone"]
+        options["phone"] = (tel, s["btn_phone"])
     booking = safe_href(payload.get("booking_url"))
     if booking:
-        return "booking", booking, s["btn_booking"]
+        options["booking"] = (booking, s["btn_booking"])
+    web = safe_href(payload.get("website"))
+    if web:
+        options["website"] = (web, s["btn_website"])
     mail = mailto_href(payload.get("public_email"))
     if mail:
-        return "email", mail, s["btn_email"]
+        options["email"] = (mail, s["btn_email"])
+    return options
+
+
+def _primary_contact(payload: dict, s: dict):
+    """Preferred public contact becomes the primary CTA (hero + fixed dock)."""
+    options = _contact_options(payload, s)
+    preferred = normalize_primary_cta(payload.get("primary_cta"))
+    if preferred in options:
+        href, label = options[preferred]
+        return preferred, href, label
+    for kind in PRIMARY_CTA_CHOICES:
+        if kind in options:
+            href, label = options[kind]
+            return kind, href, label
     return None, None, None
 
 
 def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
     """(href, label) for every public link that is not the primary CTA."""
     links = []
-    if primary_kind != "phone":
-        tel = tel_href(payload.get("phone"))
-        if tel:
-            links.append((esc(tel), s["btn_phone"]))
-    if primary_kind != "booking":
-        booking = safe_href(payload.get("booking_url"))
-        if booking:
-            links.append((booking, s["btn_booking"]))
+    contact_options = _contact_options(payload, s)
+    for kind in PRIMARY_CTA_CHOICES:
+        if kind == primary_kind:
+            continue
+        option = contact_options.get(kind)
+        if option:
+            links.append(option)
     for key, label in (
         ("instagram", "Instagram"),
         ("facebook", "Facebook"),
@@ -449,13 +498,6 @@ def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
         href = safe_href(payload.get(key))
         if href:
             links.append((href, label))
-    web = safe_href(payload.get("website"))
-    if web:
-        links.append((web, s["btn_website"]))
-    if primary_kind != "email":
-        mail = mailto_href(payload.get("public_email"))
-        if mail:
-            links.append((mail, s["btn_email"]))
     return links
 
 
@@ -512,7 +554,8 @@ def build_marquee(payload: dict) -> str:
         if i % 2 == 1:
             text = f"<em>{text}</em>"
         parts.append(f'<span>{text} <span class="dot">✦</span></span>')
-    track = "".join(parts) * 2  # duplicated for the seamless CSS loop
+    base_repeat = max(4, 12 // len(parts))
+    track = "".join(parts * base_repeat) * 2  # duplicated for the seamless CSS loop
     return (
         '<div class="marquee" aria-hidden="true">'
         f'<div class="marquee__track">{track}</div></div>'
@@ -832,6 +875,7 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "tiktok",
             "website",
             "booking_url",
+            "primary_cta",
             "google_maps_url",
             "google_reviews_url",
             "locations",

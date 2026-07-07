@@ -124,12 +124,12 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 /* ---------- marquee ---------- */
 .marquee{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
   overflow:hidden;padding:16px 0;white-space:nowrap;margin-top:8px}
-.marquee__track{display:inline-flex;animation:slide 28s linear infinite}
-.marquee__track>span{display:inline-flex;align-items:baseline;gap:.6em;padding-right:.6em;
+.marquee__track{display:inline-flex;min-width:max-content;animation:slide 18s linear infinite;will-change:transform}
+.marquee__track>span{display:inline-flex;align-items:baseline;gap:.6em;padding-right:1.6em;
   font-family:var(--serif);font-size:25px;letter-spacing:.05em;color:var(--soft)}
 .marquee__track em{font-style:italic;color:var(--accent)}
 .marquee__track .dot{color:var(--accent);font-size:13px;transform:translateY(-4px)}
-@keyframes slide{to{transform:translateX(-50%)}}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* ---------- secciones editoriales ---------- */
 .section{padding:88px 0}
@@ -153,10 +153,11 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 
 /* ---------- destacado (firma de la casa) ---------- */
 .section--featured{padding-top:0}
-.ritual{border-radius:26px;padding:2px;position:relative;overflow:hidden}
-.ritual::before{content:"";position:absolute;inset:-60%;
-  background:conic-gradient(from 0deg,transparent 0 40%,var(--panel-accent) 50%,transparent 60% 100%);
-  animation:spin 6s linear infinite}
+.ritual{border-radius:26px;padding:2px;position:relative;overflow:hidden;
+  box-shadow:0 24px 70px rgba(0,0,0,.08)}
+.ritual::before{content:"";position:absolute;inset:-85%;
+  background:conic-gradient(from 0deg,transparent 0 33%,var(--panel-accent) 43%,#fffdf2 50%,var(--panel-accent) 57%,transparent 68% 100%);
+  animation:spin 4.8s linear infinite;opacity:.9}
 @keyframes spin{to{transform:rotate(1turn)}}
 .ritual__in{position:relative;border-radius:24px;background:var(--panel-bg);
   padding:32px 26px;text-align:center;color:var(--panel-ink)}

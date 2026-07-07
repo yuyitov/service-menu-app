@@ -205,6 +205,36 @@ def url_or_none(value: str) -> str | None:
     return v
 
 
+def normalize_primary_cta(value: str) -> str | None:
+    v = (value or "").strip().lower()
+    if not v:
+        return None
+    normalized = re.sub(r"[^a-z0-9]+", "_", plain_latin(v)).strip("_")
+    aliases = {
+        "wa": "whatsapp",
+        "wpp": "whatsapp",
+        "whats": "whatsapp",
+        "whatsapp": "whatsapp",
+        "telefono": "phone",
+        "phone": "phone",
+        "call": "phone",
+        "llamar": "phone",
+        "booking": "booking",
+        "book": "booking",
+        "reservation": "booking",
+        "reservas": "booking",
+        "reservar": "booking",
+        "website": "website",
+        "web": "website",
+        "sitio_web": "website",
+        "site": "website",
+        "email": "email",
+        "mail": "email",
+        "correo": "email",
+    }
+    return aliases.get(normalized)
+
+
 def social_url(value: str, base: str, handle_prefix: str = "") -> str | None:
     """Accepts a full URL, a domain path (instagram.com/x) or a bare handle
     (@unveilmexico / unveilmexico) and returns a valid profile URL."""
@@ -455,6 +485,7 @@ def main() -> int:
         "tiktok": social_url(payload.get("tiktok", ""), "www.tiktok.com", handle_prefix="@"),
         "website": url_or_none(payload.get("website", "")),
         "booking_url": url_or_none(payload.get("booking_url", "")),
+        "primary_cta": normalize_primary_cta(payload.get("primary_cta", "")),
         "google_maps_url": url_or_none(payload.get("google_maps_url", "")),
         "google_reviews_url": url_or_none(payload.get("google_reviews_url", "")),
         "content": {"es": content_block("es"), "en": content_block("en")},
@@ -478,8 +509,14 @@ def main() -> int:
             "set OPENAI_API_KEY or translate the intake manually before publishing"
         )
 
-    if not (client["whatsapp"] or client["phone"] or client["public_email"] or client["booking_url"]):
-        fail("no public contact (whatsapp/phone/email/booking) — manual review required")
+    if not (
+        client["whatsapp"]
+        or client["phone"]
+        or client["public_email"]
+        or client["booking_url"]
+        or client["website"]
+    ):
+        fail("no public contact (whatsapp/phone/email/booking/website) - manual review required")
 
     CLIENTS_DIR.mkdir(parents=True, exist_ok=True)
     client_path = CLIENTS_DIR / f"{slug}.client.json"

@@ -883,6 +883,33 @@ function slugify(text) {
     .replace(/-+$/g, '');
 }
 
+function normalizePrimaryCta(value) {
+  const normalized = normalizeKey(value);
+  const aliases = {
+    wa: 'whatsapp',
+    wpp: 'whatsapp',
+    whats: 'whatsapp',
+    whatsapp: 'whatsapp',
+    telefono: 'phone',
+    phone: 'phone',
+    call: 'phone',
+    llamar: 'phone',
+    booking: 'booking',
+    book: 'booking',
+    reservation: 'booking',
+    reservas: 'booking',
+    reservar: 'booking',
+    website: 'website',
+    web: 'website',
+    sitio_web: 'website',
+    site: 'website',
+    email: 'email',
+    mail: 'email',
+    correo: 'email'
+  };
+  return aliases[normalized] || '';
+}
+
 // Mapea las respuestas del intake (formularios EN yPkN5X y ES MeyDpk) al
 // payload público que consume el generador. SOLO campos públicos aprobados:
 // los datos internos (nombre de contacto, teléfono privado, notas "keep off")
@@ -931,6 +958,23 @@ function buildHmuPublicPayload(normalized, orderId) {
     tiktok: answerAny(a, ['tiktok']),
     website: answerAny(a, ['website', 'sitio_web']),
     booking_url: answerAny(a, ['external_booking_link', 'enlace_externo_de_reservas']),
+    primary_cta: normalizePrimaryCta(answerAny(a, [
+      'featured_button',
+      'primary_button',
+      'main_button',
+      'preferred_button',
+      'highlight_button',
+      'call_to_action_button',
+      'which_button_should_be_featured',
+      'which_button_should_stand_out_on_your_page',
+      'which_button_should_be_the_main_button',
+      'boton_destacado',
+      'boton_principal',
+      'boton_a_destacar',
+      'que_boton_quieres_destacar',
+      'que_boton_debe_destacar',
+      'que_boton_debe_ser_el_principal'
+    ])),
     google_maps_url: answerAny(a, ['location_1_google_maps_link', 'ubicacion_1_enlace_de_google_maps']),
     google_reviews_url: answerAny(a, ['google_reviews_link', 'enlace_de_google_reviews']),
     address: answerAny(a, ['location_1_public_address', 'ubicacion_1_direccion_publica']),

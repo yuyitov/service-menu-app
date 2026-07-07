@@ -90,6 +90,8 @@ CLIENT_LANGS = ("es", "en")
 # URL schemes we are willing to emit into href attributes.
 _ALLOWED_SCHEMES = ("http://", "https://")
 PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "email", "other", "maps")
+DELIVERY_PICKUP_TYPES = {"food", "retail"}
+PORTFOLIO_TYPES = {"creative", "beauty", "wellness", "professional", "fitness"}
 
 # UI strings per language (WOW editorial template). Values marked *_html may
 # contain trusted inline markup (<em>) and are injected without re-escaping.
@@ -103,6 +105,8 @@ STRINGS = {
         "btn_booking": "Reservar en linea",
         "btn_maps": "Google Maps",
         "btn_other": "Abrir enlace",
+        "delivery_pickup_label": "Delivery / pickup",
+        "portfolio_label": "Portafolio",
         "view_menu": "Ver servicios",
         "scroll_hint": "Desliza",
         "services_eyebrow": "Servicios",
@@ -137,6 +141,8 @@ STRINGS = {
         "btn_booking": "Book online",
         "btn_maps": "Google Maps",
         "btn_other": "Open link",
+        "delivery_pickup_label": "Delivery / pickup",
+        "portfolio_label": "Portfolio",
         "view_menu": "See services",
         "scroll_hint": "Scroll",
         "services_eyebrow": "Services",
@@ -382,10 +388,16 @@ def validate_client(payload: dict) -> None:
 
     contact_keys = ("whatsapp", "phone", "public_email", "booking_url", "website")
     if not any(str(payload.get(k, "") or "").strip() for k in contact_keys):
-        raise ValidationError(
-            "Cliente: se requiere al menos un contacto publico "
-            "(whatsapp, phone, public_email o booking_url)."
+        has_public_link = bool(
+            payload.get("other_public_link")
+            or payload.get("portfolio_link")
+            or payload.get("delivery_pickup_links")
         )
+        if not has_public_link:
+            raise ValidationError(
+                "Cliente: se requiere al menos un contacto publico "
+                "(whatsapp, phone, public_email, booking_url, website o link publico)."
+            )
 
     content = payload.get("content")
     if not isinstance(content, dict):
@@ -591,6 +603,33 @@ def _location_map_links(payload: dict, s: dict) -> list:
     return [(href, f"Google Maps - {esc(label)}") for href, label in candidates]
 
 
+def _type_allows(payload: dict, allowed: set[str]) -> bool:
+    business_type = str(payload.get("business_type", "") or "").strip().lower()
+    if not business_type or business_type == "general":
+        return True
+    return business_type in allowed
+
+
+def _special_public_links(payload: dict, s: dict) -> list:
+    links = []
+    if _type_allows(payload, DELIVERY_PICKUP_TYPES):
+        for item in payload.get("delivery_pickup_links") or []:
+            if not isinstance(item, dict):
+                continue
+            href = safe_href(item.get("url"))
+            label = str(item.get("label", "") or "").strip() or s["delivery_pickup_label"]
+            if href:
+                links.append((href, esc(label)))
+
+    portfolio = payload.get("portfolio_link")
+    if isinstance(portfolio, dict) and _type_allows(payload, PORTFOLIO_TYPES):
+        href = safe_href(portfolio.get("url"))
+        label = str(portfolio.get("label", "") or "").strip() or s["portfolio_label"]
+        if href:
+            links.append((href, esc(label)))
+    return links
+
+
 def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
     """(href, label) for every public link that is not the primary CTA."""
     links = []
@@ -613,7 +652,17 @@ def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
     reviews = safe_href(payload.get("google_reviews_url"))
     if reviews:
         links.append((reviews, "Google Reviews"))
-    return links
+    links.extend(_special_public_links(payload, s))
+
+    deduped = []
+    seen = set()
+    for href, label in links:
+        key = str(href).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append((href, label))
+    return deduped
 
 
 def build_cta_row(payload: dict, s: dict) -> str:
@@ -1046,6 +1095,8 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "google_maps_url",
             "google_reviews_url",
             "other_public_link",
+            "delivery_pickup_links",
+            "portfolio_link",
             "locations",
         )
     }

@@ -366,6 +366,30 @@ def parse_public_link(value: str) -> dict | None:
     return {"label": (label or "Other link")[:80], "url": url}
 
 
+def parse_public_links(value: str, default_label: str) -> list[dict]:
+    text = (value or "").strip()
+    if not text:
+        return []
+    lines = [clean_line(line) for line in text.replace(";", "\n").splitlines()]
+    lines = [line for line in lines if line]
+    if not lines:
+        lines = [text]
+    out = []
+    seen = set()
+    for line in lines:
+        link = parse_public_link(line)
+        if not link:
+            continue
+        if link["label"] == "Other link":
+            link["label"] = default_label
+        key = link["url"].lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(link)
+    return out[:6]
+
+
 def url_or_none(value: str) -> str | None:
     v = (value or "").strip()
     if not v:
@@ -437,6 +461,27 @@ def social_url(value: str, base: str, handle_prefix: str = "") -> str | None:
     if not handle:
         return None
     return f"https://{base}/{handle_prefix}{handle}"
+
+
+def normalize_business_type(value: str) -> str | None:
+    plain = plain_latin(value)
+    if not plain:
+        return None
+    checks = (
+        ("food", ("restaurant", "restaurante", "cafe", "coffee", "bar", "food", "comida", "bakery", "panaderia")),
+        ("fitness", ("fitness", "gym", "gimnasio", "yoga", "pilates", "class", "clase", "training", "entrenamiento")),
+        ("tours", ("tour", "tours", "experience", "experiencia", "travel", "viaje", "actividad")),
+        ("pets", ("pet", "pets", "mascota", "mascotas", "dog", "perro", "grooming", "veterinaria")),
+        ("creative", ("creative", "creativo", "photography", "fotografia", "photo", "artist", "artista", "design", "diseno", "tattoo", "tatuaje")),
+        ("beauty", ("beauty", "belleza", "spa", "salon", "nails", "unas", "lashes", "cejas", "hair", "cabello")),
+        ("wellness", ("wellness", "bienestar", "therapy", "terapia", "massage", "masaje", "holistic", "holistico")),
+        ("professional", ("professional", "profesional", "consult", "consultoria", "coach", "coaching", "clinic", "clinica")),
+        ("retail", ("retail", "tienda", "store", "boutique", "shop", "producto", "products")),
+    )
+    for category, needles in checks:
+        if any(needle in plain for needle in needles):
+            return category
+    return "general"
 
 
 LANG_NAMES = {"es": "Spanish", "en": "English"}
@@ -711,12 +756,18 @@ def main() -> int:
     hero_file = download_image(payload.get("image_url", ""), assets_dir, "hero")
 
     locations = build_locations(payload)
+    delivery_pickup_links = parse_public_links(
+        payload.get("delivery_pickup_links_text", ""), "Delivery / pickup"
+    )
+    portfolio_link = parse_public_link(payload.get("portfolio_link", ""))
+    if portfolio_link and portfolio_link.get("label") == "Other link":
+        portfolio_link["label"] = "Portfolio"
 
     client = {
         "public_slug": slug,
         "default_language": default_language,
         "brand_style": payload.get("brand_style", "warm-sand"),
-        "business_type": str(payload.get("business_type", "")).strip()[:80] or None,
+        "business_type": normalize_business_type(payload.get("business_type", "")),
         "business_name": str(payload.get("business_name", "")).strip()[:120],
         "logo_url": f"{CLIENT_BASE_URL}/{slug}/assets/{logo_file}" if logo_file else None,
         "primary_image_url": f"{CLIENT_BASE_URL}/{slug}/assets/{hero_file}" if hero_file else None,
@@ -732,6 +783,8 @@ def main() -> int:
         "google_maps_url": url_or_none(payload.get("google_maps_url", "")),
         "google_reviews_url": url_or_none(payload.get("google_reviews_url", "")),
         "other_public_link": parse_public_link(payload.get("other_public_link", "")),
+        "delivery_pickup_links": delivery_pickup_links,
+        "portfolio_link": portfolio_link,
         "content": {"es": content_block("es"), "en": content_block("en")},
     }
     if locations:
@@ -759,8 +812,11 @@ def main() -> int:
         or client["public_email"]
         or client["booking_url"]
         or client["website"]
+        or client["other_public_link"]
+        or client["delivery_pickup_links"]
+        or client["portfolio_link"]
     ):
-        fail("no public contact (whatsapp/phone/email/booking/website) - manual review required")
+        fail("no public contact or public link - manual review required")
 
     CLIENTS_DIR.mkdir(parents=True, exist_ok=True)
     client_path = CLIENTS_DIR / f"{slug}.client.json"

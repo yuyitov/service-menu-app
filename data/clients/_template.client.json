@@ -18,6 +18,16 @@
     "label": "Catalogo",
     "url": "https://example.com/catalogo"
   },
+  "delivery_pickup_links": [
+    {
+      "label": "Order online",
+      "url": "https://example.com/order"
+    }
+  ],
+  "portfolio_link": {
+    "label": "Portfolio",
+    "url": "https://example.com/portfolio"
+  },
   "booking_url": null,
   "primary_cta": null,
   "google_maps_url": "https://maps.app.goo.gl/EXAMPLE",

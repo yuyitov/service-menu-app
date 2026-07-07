@@ -964,7 +964,15 @@ function buildHmuPublicPayload(normalized, orderId) {
     brand_style: brandStyle,
     style_unmapped: styleUnmapped,
     business_name: businessName,
-    business_type: answerAny(a, ['business_type', 'tipo_de_negocio']),
+    business_type: answerAny(a, [
+      'business_type',
+      'type_of_business',
+      'what_type_of_business_is_this',
+      'what_type_of_business_do_you_have',
+      'tipo_de_negocio',
+      'que_tipo_de_negocio_es',
+      'cual_es_tu_tipo_de_negocio'
+    ]),
     short_description: answerAny(a, [
       'describe_your_business_in_1_2_sentences',
       'describe_tu_negocio_en_1_2_frases'
@@ -977,6 +985,15 @@ function buildHmuPublicPayload(normalized, orderId) {
     tiktok: answerAny(a, ['tiktok']),
     website: answerAny(a, ['website', 'sitio_web']),
     other_public_link: answerAny(a, ['other_public_link', 'otro_enlace_publico']),
+    delivery_pickup_links_text: answerAny(a, [
+      'delivery_pickup_links',
+      'delivery_or_pickup_links',
+      'links_for_delivery_or_pickup',
+      'links_de_delivery_pickup',
+      'links_de_delivery_o_pickup',
+      'enlaces_de_delivery_o_pickup'
+    ]),
+    portfolio_link: answerAny(a, ['portfolio_link', 'portfolio_url', 'enlace_de_portafolio', 'link_de_portafolio']),
     booking_url: answerAny(a, ['external_booking_link', 'enlace_externo_de_reservas']),
     primary_cta: normalizePrimaryCta(answerAny(a, [
       'featured_button',

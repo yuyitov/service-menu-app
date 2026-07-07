@@ -10,9 +10,10 @@ clarity-editorial / horizon-teal.
 
 Two page kinds:
 
-- **Demos** (`data/demos/*.json` -> `public/demos/<slug>/`): single-language
-  Spanish pages, `noindex`, footer "HMU Link - Demo". Behavior unchanged from
-  Phase 2.
+- **Demos** (`data/demos/*.json` -> `public/demos/<slug>/`): bilingual pages
+  (Spanish at the slug root, English in `en/`), `noindex`, footer
+  "HMU Link - Demo", with a language switch. Being noindex, they carry no
+  canonical/hreflang.
 - **Real clients** (`data/clients/*.json` -> `public/links/<slug>/`): bilingual
   pages (Spanish + English). The client's `default_language` renders at the
   root of the slug; the alternate language renders in a subfolder (`en/` or
@@ -84,18 +85,6 @@ DEMO_BASE_URL = "https://www.hmulink.com/demos"
 CLIENT_BASE_URL = "https://www.hmulink.com/links"
 
 CLIENT_LANGS = ("es", "en")
-
-# Required top-level fields for a minimally valid public payload (demos).
-REQUIRED_FIELDS = (
-    "public_slug",
-    "business_name",
-    "short_description",
-    "brand_style",
-    "whatsapp",
-    "google_maps_url",
-    "address",
-    "opening_hours_text",
-)
 
 # URL schemes we are willing to emit into href attributes.
 _ALLOWED_SCHEMES = ("http://", "https://")
@@ -219,33 +208,6 @@ def mailto_href(value):
 # --------------------------------------------------------------------------- #
 # Validation
 # --------------------------------------------------------------------------- #
-def validate(payload: dict) -> None:
-    """Validate minimum required fields. Raises ValidationError with a clear message."""
-    missing = [
-        field
-        for field in REQUIRED_FIELDS
-        if not str(payload.get(field, "")).strip()
-    ]
-    if missing:
-        raise ValidationError(
-            "Faltan campos requeridos o estan vacios: " + ", ".join(missing)
-        )
-
-    brand = payload.get("brand_style")
-    if brand not in BRAND_STYLES:
-        raise ValidationError(
-            f"brand_style invalido: {brand!r}. Debe ser uno de {BRAND_STYLES}."
-        )
-
-    services = payload.get("services")
-    if not isinstance(services, list) or len(services) == 0:
-        raise ValidationError("services debe ser una lista con al menos un servicio.")
-
-    for i, svc in enumerate(services):
-        if not isinstance(svc, dict) or not str(svc.get("name", "")).strip():
-            raise ValidationError(f"services[{i}] requiere al menos 'name'.")
-
-
 def validate_client(payload: dict) -> None:
     """Validate a bilingual real-client payload (client_payload_public v1)."""
     if not str(payload.get("public_slug", "")).strip():
@@ -707,14 +669,6 @@ def build_footer(payload: dict, text: str = "HMU Link - Demo") -> str:
 # --------------------------------------------------------------------------- #
 # Rendering
 # --------------------------------------------------------------------------- #
-def resolve_public_url(payload: dict) -> str:
-    url = str(payload.get("public_url", "")).strip()
-    if url:
-        return url
-    slug = str(payload.get("public_slug", "")).strip()
-    return f"{DEMO_BASE_URL}/{slug}"
-
-
 DEMO_HEAD_META = '<meta name="robots" content="noindex">'
 
 
@@ -768,19 +722,6 @@ def render_view(
     for token, value in tokens.items():
         out = out.replace(token, value)
     return out
-
-
-def render(payload: dict) -> str:
-    """Render a single-language Spanish demo page (Phase 2 behavior)."""
-    validate(payload)
-    return render_view(
-        payload,
-        "es",
-        head_meta=DEMO_HEAD_META,
-        lang_switch_html="",
-        footer_text="HMU Link - Demo",
-        share_url=resolve_public_url(payload),
-    )
 
 
 # --------------------------------------------------------------------------- #
@@ -886,20 +827,72 @@ def build_client(json_path: Path) -> Path:
 
 
 # --------------------------------------------------------------------------- #
+# Demo rendering (bilingual)
+# --------------------------------------------------------------------------- #
+def build_demo(json_path: Path) -> Path:
+    """Generate both language pages + one QR for a bilingual demo payload.
+
+    Spanish is the default at the slug root (`demos/<slug>/`); English lives in
+    `demos/<slug>/en/`. Every page carries a language switch and is `noindex`
+    (demos are not meant to rank), so — unlike real clients — they get no
+    canonical/hreflang. The footer reads "HMU Link - Demo".
+    """
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    validate_client(payload)
+
+    slug = str(payload["public_slug"]).strip()
+    default_lang = payload.get("default_language", "es")
+    alt_lang = "en" if default_lang == "es" else "es"
+
+    root_url = f"{DEMO_BASE_URL}/{slug}/"
+
+    root_dir = OUTPUT_DIR / slug
+    root_dir.mkdir(parents=True, exist_ok=True)
+    alt_dir = root_dir / alt_lang
+    alt_dir.mkdir(parents=True, exist_ok=True)
+
+    # Language switch: the default page links into the subfolder; the alternate
+    # page links back to the root. Labels are in the *target* language.
+    switch = {
+        default_lang: (
+            f'<div class="lang-switch"><a href="{alt_lang}/" lang="{alt_lang}">'
+            f'{STRINGS[default_lang]["lang_switch"]}</a></div>'
+        ),
+        alt_lang: (
+            f'<div class="lang-switch"><a href="../" lang="{default_lang}">'
+            f'{STRINGS[alt_lang]["lang_switch"]}</a></div>'
+        ),
+    }
+
+    default_html = render_view(
+        client_lang_view(payload, default_lang),
+        default_lang,
+        head_meta=DEMO_HEAD_META,
+        lang_switch_html=switch[default_lang],
+        footer_text="HMU Link - Demo",
+        share_url=root_url,
+        qr_src=QR_ASSET_NAME,
+    )
+    alt_html = render_view(
+        client_lang_view(payload, alt_lang),
+        alt_lang,
+        head_meta=DEMO_HEAD_META,
+        lang_switch_html=switch[alt_lang],
+        footer_text="HMU Link - Demo",
+        share_url=root_url,
+        qr_src=f"../{QR_ASSET_NAME}",
+    )
+
+    (root_dir / "index.html").write_text(default_html, encoding="utf-8")
+    (alt_dir / "index.html").write_text(alt_html, encoding="utf-8")
+    # One QR per demo, encoding the default-language (root) URL.
+    (root_dir / QR_ASSET_NAME).write_text(make_qr_svg(root_url), encoding="utf-8")
+    return root_dir / "index.html"
+
+
+# --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
-def build_one(json_path: Path) -> Path:
-    payload = json.loads(json_path.read_text(encoding="utf-8"))
-    slug = str(payload.get("public_slug", "")).strip() or json_path.stem
-    html_out = render(payload)
-    qr_svg = make_qr_svg(resolve_public_url(payload))
-
-    out_dir = OUTPUT_DIR / slug
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_file = out_dir / "index.html"
-    out_file.write_text(html_out, encoding="utf-8")
-    (out_dir / QR_ASSET_NAME).write_text(qr_svg, encoding="utf-8")
-    return out_file
 
 
 def _client_jsons() -> list[Path]:
@@ -933,9 +926,9 @@ def main(argv: list[str]) -> int:
     failures = 0
     for path in demo_paths:
         try:
-            out_file = build_one(path)
+            out_file = build_demo(path)
             rel = out_file.relative_to(REPO_ROOT)
-            print(f"[ok]   {path.name} -> {rel}")
+            print(f"[ok]   {path.name} -> {rel} (+ alterno bilingue)")
         except (ValidationError, json.JSONDecodeError, OSError) as exc:
             failures += 1
             print(f"[fail] {path.name}: {exc}", file=sys.stderr)

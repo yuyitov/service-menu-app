@@ -1,60 +1,114 @@
 {
-    "public_slug":  "pulse-fitness",
-    "public_url":  "https://www.hmulink.com/demos/pulse-fitness/",
-    "business_name":  "Pulse Fitness Studio",
-    "short_description":  "Entrena fuerte, entrena con propósito 💪",
-    "brand_style":  "electric-slate",
-    "primary_image_url":  "https://www.hmulink.com/assets/demo-heroes/electric-slate.jpg",
-    "logo_url":  null,
-    "service_categories":  [
-                               "Membresías",
-                               "Clases grupales",
-                               "Entrenamiento personal"
-                           ],
-    "services":  [
-                     {
-                         "category":  "Membresías",
-                         "name":  "Membresía mensual",
-                         "description":  "Acceso ilimitado a piso de pesas y cardio",
-                         "price_label":  "$650 MXN/mes"
-                     },
-                     {
-                         "category":  "Membresías",
-                         "name":  "Pase de día",
-                         "price_label":  "$120 MXN"
-                     },
-                     {
-                         "category":  "Clases grupales",
-                         "name":  "HIIT 45 min",
-                         "description":  "Circuito de alta intensidad",
-                         "price_label":  "$150 MXN"
-                     },
-                     {
-                         "category":  "Clases grupales",
-                         "name":  "Spinning",
-                         "price_label":  "$130 MXN"
-                     },
-                     {
-                         "category":  "Entrenamiento personal",
-                         "name":  "Sesión 1 a 1",
-                         "description":  "60 minutos con coach certificado",
-                         "price_label":  "Desde $450 MXN"
-                     }
-                 ],
-    "featured_package":  {
-                             "name":  "Pack Transformación 3 meses",
-                             "description":  "Membresía + 8 sesiones de entrenamiento personal + plan de nutrición",
-                             "price_label":  "$3,200 MXN"
-                         },
-    "whatsapp":  "+52 55 2345 6789",
-    "instagram":  "https://instagram.com/pulsefitness.demo",
-    "google_maps_url":  "https://maps.google.com/?q=Pulse+Fitness+Studio+Demo",
-    "address":  "Av. Insurgentes Sur 456, Col. Nápoles, CDMX",
-    "opening_hours_text":  "Lun–Vie 6:00–22:00 · Sáb 8:00–14:00 · Dom cerrado",
-    "google_reviews_url":  "https://g.page/r/pulse-fitness-demo/review",
-    "policies":  [
-                     "Trae tu propia toalla y botella de agua.",
-                     "Cancelaciones de clases con 2 h de anticipación.",
-                     "Congelamiento de membresía disponible por vacaciones."
-                 ]
+  "public_slug": "pulse-fitness",
+  "business_name": "Pulse Fitness Studio",
+  "brand_style": "electric-slate",
+  "primary_image_url": "https://www.hmulink.com/assets/demo-heroes/electric-slate.jpg",
+  "logo_url": null,
+  "whatsapp": "+52 55 2345 6789",
+  "instagram": "https://instagram.com/pulsefitness.demo",
+  "google_maps_url": "https://maps.google.com/?q=Pulse+Fitness+Studio+Demo",
+  "google_reviews_url": "https://g.page/r/pulse-fitness-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Entrena fuerte, entrena con propósito 💪",
+      "address": "Av. Insurgentes Sur 456, Col. Nápoles, CDMX",
+      "opening_hours_text": "Lun–Vie 6:00–22:00 · Sáb 8:00–14:00 · Dom cerrado",
+      "service_categories": [
+        "Membresías",
+        "Clases grupales",
+        "Entrenamiento personal"
+      ],
+      "services": [
+        {
+          "category": "Membresías",
+          "name": "Membresía mensual",
+          "description": "Acceso ilimitado a piso de pesas y cardio",
+          "price_label": "$650 MXN/mes"
+        },
+        {
+          "category": "Membresías",
+          "name": "Pase de día",
+          "price_label": "$120 MXN"
+        },
+        {
+          "category": "Clases grupales",
+          "name": "HIIT 45 min",
+          "description": "Circuito de alta intensidad",
+          "price_label": "$150 MXN"
+        },
+        {
+          "category": "Clases grupales",
+          "name": "Spinning",
+          "price_label": "$130 MXN"
+        },
+        {
+          "category": "Entrenamiento personal",
+          "name": "Sesión 1 a 1",
+          "description": "60 minutos con coach certificado",
+          "price_label": "Desde $450 MXN"
+        }
+      ],
+      "policies": [
+        "Trae tu propia toalla y botella de agua.",
+        "Cancelaciones de clases con 2 h de anticipación.",
+        "Congelamiento de membresía disponible por vacaciones."
+      ],
+      "featured_package": {
+        "name": "Pack Transformación 3 meses",
+        "description": "Membresía + 8 sesiones de entrenamiento personal + plan de nutrición",
+        "price_label": "$3,200 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Train hard, train with purpose 💪",
+      "address": "Av. Insurgentes Sur 456, Col. Nápoles, CDMX",
+      "opening_hours_text": "Mon–Fri 6:00–22:00 · Sat 8:00–14:00 · Sun closed",
+      "service_categories": [
+        "Memberships",
+        "Group classes",
+        "Personal training"
+      ],
+      "services": [
+        {
+          "category": "Memberships",
+          "name": "Monthly membership",
+          "description": "Unlimited access to the weights and cardio floor",
+          "price_label": "$650 MXN/mo"
+        },
+        {
+          "category": "Memberships",
+          "name": "Day pass",
+          "price_label": "$120 MXN"
+        },
+        {
+          "category": "Group classes",
+          "name": "HIIT 45 min",
+          "description": "High-intensity circuit",
+          "price_label": "$150 MXN"
+        },
+        {
+          "category": "Group classes",
+          "name": "Spinning",
+          "price_label": "$130 MXN"
+        },
+        {
+          "category": "Personal training",
+          "name": "1-on-1 session",
+          "description": "60 minutes with a certified coach",
+          "price_label": "From $450 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "3-Month Transformation Pack",
+        "description": "Membership + 8 personal-training sessions + nutrition plan",
+        "price_label": "$3,200 MXN"
+      },
+      "policies": [
+        "Bring your own towel and water bottle.",
+        "Cancel classes at least 2 h in advance.",
+        "Membership freeze available for vacations."
+      ]
+    }
+  }
 }

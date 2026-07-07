@@ -1,54 +1,102 @@
 {
-    "public_slug":  "studio-blush",
-    "public_url":  "https://www.hmulink.com/demos/studio-blush/",
-    "business_name":  "Studio Blush — Lashes \u0026 Brows",
-    "short_description":  "Realza tu mirada con lashes \u0026 brows de autor 🌸",
-    "brand_style":  "soft-blush",
-    "primary_image_url":  "https://www.hmulink.com/assets/demo-heroes/soft-blush.jpg",
-    "logo_url":  null,
-    "service_categories":  [
-                               "Pestañas",
-                               "Cejas",
-                               "Faciales express"
-                           ],
-    "services":  [
-                     {
-                         "category":  "Pestañas",
-                         "name":  "Lashes clásicas",
-                         "description":  "Extensión pelo a pelo, look natural",
-                         "price_label":  "$450 MXN"
-                     },
-                     {
-                         "category":  "Pestañas",
-                         "name":  "Lashes volumen ruso",
-                         "description":  "Máximo volumen \u0026 duración",
-                         "price_label":  "$650 MXN"
-                     },
-                     {
-                         "category":  "Cejas",
-                         "name":  "Diseño \u0026 laminado de cejas",
-                         "price_label":  "$400 MXN"
-                     },
-                     {
-                         "category":  "Faciales express",
-                         "name":  "Limpieza facial express",
-                         "description":  "30 min de hidratación y glow",
-                         "price_label":  "Desde $350 MXN"
-                     }
-                 ],
-    "featured_package":  {
-                             "name":  "Combo Mirada Perfecta",
-                             "description":  "Lashes volumen + diseño de cejas en una sola cita",
-                             "price_label":  "$950 MXN"
-                         },
-    "whatsapp":  "+52 55 2233 4455",
-    "instagram":  "https://instagram.com/studioblush.demo",
-    "google_maps_url":  "https://maps.google.com/?q=Studio+Blush+Demo",
-    "address":  "Av. Ámsterdam 210, Col. Condesa, CDMX",
-    "opening_hours_text":  "Mar–Sáb 10:00–19:00 · Dom y Lun cerrado",
-    "google_reviews_url":  "https://g.page/r/studio-blush-demo/review",
-    "policies":  [
-                     "Llega sin maquillaje en el área de ojos para lashes.",
-                     "Se requiere anticipo del 30% para reservar."
-                 ]
+  "public_slug": "studio-blush",
+  "business_name": "Studio Blush — Lashes & Brows",
+  "brand_style": "soft-blush",
+  "primary_image_url": "https://www.hmulink.com/assets/demo-heroes/soft-blush.jpg",
+  "logo_url": null,
+  "whatsapp": "+52 55 2233 4455",
+  "instagram": "https://instagram.com/studioblush.demo",
+  "google_maps_url": "https://maps.google.com/?q=Studio+Blush+Demo",
+  "google_reviews_url": "https://g.page/r/studio-blush-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Realza tu mirada con lashes & brows de autor 🌸",
+      "address": "Av. Ámsterdam 210, Col. Condesa, CDMX",
+      "opening_hours_text": "Mar–Sáb 10:00–19:00 · Dom y Lun cerrado",
+      "service_categories": [
+        "Pestañas",
+        "Cejas",
+        "Faciales express"
+      ],
+      "services": [
+        {
+          "category": "Pestañas",
+          "name": "Lashes clásicas",
+          "description": "Extensión pelo a pelo, look natural",
+          "price_label": "$450 MXN"
+        },
+        {
+          "category": "Pestañas",
+          "name": "Lashes volumen ruso",
+          "description": "Máximo volumen & duración",
+          "price_label": "$650 MXN"
+        },
+        {
+          "category": "Cejas",
+          "name": "Diseño & laminado de cejas",
+          "price_label": "$400 MXN"
+        },
+        {
+          "category": "Faciales express",
+          "name": "Limpieza facial express",
+          "description": "30 min de hidratación y glow",
+          "price_label": "Desde $350 MXN"
+        }
+      ],
+      "policies": [
+        "Llega sin maquillaje en el área de ojos para lashes.",
+        "Se requiere anticipo del 30% para reservar."
+      ],
+      "featured_package": {
+        "name": "Combo Mirada Perfecta",
+        "description": "Lashes volumen + diseño de cejas en una sola cita",
+        "price_label": "$950 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Elevate your look with signature lashes & brows 🌸",
+      "address": "Av. Ámsterdam 210, Col. Condesa, CDMX",
+      "opening_hours_text": "Tue–Sat 10:00–19:00 · Sun & Mon closed",
+      "service_categories": [
+        "Lashes",
+        "Brows",
+        "Express facials"
+      ],
+      "services": [
+        {
+          "category": "Lashes",
+          "name": "Classic lashes",
+          "description": "Lash-by-lash extensions, natural look",
+          "price_label": "$450 MXN"
+        },
+        {
+          "category": "Lashes",
+          "name": "Russian volume lashes",
+          "description": "Maximum volume & wear",
+          "price_label": "$650 MXN"
+        },
+        {
+          "category": "Brows",
+          "name": "Brow design & lamination",
+          "price_label": "$400 MXN"
+        },
+        {
+          "category": "Express facials",
+          "name": "Express facial cleanse",
+          "description": "30 min of hydration and glow",
+          "price_label": "From $350 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Perfect Look Combo",
+        "description": "Volume lashes + brow design in a single appointment",
+        "price_label": "$950 MXN"
+      },
+      "policies": [
+        "Arrive with no eye makeup for lash services.",
+        "A 30% deposit is required to book."
+      ]
+    }
+  }
 }

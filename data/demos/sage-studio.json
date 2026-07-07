@@ -1,53 +1,100 @@
 {
-    "public_slug":  "sage-studio",
-    "public_url":  "https://www.hmulink.com/demos/sage-studio/",
-    "business_name":  "Renacer — Sage Studio",
-    "short_description":  "Yoga, meditación y terapias holísticas para tu día a día",
-    "brand_style":  "sage-calm",
-    "primary_image_url":  "https://www.hmulink.com/assets/demo-heroes/sage-calm.jpg",
-    "logo_url":  null,
-    "service_categories":  [
-                               "Clases",
-                               "Terapias"
-                           ],
-    "services":  [
-                     {
-                         "category":  "Clases",
-                         "name":  "Hatha Yoga",
-                         "description":  "Clase grupal para todos los niveles",
-                         "price_label":  "$150 MXN / clase"
-                     },
-                     {
-                         "category":  "Clases",
-                         "name":  "Vinyasa Flow",
-                         "price_label":  "$180 MXN / clase"
-                     },
-                     {
-                         "category":  "Terapias",
-                         "name":  "Meditación guiada",
-                         "description":  "Individual, 45 minutos",
-                         "price_label":  "Consultar"
-                     },
-                     {
-                         "category":  "Terapias",
-                         "name":  "Masaje holístico",
-                         "description":  "Aromaterapia \u0026 sonido",
-                         "price_label":  "$700 MXN"
-                     }
-                 ],
-    "featured_package":  {
-                             "name":  "Mes de Bienestar",
-                             "description":  "Clases ilimitadas + 1 terapia individual al mes",
-                             "price_label":  "Desde $1,200 MXN"
-                         },
-    "whatsapp":  "+52 55 4455 6677",
-    "instagram":  "https://instagram.com/sagestudio.demo",
-    "google_maps_url":  "https://maps.google.com/?q=Renacer+Sage+Studio+Demo",
-    "address":  "Insurgentes Sur 800, Col. Del Valle, CDMX",
-    "opening_hours_text":  "Lun–Vie 07:00–21:00 · Sáb 08:00–14:00 · Dom cerrado",
-    "google_reviews_url":  "https://g.page/r/sage-studio-demo/review",
-    "policies":  [
-                     "Reserva tu lugar por WhatsApp antes de cada clase.",
-                     "Trae tu propio tapete o renta uno en recepción."
-                 ]
+  "public_slug": "sage-studio",
+  "business_name": "Renacer — Sage Studio",
+  "brand_style": "sage-calm",
+  "primary_image_url": "https://www.hmulink.com/assets/demo-heroes/sage-calm.jpg",
+  "logo_url": null,
+  "whatsapp": "+52 55 4455 6677",
+  "instagram": "https://instagram.com/sagestudio.demo",
+  "google_maps_url": "https://maps.google.com/?q=Renacer+Sage+Studio+Demo",
+  "google_reviews_url": "https://g.page/r/sage-studio-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Yoga, meditación y terapias holísticas para tu día a día",
+      "address": "Insurgentes Sur 800, Col. Del Valle, CDMX",
+      "opening_hours_text": "Lun–Vie 07:00–21:00 · Sáb 08:00–14:00 · Dom cerrado",
+      "service_categories": [
+        "Clases",
+        "Terapias"
+      ],
+      "services": [
+        {
+          "category": "Clases",
+          "name": "Hatha Yoga",
+          "description": "Clase grupal para todos los niveles",
+          "price_label": "$150 MXN / clase"
+        },
+        {
+          "category": "Clases",
+          "name": "Vinyasa Flow",
+          "price_label": "$180 MXN / clase"
+        },
+        {
+          "category": "Terapias",
+          "name": "Meditación guiada",
+          "description": "Individual, 45 minutos",
+          "price_label": "Consultar"
+        },
+        {
+          "category": "Terapias",
+          "name": "Masaje holístico",
+          "description": "Aromaterapia & sonido",
+          "price_label": "$700 MXN"
+        }
+      ],
+      "policies": [
+        "Reserva tu lugar por WhatsApp antes de cada clase.",
+        "Trae tu propio tapete o renta uno en recepción."
+      ],
+      "featured_package": {
+        "name": "Mes de Bienestar",
+        "description": "Clases ilimitadas + 1 terapia individual al mes",
+        "price_label": "Desde $1,200 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Yoga, meditation and holistic therapies for everyday life",
+      "address": "Insurgentes Sur 800, Col. Del Valle, CDMX",
+      "opening_hours_text": "Mon–Fri 7:00–21:00 · Sat 8:00–14:00 · Sun closed",
+      "service_categories": [
+        "Classes",
+        "Therapies"
+      ],
+      "services": [
+        {
+          "category": "Classes",
+          "name": "Hatha Yoga",
+          "description": "Group class for all levels",
+          "price_label": "$150 MXN / class"
+        },
+        {
+          "category": "Classes",
+          "name": "Vinyasa Flow",
+          "price_label": "$180 MXN / class"
+        },
+        {
+          "category": "Therapies",
+          "name": "Guided meditation",
+          "description": "One-on-one, 45 minutes",
+          "price_label": "Inquire"
+        },
+        {
+          "category": "Therapies",
+          "name": "Holistic massage",
+          "description": "Aromatherapy & sound",
+          "price_label": "$700 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Wellness Month",
+        "description": "Unlimited classes + 1 one-on-one therapy per month",
+        "price_label": "From $1,200 MXN"
+      },
+      "policies": [
+        "Reserve your spot via WhatsApp before each class.",
+        "Bring your own mat or rent one at reception."
+      ]
+    }
+  }
 }

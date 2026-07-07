@@ -1,55 +1,104 @@
 {
-    "public_slug":  "horizon-tours",
-    "public_url":  "https://www.hmulink.com/demos/horizon-tours/",
-    "business_name":  "Horizon City Tours",
-    "short_description":  "Explora la ciudad como local, no como turista 🧭",
-    "brand_style":  "horizon-teal",
-    "primary_image_url":  "https://www.hmulink.com/assets/demo-heroes/horizon-teal.jpg",
-    "logo_url":  null,
-    "service_categories":  [
-                               "Tours a pie",
-                               "Experiencias",
-                               "Privados"
-                           ],
-    "services":  [
-                     {
-                         "category":  "Tours a pie",
-                         "name":  "Centro Histórico esencial",
-                         "description":  "3 horas, grupo compartido",
-                         "price_label":  "$350 MXN"
-                     },
-                     {
-                         "category":  "Tours a pie",
-                         "name":  "Ruta de mercados y sabores",
-                         "description":  "Incluye 4 degustaciones",
-                         "price_label":  "$550 MXN"
-                     },
-                     {
-                         "category":  "Experiencias",
-                         "name":  "Bici nocturna por la ciudad",
-                         "price_label":  "$450 MXN"
-                     },
-                     {
-                         "category":  "Privados",
-                         "name":  "Tour privado a medida",
-                         "description":  "Hasta 6 personas, ruta personalizada",
-                         "price_label":  "Desde $2,200 MXN"
-                     }
-                 ],
-    "featured_package":  {
-                             "name":  "Día completo: Historia + Sabores",
-                             "description":  "Tour matutino + ruta de mercados + transporte incluido",
-                             "price_label":  "$780 MXN"
-                         },
-    "whatsapp":  "+52 55 7890 1234",
-    "instagram":  "https://instagram.com/horizontours.demo",
-    "google_maps_url":  "https://maps.google.com/?q=Horizon+City+Tours+Demo",
-    "address":  "Punto de encuentro: Zócalo, CDMX (confirmamos por WhatsApp)",
-    "opening_hours_text":  "Todos los días, salidas 9:00 y 16:00",
-    "google_reviews_url":  "https://g.page/r/horizon-tours-demo/review",
-    "policies":  [
-                     "Reserva con 24 h de anticipación.",
-                     "Cancelación gratuita hasta 12 h antes.",
-                     "Tours se realizan con cualquier clima, salvo alertas oficiales."
-                 ]
+  "public_slug": "horizon-tours",
+  "business_name": "Horizon City Tours",
+  "brand_style": "horizon-teal",
+  "primary_image_url": "https://www.hmulink.com/assets/demo-heroes/horizon-teal.jpg",
+  "logo_url": null,
+  "whatsapp": "+52 55 7890 1234",
+  "instagram": "https://instagram.com/horizontours.demo",
+  "google_maps_url": "https://maps.google.com/?q=Horizon+City+Tours+Demo",
+  "google_reviews_url": "https://g.page/r/horizon-tours-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Explora la ciudad como local, no como turista 🧭",
+      "address": "Punto de encuentro: Zócalo, CDMX (confirmamos por WhatsApp)",
+      "opening_hours_text": "Todos los días, salidas 9:00 y 16:00",
+      "service_categories": [
+        "Tours a pie",
+        "Experiencias",
+        "Privados"
+      ],
+      "services": [
+        {
+          "category": "Tours a pie",
+          "name": "Centro Histórico esencial",
+          "description": "3 horas, grupo compartido",
+          "price_label": "$350 MXN"
+        },
+        {
+          "category": "Tours a pie",
+          "name": "Ruta de mercados y sabores",
+          "description": "Incluye 4 degustaciones",
+          "price_label": "$550 MXN"
+        },
+        {
+          "category": "Experiencias",
+          "name": "Bici nocturna por la ciudad",
+          "price_label": "$450 MXN"
+        },
+        {
+          "category": "Privados",
+          "name": "Tour privado a medida",
+          "description": "Hasta 6 personas, ruta personalizada",
+          "price_label": "Desde $2,200 MXN"
+        }
+      ],
+      "policies": [
+        "Reserva con 24 h de anticipación.",
+        "Cancelación gratuita hasta 12 h antes.",
+        "Tours se realizan con cualquier clima, salvo alertas oficiales."
+      ],
+      "featured_package": {
+        "name": "Día completo: Historia + Sabores",
+        "description": "Tour matutino + ruta de mercados + transporte incluido",
+        "price_label": "$780 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Explore the city like a local, not a tourist 🧭",
+      "address": "Meeting point: Zócalo, CDMX (confirmed via WhatsApp)",
+      "opening_hours_text": "Every day, departures at 9:00 and 16:00",
+      "service_categories": [
+        "Walking tours",
+        "Experiences",
+        "Private"
+      ],
+      "services": [
+        {
+          "category": "Walking tours",
+          "name": "Historic Center essentials",
+          "description": "3 hours, shared group",
+          "price_label": "$350 MXN"
+        },
+        {
+          "category": "Walking tours",
+          "name": "Markets & flavors route",
+          "description": "Includes 4 tastings",
+          "price_label": "$550 MXN"
+        },
+        {
+          "category": "Experiences",
+          "name": "Night bike ride through the city",
+          "price_label": "$450 MXN"
+        },
+        {
+          "category": "Private",
+          "name": "Custom private tour",
+          "description": "Up to 6 people, personalized route",
+          "price_label": "From $2,200 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Full day: History + Flavors",
+        "description": "Morning tour + markets route + transport included",
+        "price_label": "$780 MXN"
+      },
+      "policies": [
+        "Book 24 h in advance.",
+        "Free cancellation up to 12 h before.",
+        "Tours run in any weather, except during official alerts."
+      ]
+    }
+  }
 }

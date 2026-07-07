@@ -1,57 +1,108 @@
 {
-    "public_slug":  "pawsome-grooming",
-    "public_url":  "https://www.hmulink.com/demos/pawsome-grooming/",
-    "business_name":  "Pawsome Grooming",
-    "short_description":  "Spa y estética para tu mejor amigo 🐾",
-    "brand_style":  "sunny-paws",
-    "primary_image_url":  "https://www.hmulink.com/assets/demo-heroes/sunny-paws.jpg",
-    "logo_url":  null,
-    "service_categories":  [
-                               "Baño y corte",
-                               "Spa canino",
-                               "Extras"
-                           ],
-    "services":  [
-                     {
-                         "category":  "Baño y corte",
-                         "name":  "Baño básico (razas pequeñas)",
-                         "price_label":  "$280 MXN"
-                     },
-                     {
-                         "category":  "Baño y corte",
-                         "name":  "Corte + baño (razas medianas)",
-                         "price_label":  "$420 MXN"
-                     },
-                     {
-                         "category":  "Spa canino",
-                         "name":  "Hidratación + cepillado profundo",
-                         "price_label":  "$180 MXN"
-                     },
-                     {
-                         "category":  "Spa canino",
-                         "name":  "Aromaterapia relajante",
-                         "price_label":  "$120 MXN"
-                     },
-                     {
-                         "category":  "Extras",
-                         "name":  "Corte de uñas",
-                         "price_label":  "$80 MXN"
-                     }
-                 ],
-    "featured_package":  {
-                             "name":  "Día de Spa Canino",
-                             "description":  "Baño + corte + spa + aromaterapia + premio sorpresa",
-                             "price_label":  "$650 MXN"
-                         },
-    "whatsapp":  "+52 55 4567 8901",
-    "instagram":  "https://instagram.com/pawsomegrooming.demo",
-    "google_maps_url":  "https://maps.google.com/?q=Pawsome+Grooming+Demo",
-    "address":  "Av. Universidad 234, Col. Del Valle, CDMX",
-    "opening_hours_text":  "Lun–Sáb 9:00–19:00 · Dom cerrado",
-    "google_reviews_url":  "https://g.page/r/pawsome-grooming-demo/review",
-    "policies":  [
-                     "Cartilla de vacunación al día obligatoria.",
-                     "Agenda tu cita con 24 h de anticipación.",
-                     "Dueños pueden esperar en sala o recoger después."
-                 ]
+  "public_slug": "pawsome-grooming",
+  "business_name": "Pawsome Grooming",
+  "brand_style": "sunny-paws",
+  "primary_image_url": "https://www.hmulink.com/assets/demo-heroes/sunny-paws.jpg",
+  "logo_url": null,
+  "whatsapp": "+52 55 4567 8901",
+  "instagram": "https://instagram.com/pawsomegrooming.demo",
+  "google_maps_url": "https://maps.google.com/?q=Pawsome+Grooming+Demo",
+  "google_reviews_url": "https://g.page/r/pawsome-grooming-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Spa y estética para tu mejor amigo 🐾",
+      "address": "Av. Universidad 234, Col. Del Valle, CDMX",
+      "opening_hours_text": "Lun–Sáb 9:00–19:00 · Dom cerrado",
+      "service_categories": [
+        "Baño y corte",
+        "Spa canino",
+        "Extras"
+      ],
+      "services": [
+        {
+          "category": "Baño y corte",
+          "name": "Baño básico (razas pequeñas)",
+          "price_label": "$280 MXN"
+        },
+        {
+          "category": "Baño y corte",
+          "name": "Corte + baño (razas medianas)",
+          "price_label": "$420 MXN"
+        },
+        {
+          "category": "Spa canino",
+          "name": "Hidratación + cepillado profundo",
+          "price_label": "$180 MXN"
+        },
+        {
+          "category": "Spa canino",
+          "name": "Aromaterapia relajante",
+          "price_label": "$120 MXN"
+        },
+        {
+          "category": "Extras",
+          "name": "Corte de uñas",
+          "price_label": "$80 MXN"
+        }
+      ],
+      "policies": [
+        "Cartilla de vacunación al día obligatoria.",
+        "Agenda tu cita con 24 h de anticipación.",
+        "Dueños pueden esperar en sala o recoger después."
+      ],
+      "featured_package": {
+        "name": "Día de Spa Canino",
+        "description": "Baño + corte + spa + aromaterapia + premio sorpresa",
+        "price_label": "$650 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Spa and grooming for your best friend 🐾",
+      "address": "Av. Universidad 234, Col. Del Valle, CDMX",
+      "opening_hours_text": "Mon–Sat 9:00–19:00 · Sun closed",
+      "service_categories": [
+        "Bath & cut",
+        "Dog spa",
+        "Extras"
+      ],
+      "services": [
+        {
+          "category": "Bath & cut",
+          "name": "Basic bath (small breeds)",
+          "price_label": "$280 MXN"
+        },
+        {
+          "category": "Bath & cut",
+          "name": "Cut + bath (medium breeds)",
+          "price_label": "$420 MXN"
+        },
+        {
+          "category": "Dog spa",
+          "name": "Hydration + deep brushing",
+          "price_label": "$180 MXN"
+        },
+        {
+          "category": "Dog spa",
+          "name": "Relaxing aromatherapy",
+          "price_label": "$120 MXN"
+        },
+        {
+          "category": "Extras",
+          "name": "Nail trim",
+          "price_label": "$80 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Dog Spa Day",
+        "description": "Bath + cut + spa + aromatherapy + surprise treat",
+        "price_label": "$650 MXN"
+      },
+      "policies": [
+        "Up-to-date vaccination record required.",
+        "Book your appointment 24 h in advance.",
+        "Owners can wait in the lounge or pick up later."
+      ]
+    }
+  }
 }

@@ -1,53 +1,100 @@
 {
-    "public_slug":  "north-barber",
-    "public_url":  "https://www.hmulink.com/demos/north-barber/",
-    "business_name":  "North Barber Co.",
-    "short_description":  "Cortes clásicos y grooming para el hombre moderno",
-    "brand_style":  "charcoal-clean",
-    "primary_image_url":  "https://www.hmulink.com/assets/demo-heroes/charcoal-clean.jpg",
-    "logo_url":  null,
-    "service_categories":  [
-                               "Cortes",
-                               "Barba",
-                               "Extras"
-                           ],
-    "services":  [
-                     {
-                         "category":  "Cortes",
-                         "name":  "Corte clásico",
-                         "description":  "Tijera \u0026 máquina, incluye lavado",
-                         "price_label":  "$220 MXN"
-                     },
-                     {
-                         "category":  "Cortes",
-                         "name":  "Corte + diseño (fade)",
-                         "price_label":  "$280 MXN"
-                     },
-                     {
-                         "category":  "Barba",
-                         "name":  "Perfilado de barba",
-                         "description":  "Toalla caliente \u0026 aceite",
-                         "price_label":  "$150 MXN"
-                     },
-                     {
-                         "category":  "Extras",
-                         "name":  "Corte de niño",
-                         "price_label":  "$180 MXN"
-                     }
-                 ],
-    "featured_package":  {
-                             "name":  "Full Grooming",
-                             "description":  "Corte + barba + perfilado de cejas",
-                             "price_label":  "$380 MXN"
-                         },
-    "whatsapp":  "+52 81 5566 7788",
-    "instagram":  "https://instagram.com/northbarber.demo",
-    "google_maps_url":  "https://maps.google.com/?q=North+Barber+Co+Demo",
-    "address":  "Calzada del Valle 300, San Pedro, Monterrey",
-    "opening_hours_text":  "Lun–Sáb 11:00–20:00 · Dom cerrado",
-    "google_reviews_url":  "https://g.page/r/north-barber-demo/review",
-    "policies":  [
-                     "Atendemos por orden de llegada y con cita.",
-                     "Tolerancia de 10 min; después se reagenda."
-                 ]
+  "public_slug": "north-barber",
+  "business_name": "North Barber Co.",
+  "brand_style": "charcoal-clean",
+  "primary_image_url": "https://www.hmulink.com/assets/demo-heroes/charcoal-clean.jpg",
+  "logo_url": null,
+  "whatsapp": "+52 81 5566 7788",
+  "instagram": "https://instagram.com/northbarber.demo",
+  "google_maps_url": "https://maps.google.com/?q=North+Barber+Co+Demo",
+  "google_reviews_url": "https://g.page/r/north-barber-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Cortes clásicos y grooming para el hombre moderno",
+      "address": "Calzada del Valle 300, San Pedro, Monterrey",
+      "opening_hours_text": "Lun–Sáb 11:00–20:00 · Dom cerrado",
+      "service_categories": [
+        "Cortes",
+        "Barba",
+        "Extras"
+      ],
+      "services": [
+        {
+          "category": "Cortes",
+          "name": "Corte clásico",
+          "description": "Tijera & máquina, incluye lavado",
+          "price_label": "$220 MXN"
+        },
+        {
+          "category": "Cortes",
+          "name": "Corte + diseño (fade)",
+          "price_label": "$280 MXN"
+        },
+        {
+          "category": "Barba",
+          "name": "Perfilado de barba",
+          "description": "Toalla caliente & aceite",
+          "price_label": "$150 MXN"
+        },
+        {
+          "category": "Extras",
+          "name": "Corte de niño",
+          "price_label": "$180 MXN"
+        }
+      ],
+      "policies": [
+        "Atendemos por orden de llegada y con cita.",
+        "Tolerancia de 10 min; después se reagenda."
+      ],
+      "featured_package": {
+        "name": "Full Grooming",
+        "description": "Corte + barba + perfilado de cejas",
+        "price_label": "$380 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Classic cuts and grooming for the modern man",
+      "address": "Calzada del Valle 300, San Pedro, Monterrey",
+      "opening_hours_text": "Mon–Sat 11:00–20:00 · Sun closed",
+      "service_categories": [
+        "Haircuts",
+        "Beard",
+        "Extras"
+      ],
+      "services": [
+        {
+          "category": "Haircuts",
+          "name": "Classic cut",
+          "description": "Scissors & clippers, wash included",
+          "price_label": "$220 MXN"
+        },
+        {
+          "category": "Haircuts",
+          "name": "Cut + design (fade)",
+          "price_label": "$280 MXN"
+        },
+        {
+          "category": "Beard",
+          "name": "Beard lineup",
+          "description": "Hot towel & oil",
+          "price_label": "$150 MXN"
+        },
+        {
+          "category": "Extras",
+          "name": "Kids' cut",
+          "price_label": "$180 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Full Grooming",
+        "description": "Cut + beard + brow lineup",
+        "price_label": "$380 MXN"
+      },
+      "policies": [
+        "Walk-ins and appointments welcome.",
+        "10-min grace period; after that we reschedule."
+      ]
+    }
+  }
 }

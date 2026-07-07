@@ -1,55 +1,104 @@
 {
-    "public_slug":  "clarity-coaching",
-    "public_url":  "https://www.hmulink.com/demos/clarity-coaching/",
-    "business_name":  "Clarity Coaching Co.",
-    "short_description":  "Claridad y estrategia para tu siguiente paso profesional",
-    "brand_style":  "clarity-editorial",
-    "primary_image_url":  "https://www.hmulink.com/assets/demo-heroes/clarity-editorial.jpg",
-    "logo_url":  null,
-    "service_categories":  [
-                               "Coaching individual",
-                               "Programas",
-                               "Talleres"
-                           ],
-    "services":  [
-                     {
-                         "category":  "Coaching individual",
-                         "name":  "Sesión inicial de diagnóstico",
-                         "description":  "60 minutos, define objetivos y plan de trabajo",
-                         "price_label":  "$900 MXN"
-                     },
-                     {
-                         "category":  "Coaching individual",
-                         "name":  "Sesión de seguimiento",
-                         "price_label":  "$750 MXN"
-                     },
-                     {
-                         "category":  "Programas",
-                         "name":  "Programa de 8 sesiones",
-                         "description":  "Acompañamiento continuo durante 2 meses",
-                         "price_label":  "$5,200 MXN"
-                     },
-                     {
-                         "category":  "Talleres",
-                         "name":  "Taller grupal: Claridad de carrera",
-                         "description":  "3 horas, grupos pequeños",
-                         "price_label":  "$650 MXN"
-                     }
-                 ],
-    "featured_package":  {
-                             "name":  "Programa Claridad Total",
-                             "description":  "Diagnóstico + 8 sesiones + plan de acción por escrito",
-                             "price_label":  "$5,900 MXN"
-                         },
-    "whatsapp":  "+52 55 6789 0123",
-    "instagram":  "https://instagram.com/claritycoaching.demo",
-    "google_maps_url":  "https://maps.google.com/?q=Clarity+Coaching+Demo",
-    "address":  "Sesiones en línea o en Polanco, CDMX (con cita)",
-    "opening_hours_text":  "Lun–Vie 9:00–18:00, con cita previa",
-    "google_reviews_url":  "https://g.page/r/clarity-coaching-demo/review",
-    "policies":  [
-                     "Cancelaciones con 24 h de anticipación.",
-                     "Sesiones disponibles en línea o presenciales.",
-                     "Confidencialidad total en todas las sesiones."
-                 ]
+  "public_slug": "clarity-coaching",
+  "business_name": "Clarity Coaching Co.",
+  "brand_style": "clarity-editorial",
+  "primary_image_url": "https://www.hmulink.com/assets/demo-heroes/clarity-editorial.jpg",
+  "logo_url": null,
+  "whatsapp": "+52 55 6789 0123",
+  "instagram": "https://instagram.com/claritycoaching.demo",
+  "google_maps_url": "https://maps.google.com/?q=Clarity+Coaching+Demo",
+  "google_reviews_url": "https://g.page/r/clarity-coaching-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Claridad y estrategia para tu siguiente paso profesional",
+      "address": "Sesiones en línea o en Polanco, CDMX (con cita)",
+      "opening_hours_text": "Lun–Vie 9:00–18:00, con cita previa",
+      "service_categories": [
+        "Coaching individual",
+        "Programas",
+        "Talleres"
+      ],
+      "services": [
+        {
+          "category": "Coaching individual",
+          "name": "Sesión inicial de diagnóstico",
+          "description": "60 minutos, define objetivos y plan de trabajo",
+          "price_label": "$900 MXN"
+        },
+        {
+          "category": "Coaching individual",
+          "name": "Sesión de seguimiento",
+          "price_label": "$750 MXN"
+        },
+        {
+          "category": "Programas",
+          "name": "Programa de 8 sesiones",
+          "description": "Acompañamiento continuo durante 2 meses",
+          "price_label": "$5,200 MXN"
+        },
+        {
+          "category": "Talleres",
+          "name": "Taller grupal: Claridad de carrera",
+          "description": "3 horas, grupos pequeños",
+          "price_label": "$650 MXN"
+        }
+      ],
+      "policies": [
+        "Cancelaciones con 24 h de anticipación.",
+        "Sesiones disponibles en línea o presenciales.",
+        "Confidencialidad total en todas las sesiones."
+      ],
+      "featured_package": {
+        "name": "Programa Claridad Total",
+        "description": "Diagnóstico + 8 sesiones + plan de acción por escrito",
+        "price_label": "$5,900 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Clarity and strategy for your next career move",
+      "address": "Online or in Polanco, CDMX (by appointment)",
+      "opening_hours_text": "Mon–Fri 9:00–18:00, by appointment",
+      "service_categories": [
+        "1-on-1 Coaching",
+        "Programs",
+        "Workshops"
+      ],
+      "services": [
+        {
+          "category": "1-on-1 Coaching",
+          "name": "Initial assessment session",
+          "description": "60 minutes; set goals and a work plan",
+          "price_label": "$900 MXN"
+        },
+        {
+          "category": "1-on-1 Coaching",
+          "name": "Follow-up session",
+          "price_label": "$750 MXN"
+        },
+        {
+          "category": "Programs",
+          "name": "8-session program",
+          "description": "Ongoing support over 2 months",
+          "price_label": "$5,200 MXN"
+        },
+        {
+          "category": "Workshops",
+          "name": "Group workshop: Career Clarity",
+          "description": "3 hours, small groups",
+          "price_label": "$650 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Total Clarity Program",
+        "description": "Assessment + 8 sessions + written action plan",
+        "price_label": "$5,900 MXN"
+      },
+      "policies": [
+        "Cancellations 24 h in advance.",
+        "Sessions available online or in person.",
+        "Full confidentiality in every session."
+      ]
+    }
+  }
 }

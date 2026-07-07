@@ -114,20 +114,23 @@ def download_image(url: str, dest_dir: Path, basename: str) -> str | None:
 def build_locations(payload: dict) -> list[dict]:
     """Assemble the full locations list (1-3) from intake fields.
 
-    Only returned as a distinct client field when there's more than one
-    location; a single location keeps using the legacy top-level
-    address/google_maps_url fields (unchanged rendering).
+    The generator can render one Google Maps button per location, so keep every
+    location that has a name, address, map link or notes.
     """
-    locations = [{
+    first = {
         "name": str(payload.get("location_1_name", "") or "").strip(),
         "address": str(payload.get("address", "") or "").strip(),
         "google_maps_url": url_or_none(payload.get("google_maps_url", "")),
-    }]
+    }
+    notes = str(payload.get("location_1_notes", "") or "").strip()
+    if notes:
+        first["notes"] = notes
+    locations = []
+    if any(first.values()):
+        locations.append(first)
     for i in (2, 3):
         name = str(payload.get(f"location_{i}_name", "") or "").strip()
         address = str(payload.get(f"location_{i}_address", "") or "").strip()
-        if not (name or address):
-            continue
         loc = {"name": name, "address": address}
         maps = url_or_none(payload.get(f"location_{i}_maps_url", ""))
         if maps:
@@ -135,7 +138,10 @@ def build_locations(payload: dict) -> list[dict]:
         notes = str(payload.get(f"location_{i}_notes", "") or "").strip()
         if notes:
             loc["notes"] = notes
+        if not any(loc.values()):
+            continue
         locations.append(loc)
+    locations.extend(parse_additional_locations(payload.get("additional_locations_text", "")))
     return locations
 
 
@@ -196,6 +202,56 @@ def parse_featured(featured_text: str) -> dict | None:
     return featured
 
 
+def parse_additional_locations(locations_text: str) -> list[dict]:
+    """Parse extra location blocks from a flexible textarea.
+
+    Preferred format is one location per blank-line-separated block:
+    name, address, Google Maps link, notes. If the customer only writes text,
+    keep it as a note so it can still appear on the page.
+    """
+    text = (locations_text or "").strip()
+    if not text:
+        return []
+    blocks = [b.strip() for b in re.split(r"\n\s*\n+", text) if b.strip()]
+    if len(blocks) == 1:
+        lines = [clean_line(line) for line in text.splitlines()]
+        lines = [line for line in lines if line]
+        if len(lines) > 4:
+            blocks = lines
+
+    out = []
+    url_re = re.compile(r"(https?://\S+|(?:maps\.app\.goo\.gl|goo\.gl/maps|google\.com/maps)/\S+)", re.I)
+    for block in blocks:
+        lines = [clean_line(line) for line in block.splitlines()]
+        lines = [line for line in lines if line]
+        if not lines:
+            continue
+        maps_url = None
+        clean_lines = []
+        for line in lines:
+            match = url_re.search(line)
+            if match and not maps_url:
+                maps_url = url_or_none(match.group(1).rstrip(").,;"))
+                line = url_re.sub("", line).strip(" -:|")
+            if line:
+                clean_lines.append(line)
+
+        loc = {}
+        if len(clean_lines) >= 1:
+            loc["name"] = clean_lines[0][:120]
+        if len(clean_lines) >= 2:
+            loc["address"] = clean_lines[1][:200]
+        if len(clean_lines) >= 3:
+            loc["notes"] = " ".join(clean_lines[2:])[:200]
+        if len(clean_lines) == 1 and maps_url:
+            loc["address"] = loc.pop("name")
+        if maps_url:
+            loc["google_maps_url"] = maps_url
+        if loc:
+            out.append(loc)
+    return out
+
+
 def url_or_none(value: str) -> str | None:
     v = (value or "").strip()
     if not v:
@@ -217,13 +273,17 @@ def normalize_primary_cta(value: str) -> str | None:
         "whatsapp": "whatsapp",
         "telefono": "phone",
         "phone": "phone",
+        "phone_call": "phone",
         "call": "phone",
         "llamar": "phone",
+        "llamada_telefonica": "phone",
         "booking": "booking",
         "book": "booking",
         "reservation": "booking",
         "reservas": "booking",
         "reservar": "booking",
+        "external_booking_link": "booking",
+        "enlace_externo_de_reservas": "booking",
         "website": "website",
         "web": "website",
         "sitio_web": "website",
@@ -231,6 +291,14 @@ def normalize_primary_cta(value: str) -> str | None:
         "email": "email",
         "mail": "email",
         "correo": "email",
+        "maps": "maps",
+        "map": "maps",
+        "google_maps": "maps",
+        "directions": "maps",
+        "google_maps_directions": "maps",
+        "google_maps_como_llegar": "maps",
+        "como_llegar": "maps",
+        "mapa": "maps",
     }
     return aliases.get(normalized)
 
@@ -299,6 +367,7 @@ def content_text(block: dict) -> str:
     parts = [
         block.get("short_description", ""),
         block.get("opening_hours_text", ""),
+        block.get("service_area_text", ""),
     ]
     parts.extend(block.get("service_categories") or [])
     for svc in block.get("services") or []:
@@ -379,6 +448,7 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
     fields = {
         "short_description": src["short_description"],
         "opening_hours_text": src["opening_hours_text"],
+        "service_area_text": src.get("service_area_text", ""),
         "service_names": [s["name"] for s in src["services"]],
         "policies": src["policies"],
     }
@@ -395,6 +465,8 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         tgt["short_description"] = translated["short_description"][:300]
     if isinstance(translated.get("opening_hours_text"), str) and translated["opening_hours_text"].strip():
         tgt["opening_hours_text"] = translated["opening_hours_text"][:200]
+    if isinstance(translated.get("service_area_text"), str) and translated["service_area_text"].strip():
+        tgt["service_area_text"] = translated["service_area_text"][:200]
 
     names = translated.get("service_names")
     if isinstance(names, list) and len(names) == len(tgt["services"]):
@@ -446,6 +518,7 @@ def main() -> int:
 
     short_description = str(payload.get("short_description", "")).strip() or str(payload.get("business_name", "")).strip()
     hours = str(payload.get("opening_hours_text", "")).strip() or "Consultar horarios / Ask us for hours"
+    service_area = str(payload.get("service_area_text", "")).strip()
     address = str(payload.get("address", "")).strip()
 
     def content_block(lang: str) -> dict:
@@ -456,6 +529,7 @@ def main() -> int:
             "short_description": short_description[:300],
             "address": address[:200],
             "opening_hours_text": hours[:200],
+            "service_area_text": service_area[:200],
             "service_categories": ["Servicios" if lang == "es" else "Services"],
             "services": [dict(s) for s in (services_es if lang == "es" else services_en)],
             "policies": list(policies),
@@ -490,7 +564,7 @@ def main() -> int:
         "google_reviews_url": url_or_none(payload.get("google_reviews_url", "")),
         "content": {"es": content_block("es"), "en": content_block("en")},
     }
-    if len(locations) > 1:
+    if locations:
         client["locations"] = locations
 
     # The intake is usually authored in default_language. If the customer asks

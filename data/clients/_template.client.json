@@ -17,11 +17,26 @@
   "primary_cta": null,
   "google_maps_url": "https://maps.app.goo.gl/EXAMPLE",
   "google_reviews_url": null,
+  "locations": [
+    {
+      "name": "Sucursal Centro",
+      "address": "Calle Ejemplo 123, Colonia Centro, Ciudad",
+      "google_maps_url": "https://maps.app.goo.gl/EXAMPLE",
+      "notes": "Entrada por la puerta principal"
+    },
+    {
+      "name": "Sucursal Norte",
+      "address": "Avenida Ejemplo 456, Ciudad",
+      "google_maps_url": "https://maps.app.goo.gl/EXAMPLE2",
+      "notes": "Solo con cita"
+    }
+  ],
   "content": {
     "es": {
       "short_description": "Descripcion corta de ejemplo del negocio",
       "address": "Calle Ejemplo 123, Colonia Centro, Ciudad",
       "opening_hours_text": "Lun-Sab 10:00-19:00 · Dom cerrado",
+      "service_area_text": "Atendemos en sucursal y a domicilio dentro de la ciudad.",
       "service_categories": ["Categoria A", "Categoria B"],
       "services": [
         {
@@ -50,6 +65,7 @@
       "short_description": "Example short description of the business",
       "address": "123 Example St, Downtown, City",
       "opening_hours_text": "Mon-Sat 10:00-19:00 · Sun closed",
+      "service_area_text": "We serve clients in-studio and at home within the city.",
       "service_categories": ["Category A", "Category B"],
       "services": [
         {

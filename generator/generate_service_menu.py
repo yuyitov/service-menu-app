@@ -89,7 +89,7 @@ CLIENT_LANGS = ("es", "en")
 
 # URL schemes we are willing to emit into href attributes.
 _ALLOWED_SCHEMES = ("http://", "https://")
-PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "email")
+PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "email", "maps")
 
 # UI strings per language (WOW editorial template). Values marked *_html may
 # contain trusted inline markup (<em>) and are injected without re-escaping.
@@ -101,6 +101,7 @@ STRINGS = {
         "btn_email": "Enviar correo",
         "btn_website": "Sitio web",
         "btn_booking": "Reservar en linea",
+        "btn_maps": "Google Maps",
         "view_menu": "Ver servicios",
         "scroll_hint": "Desliza",
         "services_eyebrow": "Servicios",
@@ -112,6 +113,8 @@ STRINGS = {
         "hours_title": "Horarios",
         "address_title": "Dónde estamos",
         "address_map": "Ver en Google Maps",
+        "location_label": "Ubicacion",
+        "service_area_title": "Area de servicio",
         "policies_title": "Políticas",
         "links_title": "Enlaces",
         "share_eyebrow": "Comparte",
@@ -127,6 +130,7 @@ STRINGS = {
         "btn_email": "Send an email",
         "btn_website": "Website",
         "btn_booking": "Book online",
+        "btn_maps": "Google Maps",
         "view_menu": "See services",
         "scroll_hint": "Scroll",
         "services_eyebrow": "Services",
@@ -138,6 +142,8 @@ STRINGS = {
         "hours_title": "Hours",
         "address_title": "Where we are",
         "address_map": "View on Google Maps",
+        "location_label": "Location",
+        "service_area_title": "Service area",
         "policies_title": "Policies",
         "links_title": "Links",
         "share_eyebrow": "Share",
@@ -190,13 +196,17 @@ def normalize_primary_cta(value):
         "whatsapp": "whatsapp",
         "telefono": "phone",
         "phone": "phone",
+        "phone_call": "phone",
         "call": "phone",
         "llamar": "phone",
+        "llamada_telefonica": "phone",
         "booking": "booking",
         "book": "booking",
         "reservation": "booking",
         "reservas": "booking",
         "reservar": "booking",
+        "external_booking_link": "booking",
+        "enlace_externo_de_reservas": "booking",
         "website": "website",
         "web": "website",
         "sitio_web": "website",
@@ -204,6 +214,14 @@ def normalize_primary_cta(value):
         "email": "email",
         "mail": "email",
         "correo": "email",
+        "maps": "maps",
+        "map": "maps",
+        "google_maps": "maps",
+        "directions": "maps",
+        "google_maps_directions": "maps",
+        "google_maps_como_llegar": "maps",
+        "como_llegar": "maps",
+        "mapa": "maps",
     }
     return aliases.get(normalized)
 
@@ -281,6 +299,7 @@ def _content_text(block: dict) -> str:
     parts = [
         block.get("short_description", ""),
         block.get("opening_hours_text", ""),
+        block.get("service_area_text", ""),
     ]
     parts.extend(block.get("service_categories") or [])
     for svc in block.get("services") or []:
@@ -461,6 +480,9 @@ def _contact_options(payload: dict, s: dict) -> dict:
     mail = mailto_href(payload.get("public_email"))
     if mail:
         options["email"] = (mail, s["btn_email"])
+    first_map = _first_location_map_href(payload)
+    if first_map:
+        options["maps"] = (first_map, s["btn_maps"])
     return options
 
 
@@ -478,12 +500,76 @@ def _primary_contact(payload: dict, s: dict):
     return None, None, None
 
 
+def _all_locations(payload: dict) -> list:
+    """Return every location-like entry with at least one public detail."""
+    raw_locations = payload.get("locations")
+    locations = []
+    if isinstance(raw_locations, list):
+        source = raw_locations
+    else:
+        source = [
+            {
+                "name": payload.get("location_name"),
+                "address": payload.get("address"),
+                "google_maps_url": payload.get("google_maps_url"),
+            }
+        ]
+
+    for loc in source:
+        if not isinstance(loc, dict):
+            continue
+        item = {
+            "name": str(loc.get("name", "") or "").strip(),
+            "address": str(loc.get("address", "") or "").strip(),
+            "google_maps_url": loc.get("google_maps_url"),
+            "notes": str(loc.get("notes", "") or "").strip(),
+        }
+        if item["name"] or item["address"] or safe_href(item["google_maps_url"]):
+            locations.append(item)
+
+    if not locations:
+        maps = payload.get("google_maps_url")
+        addr = str(payload.get("address", "") or "").strip()
+        if addr or safe_href(maps):
+            locations.append({"name": "", "address": addr, "google_maps_url": maps, "notes": ""})
+    return locations
+
+
+def _first_location_map_href(payload: dict):
+    for loc in _all_locations(payload):
+        href = safe_href(loc.get("google_maps_url"))
+        if href:
+            return href
+    return None
+
+
+def _location_map_links(payload: dict, s: dict) -> list:
+    """Google Maps buttons, one per location that has a map URL."""
+    candidates = []
+    seen = set()
+    for i, loc in enumerate(_all_locations(payload), start=1):
+        href = safe_href(loc.get("google_maps_url"))
+        if not href or href in seen:
+            continue
+        seen.add(href)
+        name = str(loc.get("name", "") or "").strip()
+        fallback = f'{s["location_label"]} {i}'
+        candidates.append((href, name or fallback))
+
+    if not candidates:
+        return []
+    if len(candidates) == 1:
+        href, _ = candidates[0]
+        return [(href, "Google Maps")]
+    return [(href, f"Google Maps - {esc(label)}") for href, label in candidates]
+
+
 def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
     """(href, label) for every public link that is not the primary CTA."""
     links = []
     contact_options = _contact_options(payload, s)
     for kind in PRIMARY_CTA_CHOICES:
-        if kind == primary_kind:
+        if kind == primary_kind or kind == "maps":
             continue
         option = contact_options.get(kind)
         if option:
@@ -492,12 +578,14 @@ def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
         ("instagram", "Instagram"),
         ("facebook", "Facebook"),
         ("tiktok", "TikTok"),
-        ("google_maps_url", "Google Maps"),
-        ("google_reviews_url", "Google Reviews"),
     ):
         href = safe_href(payload.get(key))
         if href:
             links.append((href, label))
+    links.extend(_location_map_links(payload, s))
+    reviews = safe_href(payload.get("google_reviews_url"))
+    if reviews:
+        links.append((reviews, "Google Reviews"))
     return links
 
 
@@ -654,31 +742,33 @@ def _address_map_link(maps_url, s: dict) -> str:
 
 def _address_row_body(payload: dict, s: dict) -> str:
     """Inner HTML for the address info-row ('' if the payload has no address)."""
-    locations = payload.get("locations")
-    if isinstance(locations, list) and len(locations) > 1:
+    locations = _all_locations(payload)
+    if len(locations) > 1:
         items = []
         for loc in locations:
-            if not isinstance(loc, dict):
-                continue
             addr = str(loc.get("address", "") or "").strip()
-            if not addr:
+            link = _address_map_link(loc.get("google_maps_url"), s)
+            if not (addr or link):
                 continue
             name = str(loc.get("name", "") or "").strip()
             name_html = f'<h4 class="address__name">{esc(name)}</h4>' if name else ""
             notes = str(loc.get("notes", "") or "").strip()
             notes_html = f'<p class="address__notes">{esc(notes)}</p>' if notes else ""
-            link = _address_map_link(loc.get("google_maps_url"), s)
+            main = esc(addr) if addr else link
             items.append(
                 f'<div class="address__item">{name_html}'
-                f'<p>{esc(addr)}{"<br>" + link if link else ""}</p>{notes_html}</div>'
+                f'<p>{main}{"<br>" + link if addr and link else ""}</p>{notes_html}</div>'
             )
         return "".join(items)
 
-    addr = str(payload.get("address", "") or "").strip()
-    if not addr:
+    loc = locations[0] if locations else {}
+    addr = str(loc.get("address", "") or "").strip()
+    link = _address_map_link(loc.get("google_maps_url"), s)
+    if not (addr or link):
         return ""
-    link = _address_map_link(payload.get("google_maps_url"), s)
-    return f'<p>{esc(addr)}{"<br>" + link if link else ""}</p>'
+    if addr:
+        return f'<p>{esc(addr)}{"<br>" + link if link else ""}</p>'
+    return f"<p>{link}</p>"
 
 
 def build_info(payload: dict, s: dict) -> str:
@@ -691,6 +781,13 @@ def build_info(payload: dict, s: dict) -> str:
         rows.append(
             f'<div class="info-row" data-reveal><h3>{s["hours_title"]}</h3>'
             f'<p>{esc(hours)}</p></div>'
+        )
+
+    service_area = str(payload.get("service_area_text", "") or "").strip()
+    if service_area:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["service_area_title"]}</h3>'
+            f'<p>{esc(service_area)}</p></div>'
         )
 
     address_body = _address_row_body(payload, s)

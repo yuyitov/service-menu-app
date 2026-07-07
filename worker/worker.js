@@ -325,7 +325,7 @@ async function handleTallyWebhook(request, env) {
     return jsonResponse({ ok: false, status: 'incomplete_intake', missing: 'business_name' }, 422);
   }
 
-  const hasContact = publicPayload.whatsapp || publicPayload.phone || publicPayload.public_email || publicPayload.booking_url;
+  const hasContact = publicPayload.whatsapp || publicPayload.phone || publicPayload.public_email || publicPayload.booking_url || publicPayload.website;
   if (!hasContact) {
     await env.SERVICE_MENU_KV.put(
       `hmu_incomplete_intake:${incomingOrderId}:${normalized.submission_id}`,
@@ -892,20 +892,32 @@ function normalizePrimaryCta(value) {
     whatsapp: 'whatsapp',
     telefono: 'phone',
     phone: 'phone',
+    phone_call: 'phone',
     call: 'phone',
     llamar: 'phone',
+    llamada_telefonica: 'phone',
     booking: 'booking',
     book: 'booking',
     reservation: 'booking',
     reservas: 'booking',
     reservar: 'booking',
+    external_booking_link: 'booking',
+    enlace_externo_de_reservas: 'booking',
     website: 'website',
     web: 'website',
     sitio_web: 'website',
     site: 'website',
     email: 'email',
     mail: 'email',
-    correo: 'email'
+    correo: 'email',
+    maps: 'maps',
+    map: 'maps',
+    google_maps: 'maps',
+    directions: 'maps',
+    google_maps_directions: 'maps',
+    google_maps_como_llegar: 'maps',
+    como_llegar: 'maps',
+    mapa: 'maps'
   };
   return aliases[normalized] || '';
 }
@@ -968,16 +980,20 @@ function buildHmuPublicPayload(normalized, orderId) {
       'which_button_should_be_featured',
       'which_button_should_stand_out_on_your_page',
       'which_button_should_be_the_main_button',
+      'which_one_should_be_the_main_button',
       'boton_destacado',
       'boton_principal',
       'boton_a_destacar',
       'que_boton_quieres_destacar',
       'que_boton_debe_destacar',
-      'que_boton_debe_ser_el_principal'
+      'que_boton_debe_ser_el_principal',
+      'cual_debe_ser_el_boton_principal'
     ])),
     google_maps_url: answerAny(a, ['location_1_google_maps_link', 'ubicacion_1_enlace_de_google_maps']),
     google_reviews_url: answerAny(a, ['google_reviews_link', 'enlace_de_google_reviews']),
     address: answerAny(a, ['location_1_public_address', 'ubicacion_1_direccion_publica']),
+    location_1_notes: answerAny(a, ['location_1_notes', 'ubicacion_1_notas']),
+    service_area_text: answerAny(a, ['where_do_you_offer_your_services', 'donde_ofreces_tus_servicios']),
     opening_hours_text: answerAny(a, ['what_are_your_business_hours', 'cuales_son_tus_horarios_de_atencion']),
     services_text: answerAny(a, ['list_your_services_with_prices', 'lista_tus_servicios_con_precios']),
     featured_text: answerAny(a, [
@@ -1001,7 +1017,8 @@ function buildHmuPublicPayload(normalized, orderId) {
     location_3_notes: answerAny(a, [
       'location_3_phone_whatsapp_or_hours_if_different',
       'ubicacion_3_telefono_whatsapp_u_horarios_si_son_diferentes'
-    ])
+    ]),
+    additional_locations_text: answerAny(a, ['additional_locations', 'ubicaciones_adicionales'])
   };
 }
 

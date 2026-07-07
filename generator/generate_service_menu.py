@@ -100,8 +100,8 @@ REQUIRED_FIELDS = (
 # URL schemes we are willing to emit into href attributes.
 _ALLOWED_SCHEMES = ("http://", "https://")
 
-# UI strings per language. The "es" strings are byte-for-byte the historical
-# hardcoded labels so demo output stays identical (intentionally unaccented).
+# UI strings per language (WOW editorial template). Values marked *_html may
+# contain trusted inline markup (<em>) and are injected without re-escaping.
 STRINGS = {
     "es": {
         "title_suffix": "Servicios",
@@ -109,18 +109,23 @@ STRINGS = {
         "btn_phone": "Llamar",
         "btn_email": "Enviar correo",
         "btn_website": "Sitio web",
-        "btn_booking": "Reservar en linea",
-        "hero_placeholder": "Imagen del negocio",
-        "services_title": "Servicios",
+        "btn_booking": "Reservar en línea",
+        "view_menu": "Ver el menú",
+        "scroll_hint": "Desliza",
+        "services_eyebrow": "Servicios",
+        "menu_title_html": "El <em>menú</em>",
         "services_fallback": "Servicios",
         "featured_badge": "Destacado",
+        "visit_eyebrow": "Visítanos",
+        "visit_title_html": "Encuéntra<em>nos</em>",
         "hours_title": "Horarios",
-        "address_title": "Donde estamos",
+        "address_title": "Dónde estamos",
         "address_map": "Ver en Google Maps",
-        "policies_title": "Politicas",
-        "share_title": "Comparte esta pagina",
-        "share_lead": "Usa este QR o comparte el link directo.",
-        "share_open": "Abrir pagina",
+        "policies_title": "Políticas",
+        "links_title": "Enlaces",
+        "share_eyebrow": "Comparte",
+        "share_title_html": "Llévanos <em>contigo</em>",
+        "share_lead": "Escanea el código o comparte el link directo.",
         "qr_alt": "Codigo QR de",
         "lang_switch": "View this page in English",
     },
@@ -131,19 +136,24 @@ STRINGS = {
         "btn_email": "Send an email",
         "btn_website": "Website",
         "btn_booking": "Book online",
-        "hero_placeholder": "Business image",
-        "services_title": "Services",
+        "view_menu": "See the menu",
+        "scroll_hint": "Scroll",
+        "services_eyebrow": "Services",
+        "menu_title_html": "The <em>menu</em>",
         "services_fallback": "Services",
         "featured_badge": "Featured",
+        "visit_eyebrow": "Visit us",
+        "visit_title_html": "Find <em>us</em>",
         "hours_title": "Hours",
         "address_title": "Where we are",
         "address_map": "View on Google Maps",
         "policies_title": "Policies",
-        "share_title": "Share this page",
-        "share_lead": "Use this QR code or share the direct link.",
-        "share_open": "Open page",
+        "links_title": "Links",
+        "share_eyebrow": "Share",
+        "share_title_html": "Take us <em>with you</em>",
+        "share_lead": "Scan the code or share the direct link.",
         "qr_alt": "QR code for",
-        "lang_switch": "Ver esta pagina en espanol",
+        "lang_switch": "Ver esta página en español",
     },
 }
 
@@ -288,81 +298,179 @@ def _initials(business_name: str) -> str:
 
 
 def build_logo(payload: dict) -> str:
+    """Topbar monogram: round logo image, or initials in a hairline circle."""
     href = safe_href(payload.get("logo_url"))
     alt = esc(payload.get("business_name"))
     if href:
-        return f'<img class="logo" src="{href}" alt="{alt}">'
-    # Placeholder logo: initials in a circle (no external image needed).
-    return f'<div class="logo logo--placeholder" aria-hidden="true">{_initials(str(payload.get("business_name", "")))}</div>'
+        return f'<img class="monogram" src="{href}" alt="{alt}">'
+    return f'<div class="monogram" aria-hidden="true">{_initials(str(payload.get("business_name", "")))}</div>'
 
 
-def build_hero(payload: dict, s: dict) -> str:
-    href = safe_href(payload.get("primary_image_url"))
-    alt = esc(payload.get("business_name"))
-    if href:
-        return f'<div class="hero"><img class="hero__img" src="{href}" alt="{alt}"></div>'
-    # Placeholder hero: labeled gradient band, never a broken image.
+def build_intro(payload: dict, s: dict) -> str:
+    """Entrance curtain: business name words staggered, then the curtain lifts."""
+    words = [w for w in re.split(r"\s+", str(payload.get("business_name", "")).strip()) if w]
+    if not words:
+        return ""
+    spans = "".join(f"<span>{esc(w)}</span>" for w in words)
     return (
-        '<div class="hero hero--placeholder" role="img" '
-        f'aria-label="{alt}"><span class="hero__ph-icon" aria-hidden="true">📷</span>'
-        f'<span class="hero__ph-text">{s["hero_placeholder"]}</span></div>'
+        '<div class="intro" id="intro" aria-hidden="true">'
+        f'<div class="intro__brand">{spans}</div>'
+        f'<div class="intro__sub">{s["title_suffix"]}</div></div>'
     )
 
 
-def _button(href: str, css: str, label: str) -> str:
-    return (
-        f'<a class="btn {css}" href="{href}" target="_blank" '
-        f'rel="noopener noreferrer">{label}</a>'
-    )
+def build_hero_title(payload: dict) -> str:
+    """Giant serif H1: the business name split over up to 3 animated lines,
+    middle line in accent italics (the WOW editorial signature)."""
+    words = [w for w in re.split(r"\s+", str(payload.get("business_name", "")).strip()) if w]
+    if not words:
+        return '<h1 id="ht"></h1>'
+    n = len(words)
+    if n == 1:
+        groups = [words]
+    elif n == 2:
+        groups = [[words[0]], [words[1]]]
+    elif n == 3:
+        groups = [[words[0]], [words[1]], [words[2]]]
+    else:
+        third = (n + 2) // 3
+        groups = [words[:third], words[third:2 * third], words[2 * third:]]
+        groups = [g for g in groups if g]
+    em_index = len(groups) // 2  # middle line (or 2nd of 2) gets the italics
+    lines = []
+    for i, group in enumerate(groups):
+        text = esc(" ".join(group))
+        if i == em_index and len(groups) > 1:
+            text = f"<em>{text}</em>"
+        lines.append(f'<span class="line"><span>{text}</span></span>')
+    long_cls = " h1--long" if max(len(w) for w in words) >= 10 else ""
+    name = esc(str(payload.get("business_name", "")))
+    return f'<h1 id="ht" class="hero__title{long_cls}" aria-label="{name}">{"".join(lines)}</h1>'
 
 
-def build_buttons(payload: dict, s: dict) -> str:
-    buttons = []
+def build_hero_kicker(payload: dict) -> str:
+    """Letterspaced kicker over the H1: city · neighborhood from the address."""
+    addr = str(payload.get("address", "") or "").strip()
+    if not addr:
+        return ""
+    parts = [p.strip() for p in addr.split(",") if p.strip()]
+    if len(parts) >= 2:
+        text = f"{parts[-1]} · {parts[-2]}"
+    else:
+        text = parts[0] if parts else ""
+    return f'<p class="hero__kicker" id="hk">{esc(text)}</p>' if text else ""
 
+
+def _primary_contact(payload: dict, s: dict):
+    """First available contact becomes the primary CTA (hero + fixed dock)."""
     wa = whatsapp_href(payload.get("whatsapp"))
     if wa:
-        buttons.append(_button(esc(wa), "btn--wa", s["btn_whatsapp"]))
-
+        return "whatsapp", esc(wa), s["btn_whatsapp"]
     tel = tel_href(payload.get("phone"))
     if tel:
-        buttons.append(f'<a class="btn btn--phone" href="{esc(tel)}">{s["btn_phone"]}</a>')
-
+        return "phone", esc(tel), s["btn_phone"]
     booking = safe_href(payload.get("booking_url"))
     if booking:
-        buttons.append(_button(booking, "btn--booking", s["btn_booking"]))
-
-    ig = safe_href(payload.get("instagram"))
-    if ig:
-        buttons.append(_button(ig, "btn--ig", "Instagram"))
-
-    fb = safe_href(payload.get("facebook"))
-    if fb:
-        buttons.append(_button(fb, "btn--fb", "Facebook"))
-
-    tk = safe_href(payload.get("tiktok"))
-    if tk:
-        buttons.append(_button(tk, "btn--tiktok", "TikTok"))
-
-    maps = safe_href(payload.get("google_maps_url"))
-    if maps:
-        buttons.append(_button(maps, "btn--maps", "Google Maps"))
-
-    reviews = safe_href(payload.get("google_reviews_url"))
-    if reviews:
-        buttons.append(_button(reviews, "btn--reviews", "Google Reviews"))
-
-    web = safe_href(payload.get("website"))
-    if web:
-        buttons.append(_button(web, "btn--web", s["btn_website"]))
-
+        return "booking", booking, s["btn_booking"]
     mail = mailto_href(payload.get("public_email"))
     if mail:
-        buttons.append(f'<a class="btn btn--email" href="{mail}">{s["btn_email"]}</a>')
+        return "email", mail, s["btn_email"]
+    return None, None, None
 
-    return '<nav class="buttons">' + "".join(buttons) + "</nav>"
+
+def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
+    """(href, label) for every public link that is not the primary CTA."""
+    links = []
+    if primary_kind != "phone":
+        tel = tel_href(payload.get("phone"))
+        if tel:
+            links.append((esc(tel), s["btn_phone"]))
+    if primary_kind != "booking":
+        booking = safe_href(payload.get("booking_url"))
+        if booking:
+            links.append((booking, s["btn_booking"]))
+    for key, label in (
+        ("instagram", "Instagram"),
+        ("facebook", "Facebook"),
+        ("tiktok", "TikTok"),
+        ("google_maps_url", "Google Maps"),
+        ("google_reviews_url", "Google Reviews"),
+    ):
+        href = safe_href(payload.get(key))
+        if href:
+            links.append((href, label))
+    web = safe_href(payload.get("website"))
+    if web:
+        links.append((web, s["btn_website"]))
+    if primary_kind != "email":
+        mail = mailto_href(payload.get("public_email"))
+        if mail:
+            links.append((mail, s["btn_email"]))
+    return links
+
+
+def build_cta_row(payload: dict, s: dict) -> str:
+    """Hero CTA row: solid primary contact + ghost link to the menu."""
+    _, href, label = _primary_contact(payload, s)
+    buttons = []
+    if href:
+        buttons.append(
+            f'<a class="btn btn--solid" href="{href}" target="_blank" '
+            f'rel="noopener noreferrer">{label}</a>'
+        )
+    buttons.append(f'<a class="btn btn--ghost" href="#menu">{s["view_menu"]}</a>')
+    return f'<div class="cta-row" id="hc">{"".join(buttons)}</div>'
+
+
+def build_dock(payload: dict, s: dict) -> str:
+    """Fixed bottom booking pill; appears once the visitor scrolls past the hero."""
+    _, href, label = _primary_contact(payload, s)
+    if not href:
+        return ""
+    return (
+        f'<div class="dock" id="dock"><a href="{href}" target="_blank" '
+        f'rel="noopener noreferrer">{label}</a></div>'
+    )
+
+
+def build_hero_image(payload: dict) -> str:
+    """Optional full-width photo band under the hero (scroll-scale reveal)."""
+    href = safe_href(payload.get("primary_image_url"))
+    if not href:
+        return ""
+    alt = esc(payload.get("business_name"))
+    return (
+        f'<div class="shell figure" data-reveal><img src="{href}" alt="{alt}" '
+        'loading="lazy"></div>'
+    )
+
+
+def build_marquee(payload: dict) -> str:
+    """Infinite marquee strip built from service categories (or service names)."""
+    items = [str(c).strip() for c in (payload.get("service_categories") or []) if str(c).strip()]
+    if not items:
+        items = [
+            str(svc.get("name", "")).strip()
+            for svc in (payload.get("services") or [])
+            if str(svc.get("name", "")).strip()
+        ][:6]
+    if not items:
+        return ""
+    parts = []
+    for i, item in enumerate(items):
+        text = esc(item)
+        if i % 2 == 1:
+            text = f"<em>{text}</em>"
+        parts.append(f'<span>{text} <span class="dot">✦</span></span>')
+    track = "".join(parts) * 2  # duplicated for the seamless CSS loop
+    return (
+        '<div class="marquee" aria-hidden="true">'
+        f'<div class="marquee__track">{track}</div></div>'
+    )
 
 
 def build_services(payload: dict, s: dict) -> str:
+    """Editorial price list: italic serif category titles + dotted-leader rows."""
     services = payload.get("services") or []
     declared = payload.get("service_categories") or []
 
@@ -377,13 +485,24 @@ def build_services(payload: dict, s: dict) -> str:
         name = esc(svc.get("name"))
         desc = svc.get("description")
         price = svc.get("price_label")
-        parts = [f'<div class="svc__row"><span class="svc__name">{name}</span>']
-        if price:
-            parts.append(f'<span class="svc__price">{esc(price)}</span>')
-        parts.append("</div>")
+        left = f'<span class="mrow__name">{name}</span>'
         if desc:
-            parts.append(f'<p class="svc__desc">{esc(desc)}</p>')
-        return f'<li class="svc">{"".join(parts)}</li>'
+            left += f'<span class="mrow__desc">{esc(desc)}</span>'
+        price_html = (
+            f'<span class="mrow__dots"></span><span class="mrow__price">{esc(price)}</span>'
+            if price
+            else ""
+        )
+        return f'<div class="mrow"><div>{left}</div>{price_html}</div>'
+
+    def render_category(title: str, items: list) -> str:
+        rows = "".join(render_service(item) for item in items)
+        return (
+            '<div class="menu-cat" data-reveal>'
+            f'<div class="menu-cat__head"><h3 class="menu-cat__title">{title}</h3>'
+            '<span class="menu-cat__rule"></span></div>'
+            f'{rows}</div>'
+        )
 
     blocks = []
     used = set()
@@ -393,51 +512,40 @@ def build_services(payload: dict, s: dict) -> str:
             continue
         for item in items:
             used.add(id(item))
-        rows = "".join(render_service(item) for item in items)
-        blocks.append(
-            f'<div class="svc-cat"><h3 class="svc-cat__title">{esc(cat)}</h3>'
-            f'<ul class="svc-list">{rows}</ul></div>'
-        )
+        blocks.append(render_category(esc(cat), items))
 
     # Services without a (matching) category go under a generic group.
     leftovers = [svc for svc in services if id(svc) not in used]
     if leftovers:
-        rows = "".join(render_service(svc) for svc in leftovers)
-        blocks.append(
-            f'<div class="svc-cat"><h3 class="svc-cat__title">{s["services_fallback"]}</h3>'
-            f'<ul class="svc-list">{rows}</ul></div>'
-        )
+        blocks.append(render_category(s["services_fallback"], leftovers))
 
     return (
-        '<section class="section" id="servicios">'
-        f'<h2 class="section__title">{s["services_title"]}</h2>'
+        '<section class="section" id="menu" data-theme="base"><div class="shell">'
+        f'<p class="eyebrow" data-reveal>{s["services_eyebrow"]}</p>'
+        f'<h2 data-reveal>{s["menu_title_html"]}</h2>'
         + "".join(blocks)
-        + "</section>"
+        + "</div></section>"
     )
 
 
 def build_featured(payload: dict, s: dict) -> str:
+    """Featured package as the glowing "signature" card (spinning accent border)."""
     pkg = payload.get("featured_package")
     if not isinstance(pkg, dict) or not str(pkg.get("name", "")).strip():
         return ""
     name = esc(pkg.get("name"))
     desc = esc(pkg.get("description"))
     price = pkg.get("price_label")
-    price_html = f'<div class="featured__price">{esc(price)}</div>' if price else ""
+    price_html = f'<div class="ritual__price">{esc(price)}</div>' if price else ""
     # Sin descripción (o igual al nombre) no se repite el texto.
-    desc_html = f'<p class="featured__desc">{desc}</p>' if desc and desc != name else ""
+    desc_html = f'<p class="ritual__desc">{desc}</p>' if desc and desc != name else ""
     return (
-        f'<section class="section featured"><div class="featured__badge">{s["featured_badge"]}</div>'
-        f'<h2 class="featured__name">{name}</h2>'
-        f'{desc_html}{price_html}</section>'
-    )
-
-
-def build_hours(payload: dict, s: dict) -> str:
-    text = esc(payload.get("opening_hours_text"))
-    return (
-        f'<section class="section"><h2 class="section__title">{s["hours_title"]}</h2>'
-        f'<p class="hours">{text}</p></section>'
+        '<section class="section section--featured" data-theme="base"><div class="shell">'
+        '<div class="ritual" data-reveal><div class="ritual__in">'
+        f'<span class="ritual__badge">{s["featured_badge"]}</span>'
+        f'<h3 class="ritual__name serif">{name}</h3>'
+        f'{desc_html}{price_html}'
+        "</div></div></div></section>"
     )
 
 
@@ -446,12 +554,13 @@ def _address_map_link(maps_url, s: dict) -> str:
     if not maps:
         return ""
     return (
-        f'<a class="address__map" href="{maps}" target="_blank" '
+        f'<a class="mapl" href="{maps}" target="_blank" '
         f'rel="noopener noreferrer">{s["address_map"]}</a>'
     )
 
 
-def build_address(payload: dict, s: dict) -> str:
+def _address_row_body(payload: dict, s: dict) -> str:
+    """Inner HTML for the address info-row ('' if the payload has no address)."""
     locations = payload.get("locations")
     if isinstance(locations, list) and len(locations) > 1:
         items = []
@@ -462,39 +571,71 @@ def build_address(payload: dict, s: dict) -> str:
             if not addr:
                 continue
             name = str(loc.get("name", "") or "").strip()
-            name_html = f'<h3 class="address__name">{esc(name)}</h3>' if name else ""
+            name_html = f'<h4 class="address__name">{esc(name)}</h4>' if name else ""
             notes = str(loc.get("notes", "") or "").strip()
             notes_html = f'<p class="address__notes">{esc(notes)}</p>' if notes else ""
             link = _address_map_link(loc.get("google_maps_url"), s)
             items.append(
                 f'<div class="address__item">{name_html}'
-                f'<p class="address">{esc(addr)}</p>{notes_html}{link}</div>'
+                f'<p>{esc(addr)}{"<br>" + link if link else ""}</p>{notes_html}</div>'
             )
-        if not items:
-            return ""
-        return (
-            f'<section class="section"><h2 class="section__title">{s["address_title"]}</h2>'
-            f'{"".join(items)}</section>'
+        return "".join(items)
+
+    addr = str(payload.get("address", "") or "").strip()
+    if not addr:
+        return ""
+    link = _address_map_link(payload.get("google_maps_url"), s)
+    return f'<p>{esc(addr)}{"<br>" + link if link else ""}</p>'
+
+
+def build_info(payload: dict, s: dict) -> str:
+    """"Find us" section (alt theme): hours, address, policies and extra links
+    as hairline info rows — this is where the background fusion happens."""
+    rows = []
+
+    hours = str(payload.get("opening_hours_text", "") or "").strip()
+    if hours:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["hours_title"]}</h3>'
+            f'<p>{esc(hours)}</p></div>'
         )
 
-    if not str(payload.get("address", "") or "").strip():
-        return ""
-    text = esc(payload.get("address"))
-    link = _address_map_link(payload.get("google_maps_url"), s)
-    return (
-        f'<section class="section"><h2 class="section__title">{s["address_title"]}</h2>'
-        f'<p class="address">{text}</p>{link}</section>'
-    )
+    address_body = _address_row_body(payload, s)
+    if address_body:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["address_title"]}</h3>'
+            f'{address_body}</div>'
+        )
 
-
-def build_policies(payload: dict, s: dict) -> str:
     policies = payload.get("policies") or []
-    items = [f'<li>{esc(p)}</li>' for p in policies if str(p).strip()]
-    if not items:
+    items = [f"<li>{esc(p)}</li>" for p in policies if str(p).strip()]
+    if items:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["policies_title"]}</h3>'
+            f'<ul>{"".join(items)}</ul></div>'
+        )
+
+    primary_kind, _, _ = _primary_contact(payload, s)
+    links = _secondary_links(payload, s, primary_kind)
+    if links:
+        pills = "".join(
+            f'<a class="btn btn--ghost btn--sm" href="{href}" target="_blank" '
+            f'rel="noopener noreferrer">{label}</a>'
+            for href, label in links
+        )
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["links_title"]}</h3>'
+            f'<div class="cta-row">{pills}</div></div>'
+        )
+
+    if not rows:
         return ""
     return (
-        f'<section class="section"><h2 class="section__title">{s["policies_title"]}</h2>'
-        f'<ul class="policies">{"".join(items)}</ul></section>'
+        '<section class="section" data-theme="alt"><div class="shell">'
+        f'<p class="eyebrow" data-reveal>{s["visit_eyebrow"]}</p>'
+        f'<h2 data-reveal>{s["visit_title_html"]}</h2>'
+        f'<div class="info-grid">{"".join(rows)}</div>'
+        "</div></section>"
     )
 
 
@@ -526,36 +667,38 @@ def make_qr_svg(public_url: str) -> str:
 
 
 def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
-    """"Share this page" section: QR image + visible link.
+    """"Share" section: QR image + visible link, centered, base theme.
 
     The QR references the static asset written next to the page (qr.svg) or at
     the client root (../qr.svg for alternate-language pages). No JavaScript,
-    no external scripts, no tracking. No "open page" button: on the page
-    itself it would just reload the same page.
+    no external scripts, no tracking.
     """
     href = safe_href(public_url)
-    shown = esc(public_url)
+    shown = esc(re.sub(r"^https?://(www\.)?", "", str(public_url)).rstrip("/"))
     alt = esc(f"{s['qr_alt']} {public_url}")
 
     link_line = (
-        f'<a class="link__url" href="{href}" target="_blank" rel="noopener noreferrer">{shown}</a>'
+        f'<a class="share__url" href="{href}" target="_blank" rel="noopener noreferrer">{shown}</a>'
         if href
-        else f'<span class="link__url">{shown}</span>'
+        else f'<span class="share__url">{shown}</span>'
     )
     return (
-        '<section class="section qr" id="compartir">'
-        f'<h2 class="section__title">{s["share_title"]}</h2>'
-        f'<p class="qr__lead">{s["share_lead"]}</p>'
-        f'<div class="qr__box"><img class="qr__img" src="{esc(qr_src)}" '
+        '<section class="section share" id="compartir" data-theme="base"><div class="shell">'
+        f'<p class="eyebrow" data-reveal>{s["share_eyebrow"]}</p>'
+        f'<h2 data-reveal>{s["share_title_html"]}</h2>'
+        f'<p class="lead" data-reveal>{s["share_lead"]}</p>'
+        f'<div class="qrbox" data-reveal><img src="{esc(qr_src)}" '
         f'alt="{alt}" width="180" height="180"></div>'
-        f'<p class="qr__url-line">{link_line}</p>'
-        "</section>"
+        f'{link_line}'
+        "</div></section>"
     )
 
 
-def build_footer(text: str = "HMU Link - Demo") -> str:
+def build_footer(payload: dict, text: str = "HMU Link - Demo") -> str:
+    name = esc(payload.get("business_name"))
     return (
         '<footer class="footer">'
+        f'<span class="serif">{name}</span>'
         f'{esc(text)}'
         "</footer>"
     )
@@ -603,19 +746,22 @@ def render_view(
         "{{STYLE_NAME}}": esc(brand),
         "{{STYLE_CSS}}": style_css,
         "{{PAGE_TITLE}}": esc(f'{view.get("business_name")} - {s["title_suffix"]}'),
-        "{{BUSINESS_NAME}}": esc(view.get("business_name")),
         "{{SHORT_DESCRIPTION}}": esc(view.get("short_description")),
         "{{LANG_SWITCH_BLOCK}}": lang_switch_html,
         "{{LOGO_BLOCK}}": build_logo(view),
-        "{{HERO_BLOCK}}": build_hero(view, s),
-        "{{BUTTONS_BLOCK}}": build_buttons(view, s),
-        "{{FEATURED_BLOCK}}": build_featured(view, s),
+        "{{INTRO_BLOCK}}": build_intro(view, s),
+        "{{HERO_KICKER_BLOCK}}": build_hero_kicker(view),
+        "{{HERO_TITLE_BLOCK}}": build_hero_title(view),
+        "{{CTA_ROW_BLOCK}}": build_cta_row(view, s),
+        "{{HERO_IMAGE_BLOCK}}": build_hero_image(view),
+        "{{MARQUEE_BLOCK}}": build_marquee(view),
         "{{SERVICES_BLOCK}}": build_services(view, s),
-        "{{HOURS_BLOCK}}": build_hours(view, s),
-        "{{ADDRESS_BLOCK}}": build_address(view, s),
-        "{{POLICIES_BLOCK}}": build_policies(view, s),
+        "{{FEATURED_BLOCK}}": build_featured(view, s),
+        "{{INFO_BLOCK}}": build_info(view, s),
         "{{SHARE_BLOCK}}": build_share(share_url, s, qr_src),
-        "{{FOOTER_BLOCK}}": build_footer(footer_text),
+        "{{FOOTER_BLOCK}}": build_footer(view, footer_text),
+        "{{DOCK_BLOCK}}": build_dock(view, s),
+        "{{SCROLL_HINT}}": s["scroll_hint"],
     }
 
     out = template

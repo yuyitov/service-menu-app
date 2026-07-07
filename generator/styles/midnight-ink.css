@@ -1,13 +1,12 @@
 /* midnight-ink - audaz, artistico, underground. Estudios de tatuaje / grooming alternativo.
-   Paleta: negro profundo + carmesi + acero. */
+   Paleta WOW: negro profundo + carmesi. Base negra, alt hueso rosado. */
 :root{
-  --bg:#0c0c0e; --card:#161618; --text:#eceae7; --muted:#8f8b87;
-  --line:#2a2a2d; --accent:#c0203a; --accent-ink:#fff5f5; --accent-soft:#26141a;
-  --radius:6px; --btn-radius:4px; --badge-radius:4px;
-  --shadow:0 16px 36px rgba(0,0,0,.55);
-  --font:"Georgia","Times New Roman",serif; --heading-font:"Georgia",serif;
-  --heading-spacing:.06em; --tagline-style:italic;
-  --hero-grad:linear-gradient(135deg,#1b1b1e,#0a0a0b); --hero-ink:#c0203a;
-  --logo-bg:transparent; --logo-ink:#c0203a; --logo-border:#c0203a;
-  --featured-bg:#26141a; --qr-bg:#111113;
+  --base-bg:#0c0c0e; --base-ink:#eceae7; --base-soft:rgba(236,234,231,.6);
+  --base-hair:rgba(217,46,78,.3); --base-accent:#d92e4e; --base-accent-ink:#fff5f5;
+  --alt-bg:#f4eef0; --alt-ink:#201317; --alt-soft:rgba(32,19,23,.62);
+  --alt-hair:rgba(161,25,48,.3); --alt-accent:#a11930; --alt-accent-ink:#fdf1f3;
+  --panel-bg:#161618; --panel-ink:#eceae7; --panel-soft:rgba(236,234,231,.66);
+  --panel-hair:rgba(217,46,78,.4); --panel-accent:#d92e4e;
+  --blob-a:#c0203a; --blob-b:#4a0e18; --blob-c:#2a2a2e; --blob-opacity:.4;
+  --dock-glow:rgba(217,46,78,.35); --dock-glow-strong:rgba(217,46,78,.55);
 }

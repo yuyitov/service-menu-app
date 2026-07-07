@@ -1,13 +1,12 @@
 /* sunny-paws - alegre, jugueton, amigable. Pet grooming / servicios para mascotas.
-   Paleta: amarillo sol + naranja + blanco calido. */
+   Paleta WOW: amarillo sol + naranja + blanco calido. Base clara, alt miel oscura. */
 :root{
-  --bg:#fffaf0; --card:#ffffff; --text:#3a2b12; --muted:#8a7550;
-  --line:#ffe9b8; --accent:#ff9f1c; --accent-ink:#3a1e00; --accent-soft:#fff1d6;
-  --radius:22px; --btn-radius:999px; --badge-radius:999px;
-  --shadow:0 8px 22px rgba(255,159,28,.18);
-  --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; --heading-font:"Segoe UI",system-ui,sans-serif;
-  --heading-spacing:0; --tagline-style:normal;
-  --hero-grad:linear-gradient(135deg,#fff1d6,#ffdf9e); --hero-ink:#c9720a;
-  --logo-bg:#ff9f1c; --logo-ink:#3a1e00; --logo-border:transparent;
-  --featured-bg:#ffe9b8; --qr-bg:#fffdf6;
+  --base-bg:#fffaf0; --base-ink:#46351d; --base-soft:rgba(70,53,29,.62);
+  --base-hair:rgba(255,159,28,.35); --base-accent:#f08c00; --base-accent-ink:#fff8ec;
+  --alt-bg:#3b2a10; --alt-ink:#fdf3e3; --alt-soft:rgba(253,243,227,.65);
+  --alt-hair:rgba(255,193,105,.3); --alt-accent:#ffc169; --alt-accent-ink:#3b2a10;
+  --panel-bg:#3b2a10; --panel-ink:#fdf3e3; --panel-soft:rgba(253,243,227,.66);
+  --panel-hair:rgba(255,193,105,.4); --panel-accent:#ffc169;
+  --blob-a:#ffd9a0; --blob-b:#ff9f1c; --blob-c:#ffeccc; --blob-opacity:.5;
+  --dock-glow:rgba(240,140,0,.35); --dock-glow-strong:rgba(240,140,0,.55);
 }

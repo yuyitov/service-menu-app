@@ -1,14 +1,12 @@
 /* aqua-clean - limpio, fresco, moderno. Wellness / servicios neutrales / negocios modernos.
-   Paleta: blanco / gris muy claro + aqua / turquesa.
-   (Reemplaza la idea previa de "clean-blue".) */
+   Paleta WOW: blanco aqua + turquesa. Base clara, alt teal profundo. */
 :root{
-  --bg:#f2f7f8; --card:#ffffff; --text:#1c3238; --muted:#5d7a80;
-  --line:#e0ebed; --accent:#12a6a6; --accent-ink:#ffffff; --accent-soft:#e2f4f4;
-  --radius:14px; --btn-radius:10px; --badge-radius:999px;
-  --shadow:0 4px 14px rgba(20,120,120,.08);
-  --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; --heading-font:"Segoe UI",system-ui,sans-serif;
-  --heading-spacing:.01em; --tagline-style:normal;
-  --hero-grad:linear-gradient(135deg,#e2f4f4,#cdeaea); --hero-ink:#0f8f8f;
-  --logo-bg:#12a6a6; --logo-ink:#ffffff; --logo-border:transparent;
-  --featured-bg:#e6f5f5; --qr-bg:#f7fbfb;
+  --base-bg:#f2f7f8; --base-ink:#123a40; --base-soft:rgba(18,58,64,.62);
+  --base-hair:rgba(18,166,166,.3); --base-accent:#12a6a6; --base-accent-ink:#f4fcfc;
+  --alt-bg:#0d3a3f; --alt-ink:#e8f6f7; --alt-soft:rgba(232,246,247,.65);
+  --alt-hair:rgba(127,212,218,.28); --alt-accent:#7fd4da; --alt-accent-ink:#0d3a3f;
+  --panel-bg:#0d3a3f; --panel-ink:#e8f6f7; --panel-soft:rgba(232,246,247,.66);
+  --panel-hair:rgba(127,212,218,.4); --panel-accent:#7fd4da;
+  --blob-a:#9fdde2; --blob-b:#12a6a6; --blob-c:#cdeef0; --blob-opacity:.5;
+  --dock-glow:rgba(18,166,166,.32); --dock-glow-strong:rgba(18,166,166,.5);
 }

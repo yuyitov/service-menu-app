@@ -1,13 +1,12 @@
 /* charcoal-clean - sobrio, moderno, masculino, minimalista. Barberias / grooming.
-   Paleta: gris carbon / negro suave + blanco hueso + gris claro. */
+   Paleta WOW: gris carbon + blanco hueso. Base carbon, alt hueso claro. */
 :root{
-  --bg:#f4f4f5; --card:#ffffff; --text:#1f2124; --muted:#6b7075;
-  --line:#e3e4e6; --accent:#2b2d31; --accent-ink:#ffffff; --accent-soft:#ececee;
-  --radius:8px; --btn-radius:6px; --badge-radius:4px;
-  --shadow:0 1px 2px rgba(20,22,26,.06);
-  --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; --heading-font:"Segoe UI",system-ui,sans-serif;
-  --heading-spacing:.02em; --tagline-style:normal;
-  --hero-grad:linear-gradient(135deg,#e6e7e9,#d4d6d9); --hero-ink:#5c6066;
-  --logo-bg:#2b2d31; --logo-ink:#ffffff; --logo-border:transparent;
-  --featured-bg:#f2f2f3; --qr-bg:#fafafb;
+  --base-bg:#26282c; --base-ink:#eef1f4; --base-soft:rgba(238,241,244,.6);
+  --base-hair:rgba(159,178,189,.25); --base-accent:#9fb2bd; --base-accent-ink:#1d2024;
+  --alt-bg:#eef1f4; --alt-ink:#23272c; --alt-soft:rgba(35,39,44,.62);
+  --alt-hair:rgba(85,112,126,.3); --alt-accent:#55707e; --alt-accent-ink:#f2f5f7;
+  --panel-bg:#1a1d20; --panel-ink:#eef1f4; --panel-soft:rgba(238,241,244,.66);
+  --panel-hair:rgba(159,178,189,.4); --panel-accent:#9fb2bd;
+  --blob-a:#9fb2bd; --blob-b:#55707e; --blob-c:#3c4a54; --blob-opacity:.4;
+  --dock-glow:rgba(159,178,189,.3); --dock-glow-strong:rgba(159,178,189,.5);
 }

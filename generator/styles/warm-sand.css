@@ -1,13 +1,12 @@
 /* warm-sand - calido, cercano, boutique. Nails / salones / wellness calido.
-   Paleta: arena / beige / crema + terracota. */
+   Paleta WOW: arena / crema + terracota. Base clara, alt espresso calido. */
 :root{
-  --bg:#f6ede0; --card:#fffaf2; --text:#4a3a2a; --muted:#8a7358;
-  --line:#ece0cf; --accent:#c06a43; --accent-ink:#fffaf2; --accent-soft:#f3e4d3;
-  --radius:18px; --btn-radius:999px; --badge-radius:999px;
-  --shadow:0 6px 20px rgba(160,90,40,.10);
-  --font:"Georgia","Segoe UI",serif; --heading-font:"Georgia",serif;
-  --heading-spacing:.01em; --tagline-style:italic;
-  --hero-grad:linear-gradient(135deg,#f3e4d3,#eecfb4); --hero-ink:#9a6b47;
-  --logo-bg:#c06a43; --logo-ink:#fffaf2; --logo-border:transparent;
-  --featured-bg:#f3e4d3; --qr-bg:#fffdf8;
+  --base-bg:#f6ede0; --base-ink:#4a3a2a; --base-soft:rgba(74,58,42,.62);
+  --base-hair:rgba(192,106,67,.3); --base-accent:#c06a43; --base-accent-ink:#fff7ee;
+  --alt-bg:#3a2517; --alt-ink:#f6ead9; --alt-soft:rgba(246,234,217,.65);
+  --alt-hair:rgba(224,149,108,.3); --alt-accent:#e0956c; --alt-accent-ink:#3a2517;
+  --panel-bg:#3a2517; --panel-ink:#f6ead9; --panel-soft:rgba(246,234,217,.66);
+  --panel-hair:rgba(224,149,108,.4); --panel-accent:#e0956c;
+  --blob-a:#eecfb4; --blob-b:#c06a43; --blob-c:#d9b98c; --blob-opacity:.5;
+  --dock-glow:rgba(192,106,67,.35); --dock-glow-strong:rgba(192,106,67,.55);
 }

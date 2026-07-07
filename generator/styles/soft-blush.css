@@ -1,13 +1,12 @@
 /* soft-blush - femenino, estetico, delicado. Estetica / lashes / brows / nails / faciales.
-   Paleta: blush / nude rosado + cafe profundo o gris calido. */
+   Paleta WOW: blush / nude rosado + vino rosado profundo. Base clara, alt vino. */
 :root{
-  --bg:#fbf1f0; --card:#fffafa; --text:#5a4038; --muted:#ab8a83;
-  --line:#f2ddd9; --accent:#bd6e7d; --accent-ink:#fffafa; --accent-soft:#f8e6e6;
-  --radius:18px; --btn-radius:999px; --badge-radius:999px;
-  --shadow:0 8px 22px rgba(180,120,120,.12);
-  --font:"Segoe UI",system-ui,-apple-system,sans-serif; --heading-font:"Georgia",serif;
-  --heading-spacing:.01em; --tagline-style:italic;
-  --hero-grad:linear-gradient(135deg,#f8e6e6,#f2d3d3); --hero-ink:#a76c74;
-  --logo-bg:#bd6e7d; --logo-ink:#fffafa; --logo-border:transparent;
-  --featured-bg:#f8e6e6; --qr-bg:#fffdfd;
+  --base-bg:#fbf1f0; --base-ink:#4a2c30; --base-soft:rgba(74,44,48,.62);
+  --base-hair:rgba(189,110,125,.3); --base-accent:#bd6e7d; --base-accent-ink:#fffafa;
+  --alt-bg:#371820; --alt-ink:#fbeef0; --alt-soft:rgba(251,238,240,.65);
+  --alt-hair:rgba(230,163,175,.28); --alt-accent:#e6a3af; --alt-accent-ink:#371820;
+  --panel-bg:#371820; --panel-ink:#fbeef0; --panel-soft:rgba(251,238,240,.66);
+  --panel-hair:rgba(230,163,175,.4); --panel-accent:#e6a3af;
+  --blob-a:#f3c6ce; --blob-b:#e39aa8; --blob-c:#f7e3d8; --blob-opacity:.55;
+  --dock-glow:rgba(189,110,125,.35); --dock-glow-strong:rgba(189,110,125,.55);
 }

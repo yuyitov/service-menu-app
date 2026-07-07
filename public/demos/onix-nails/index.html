@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>ÓNIX Nail Atelier — Menú de servicios</title>
+<meta name="description" content="Demo HMU Link — mini página editorial con movimiento para salón de uñas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ÓNIX Nail Atelier — demo "editorial motion" (tier WOW)
+   Estética: email editorial de lujo — negro espresso + champán,
+   serif gigante, fondo líquido, secciones que se funden.
+   Mejora progresiva: sin JS todo es visible; GSAP añade el cine.
+   ============================================================ */
+:root{
+  --noir:#0d0a08;
+  --noir-2:#161009;
+  --cream:#f3e9da;
+  --cream-2:#ece0cd;
+  --champ:#d9b98c;
+  --champ-deep:#b98f5a;
+  --rose:#c98d7a;
+  --cocoa:#6b4a35;
+  --ink:var(--cream);
+  --ink-soft:rgba(243,233,218,.62);
+  --hairline:rgba(217,185,140,.22);
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --sans:"Outfit","Segoe UI",sans-serif;
+}
+/* Tema por sección: el fondo del body se funde entre negro y crema,
+   como los emails que fluyen de un bloque a otro sin cortes. */
+body{
+  --bg:var(--noir);
+  background:var(--bg);
+  color:var(--ink);
+  transition:background 1s ease;
+}
+body.theme-cream{
+  --bg:var(--cream);
+  --ink:#241a12;
+  --ink-soft:rgba(36,26,18,.62);
+  --hairline:rgba(107,74,53,.25);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);font-weight:300;line-height:1.6;
+  -webkit-text-size-adjust:100%;overflow-x:hidden}
+body,body.theme-cream{color:var(--ink)}
+h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;margin:0}
+a{color:inherit}
+img{display:block;max-width:100%}
+
+/* ---------- capa líquida de fondo ---------- */
+.liquid{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;
+  will-change:transform;animation:drift 26s ease-in-out infinite alternate}
+.blob--a{width:65vmax;height:65vmax;left:-25vmax;top:-18vmax;
+  background:radial-gradient(circle at 35% 35%,#d9b98c 0%,rgba(217,185,140,0) 62%)}
+.blob--b{width:55vmax;height:55vmax;right:-22vmax;top:26%;
+  background:radial-gradient(circle at 60% 40%,#c98d7a 0%,rgba(201,141,122,0) 60%);
+  animation-duration:32s;animation-delay:-8s}
+.blob--c{width:60vmax;height:60vmax;left:-12vmax;bottom:-28vmax;
+  background:radial-gradient(circle at 50% 50%,#6b4a35 0%,rgba(107,74,53,0) 65%);
+  animation-duration:38s;animation-delay:-16s}
+@keyframes drift{
+  0%{transform:translate3d(0,0,0) scale(1)}
+  50%{transform:translate3d(6vmax,-4vmax,0) scale(1.12)}
+  100%{transform:translate3d(-4vmax,5vmax,0) scale(.94)}
+}
+/* grano de película para textura editorial */
+.grain{position:fixed;inset:-50%;z-index:1;pointer-events:none;opacity:.06;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
+
+/* ---------- intro (telón) ---------- */
+.intro{position:fixed;inset:0;z-index:60;background:var(--noir);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.intro__brand{display:flex;gap:.12em}
+.intro__brand span{font-family:var(--serif);font-size:clamp(44px,13vw,84px);
+  letter-spacing:.14em;color:var(--champ)}
+.intro__sub{font-size:11px;letter-spacing:.5em;text-transform:uppercase;color:var(--ink-soft)}
+.intro.is-done{display:none}
+/* sin JS el telón se levanta solo con CSS */
+@keyframes introUp{to{transform:translateY(-101%);visibility:hidden}}
+html:not(.gsap-on) .intro{animation:introUp .9s cubic-bezier(.76,0,.24,1) 1.9s forwards}
+
+.page{position:relative;z-index:2}
+.shell{width:100%;max-width:560px;margin:0 auto;padding:0 26px}
+
+/* ---------- hero ---------- */
+.hero{min-height:100svh;display:flex;flex-direction:column;position:relative}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding-top:26px}
+.monogram{width:46px;height:46px;border:1px solid var(--hairline);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:22px;color:var(--champ)}
+.topbar__word{font-size:10px;letter-spacing:.44em;text-transform:uppercase;color:var(--ink-soft)}
+.hero__body{flex:1;display:flex;flex-direction:column;justify-content:center;padding-top:64px;padding-bottom:48px}
+.hero__kicker{font-size:11px;letter-spacing:.42em;text-transform:uppercase;
+  color:var(--champ);margin:0 0 26px}
+.hero h1{font-size:clamp(56px,15.5vw,104px);line-height:.98;letter-spacing:-.01em;font-weight:400}
+.hero h1 .line{display:block;overflow:hidden}
+.hero h1 .line>span{display:inline-block}
+.hero h1 em{font-style:italic;font-weight:300;color:var(--champ)}
+.hero__lead{max-width:34ch;color:var(--ink-soft);font-size:16px;margin:28px 0 38px}
+.cta-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:54px;padding:0 30px;border-radius:999px;text-decoration:none;
+  font-family:var(--sans);font-weight:500;font-size:15px;letter-spacing:.04em;
+  transition:transform .35s cubic-bezier(.2,.8,.2,1),background .35s,color .35s,border-color .35s;
+  will-change:transform}
+.btn--solid{background:var(--champ);color:#241505;border:1px solid var(--champ)}
+.btn--solid:hover{background:var(--cream);border-color:var(--cream)}
+.btn--ghost{border:1px solid var(--hairline);color:var(--ink)}
+.btn--ghost:hover{border-color:var(--champ);color:var(--champ)}
+.hero__scroll{padding-bottom:30px;display:flex;justify-content:center}
+.hero__scroll span{font-size:10px;letter-spacing:.4em;text-transform:uppercase;
+  color:var(--ink-soft);display:inline-flex;flex-direction:column;align-items:center;gap:10px}
+.hero__scroll i{width:1px;height:44px;background:linear-gradient(var(--champ),transparent);
+  display:block;animation:fall 1.8s ease-in-out infinite}
+@keyframes fall{0%{transform:scaleY(0);transform-origin:top}45%{transform:scaleY(1);transform-origin:top}
+  55%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- marquee ---------- */
+.marquee{border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);
+  overflow:hidden;padding:18px 0;white-space:nowrap}
+.marquee__track{display:inline-flex;gap:0;animation:slide 28s linear infinite}
+.marquee__track>span{display:inline-flex;align-items:baseline;gap:.6em;padding-right:.6em;
+  font-family:var(--serif);font-size:26px;letter-spacing:.06em;color:var(--ink-soft)}
+.marquee__track em{font-style:italic;color:var(--champ)}
+.marquee__track .dot{color:var(--champ);font-size:14px;transform:translateY(-4px)}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* ---------- secciones editoriales ---------- */
+.section{padding:96px 0}
+.eyebrow{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--champ-deep);margin:0 0 18px}
+body:not(.theme-cream) .eyebrow{color:var(--champ)}
+.section h2{font-size:clamp(38px,10vw,58px);line-height:1.04;margin-bottom:20px}
+.section h2 em{font-style:italic;font-weight:300}
+.section .lead{color:var(--ink-soft);font-size:16.5px;max-width:38ch}
+
+/* manifiesto: palabras que se encienden al hacer scroll */
+.manifesto p{font-family:var(--serif);font-size:clamp(26px,7vw,38px);line-height:1.35;margin:0}
+.manifesto .w{opacity:.22;transition:opacity .5s ease}
+.manifesto .w.on{opacity:1}
+
+/* ---------- colección de tonos ---------- */
+.shades{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:44px}
+@media (min-width:480px){.shades{grid-template-columns:repeat(3,1fr)}}
+.shade{border:1px solid var(--hairline);border-radius:150px 150px 20px 20px;
+  padding:26px 14px 20px;text-align:center;background:rgba(255,255,255,.03);
+  backdrop-filter:blur(6px);transition:transform .5s cubic-bezier(.2,.8,.2,1),border-color .5s}
+body.theme-cream .shade{background:rgba(255,255,255,.4)}
+.shade:hover{transform:translateY(-8px);border-color:var(--champ)}
+.shade__drop{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;
+  position:relative;box-shadow:inset -6px -10px 16px rgba(0,0,0,.35),0 12px 22px rgba(0,0,0,.28)}
+.shade__drop::after{content:"";position:absolute;left:16%;top:12%;width:34%;height:26%;
+  border-radius:50%;background:rgba(255,255,255,.75);filter:blur(2px);transform:rotate(-18deg)}
+.shade__name{font-family:var(--serif);font-size:19px;font-style:italic}
+.shade__note{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:4px}
+
+/* ---------- menú de servicios ---------- */
+.menu-cat{margin-top:52px}
+.menu-cat__head{display:flex;align-items:baseline;gap:16px;margin-bottom:8px}
+.menu-cat__title{font-size:26px;font-style:italic}
+.menu-cat__rule{flex:1;height:1px;background:var(--hairline)}
+.mrow{display:flex;align-items:baseline;gap:10px;padding:15px 0;border-bottom:1px solid var(--hairline)}
+.mrow:last-child{border-bottom:0}
+.mrow__name{font-weight:400;font-size:16px}
+.mrow__desc{display:block;color:var(--ink-soft);font-size:13.5px;margin-top:3px;font-style:italic;
+  font-family:var(--serif);font-size:15px}
+.mrow__dots{flex:1;border-bottom:1px dotted var(--hairline);transform:translateY(-4px);min-width:24px}
+.mrow__price{font-family:var(--serif);font-size:19px;color:var(--champ-deep);white-space:nowrap}
+body:not(.theme-cream) .mrow__price{color:var(--champ)}
+
+/* ritual destacado */
+.ritual{margin-top:64px;border-radius:26px;padding:2px;position:relative;overflow:hidden}
+.ritual::before{content:"";position:absolute;inset:-60%;
+  background:conic-gradient(from 0deg,transparent 0 40%,var(--champ) 50%,transparent 60% 100%);
+  animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+.ritual__in{position:relative;border-radius:24px;background:var(--noir-2);
+  padding:34px 28px;text-align:center}
+body.theme-cream .ritual__in{background:#241a12;color:var(--cream)}
+.ritual__badge{display:inline-block;font-size:10px;letter-spacing:.4em;text-transform:uppercase;
+  color:var(--champ);border:1px solid rgba(217,185,140,.4);border-radius:999px;padding:7px 16px 6px}
+.ritual__name{font-size:34px;margin:16px 0 8px;color:var(--cream)}
+.ritual__desc{color:rgba(243,233,218,.66);font-size:15px;max-width:36ch;margin:0 auto 18px}
+.ritual__price{font-family:var(--serif);font-size:30px;color:var(--champ)}
+.ritual__save{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:rgba(243,233,218,.5);margin-top:4px}
+
+/* ---------- info práctica ---------- */
+.info-grid{display:grid;gap:0;margin-top:20px}
+.info-row{padding:26px 0;border-top:1px solid var(--hairline)}
+.info-row:last-child{border-bottom:1px solid var(--hairline)}
+.info-row h3{font-size:13px;letter-spacing:.34em;text-transform:uppercase;
+  font-family:var(--sans);font-weight:500;color:var(--champ-deep);margin-bottom:10px}
+body:not(.theme-cream) .info-row h3{color:var(--champ)}
+.info-row p,.info-row ul{margin:0;color:var(--ink-soft);font-size:15.5px}
+.info-row ul{padding-left:18px}
+.info-row li{margin-bottom:6px}
+.info-row a.mapl{color:inherit;text-decoration:underline;text-decoration-color:var(--champ);text-underline-offset:4px}
+.hours-line{display:flex;justify-content:space-between;gap:14px;padding:4px 0}
+.hours-line b{font-weight:400;color:var(--ink)}
+
+/* ---------- QR / compartir ---------- */
+.share{text-align:center}
+.qrbox{width:212px;margin:30px auto 0;padding:16px;border:1px solid var(--hairline);
+  border-radius:22px;background:#fffdf8}
+.qrbox img{width:180px;height:180px;margin:0 auto}
+.share__url{display:inline-block;margin-top:18px;font-size:14px;color:var(--champ-deep);
+  text-decoration:none;word-break:break-all;border-bottom:1px solid var(--hairline);padding-bottom:2px}
+body:not(.theme-cream) .share__url{color:var(--champ)}
+
+/* ---------- footer ---------- */
+.footer{padding:60px 0 130px;text-align:center;color:var(--ink-soft);font-size:12.5px;letter-spacing:.06em}
+.footer .serif{font-size:30px;letter-spacing:.2em;color:var(--champ);display:block;margin-bottom:10px}
+
+/* ---------- CTA fija inferior ---------- */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:center;
+  padding:14px 20px calc(14px + env(safe-area-inset-bottom));pointer-events:none;
+  transform:translateY(120%);transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.dock.show{transform:translateY(0)}
+.dock a{pointer-events:auto;width:min(420px,100%);min-height:56px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;
+  background:var(--champ);color:#241505;font-weight:600;font-size:15.5px;letter-spacing:.04em;
+  box-shadow:0 14px 40px rgba(217,185,140,.35);animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 14px 40px rgba(217,185,140,.30)}
+  50%{box-shadow:0 14px 52px rgba(217,185,140,.55)}}
+
+/* ---------- reveals (fallback CSS si no hay GSAP) ---------- */
+[data-reveal]{opacity:1;transform:none}
+.gsap-on [data-reveal]{opacity:0;transform:translateY(36px)}
+
+@media (prefers-reduced-motion:reduce){
+  .blob,.marquee__track,.ritual::before,.dock a,.hero__scroll i{animation:none!important}
+  .intro{display:none!important}
+  html.gsap-on [data-reveal]{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- fondo líquido -->
+<div class="liquid" aria-hidden="true">
+  <div class="blob blob--a"></div>
+  <div class="blob blob--b"></div>
+  <div class="blob blob--c"></div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- telón de entrada -->
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="intro__brand"><span>Ó</span><span>N</span><span>I</span><span>X</span></div>
+  <div class="intro__sub">Nail Atelier</div>
+</div>
+
+<div class="page">
+
+  <!-- HERO -->
+  <header class="hero" data-theme="dark">
+    <div class="shell topbar">
+      <div class="monogram" aria-hidden="true">Ó</div>
+      <div class="topbar__word">Nail Atelier</div>
+    </div>
+    <div class="shell hero__body">
+      <p class="hero__kicker" id="hk">Guadalajara · Col. Americana</p>
+      <h1 id="ht" aria-label="El lujo, en la punta de tus dedos">
+        <span class="line"><span>El lujo,</span></span>
+        <span class="line"><span><em>en la punta</em></span></span>
+        <span class="line"><span>de tus dedos</span></span>
+      </h1>
+      <p class="hero__lead" id="hl">Manicura de autor, extensiones esculpidas y nail art
+        de edición limitada. Una cita a la vez, sin prisa.</p>
+      <div class="cta-row" id="hc">
+        <a class="btn btn--solid" href="https://wa.me/523312345678" target="_blank" rel="noopener noreferrer">Reservar por WhatsApp</a>
+        <a class="btn btn--ghost" href="#menu">Ver el menú</a>
+      </div>
+    </div>
+    <div class="hero__scroll" aria-hidden="true"><span>Desliza<i></i></span></div>
+  </header>
+
+  <!-- MARQUEE -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <span>Gelish <span class="dot">✦</span></span><span><em>Nail art</em> <span class="dot">✦</span></span><span>Acrílico <span class="dot">✦</span></span><span><em>Rubber</em> <span class="dot">✦</span></span><span>Pedicura spa <span class="dot">✦</span></span><span><em>Efecto chrome</em> <span class="dot">✦</span></span>
+      <span>Gelish <span class="dot">✦</span></span><span><em>Nail art</em> <span class="dot">✦</span></span><span>Acrílico <span class="dot">✦</span></span><span><em>Rubber</em> <span class="dot">✦</span></span><span>Pedicura spa <span class="dot">✦</span></span><span><em>Efecto chrome</em> <span class="dot">✦</span></span>
+    </div>
+  </div>
+
+  <!-- MANIFIESTO -->
+  <section class="section manifesto" data-theme="dark">
+    <div class="shell">
+      <p class="eyebrow" data-reveal>El atelier</p>
+      <p id="manifesto-copy">Cada set es una pieza única: proporción, color y brillo
+        pensados para tus manos — no las de nadie más.</p>
+    </div>
+  </section>
+
+  <!-- COLECCIÓN -->
+  <section class="section" data-theme="cream">
+    <div class="shell">
+      <p class="eyebrow" data-reveal>Colección de temporada</p>
+      <h2 data-reveal>Tonos <em>otoño</em> 2026</h2>
+      <p class="lead" data-reveal>Seis tonos exclusivos del atelier, formulados en gel
+        de larga duración. Pídelos por nombre.</p>
+      <div class="shades">
+        <div class="shade" data-reveal>
+          <div class="shade__drop" style="background:radial-gradient(circle at 35% 30%,#f2dcae,#d9b98c 55%,#a67c46)"></div>
+          <div class="shade__name">Champagne Silk</div>
+          <div class="shade__note">Nude dorado</div>
+        </div>
+        <div class="shade" data-reveal>
+          <div class="shade__drop" style="background:radial-gradient(circle at 35% 30%,#a5734f,#7a5340 55%,#4c3123)"></div>
+          <div class="shade__name">Cacao Glacé</div>
+          <div class="shade__note">Marrón cálido</div>
+        </div>
+        <div class="shade" data-reveal>
+          <div class="shade__drop" style="background:radial-gradient(circle at 35% 30%,#8e2f42,#4a1420 60%,#2a0a12)"></div>
+          <div class="shade__name">Rouge Noir</div>
+          <div class="shade__note">Vino profundo</div>
+        </div>
+        <div class="shade" data-reveal>
+          <div class="shade__drop" style="background:radial-gradient(circle at 35% 30%,#ffffff,#efe6e1 55%,#c9b8ae)"></div>
+          <div class="shade__name">Perla Lunar</div>
+          <div class="shade__note">Blanco perlado</div>
+        </div>
+        <div class="shade" data-reveal>
+          <div class="shade__drop" style="background:radial-gradient(circle at 35% 30%,#f0b98e,#c47a52 55%,#8a4e2e)"></div>
+          <div class="shade__name">Chrome Cobre</div>
+          <div class="shade__note">Metálico espejo</div>
+        </div>
+        <div class="shade" data-reveal>
+          <div class="shade__drop" style="background:radial-gradient(circle at 35% 30%,#e8c3ae,#c9a08c 55%,#96705c)"></div>
+          <div class="shade__name">Velvet Nude</div>
+          <div class="shade__note">Rosa empolvado</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENÚ -->
+  <section class="section" id="menu" data-theme="dark">
+    <div class="shell">
+      <p class="eyebrow" data-reveal>Servicios</p>
+      <h2 data-reveal>El <em>menú</em></h2>
+      <p class="lead" data-reveal>Precios en pesos mexicanos. Toda cita incluye limado de precisión,
+        cutícula rusa y aceite final.</p>
+
+      <div class="menu-cat" data-reveal>
+        <div class="menu-cat__head"><h3 class="menu-cat__title serif">Manicura</h3><span class="menu-cat__rule"></span></div>
+        <div class="mrow"><div><span class="mrow__name">Manicura rusa</span><span class="mrow__desc">Cutícula impecable a torno, brillo natural</span></div><span class="mrow__dots"></span><span class="mrow__price">$280</span></div>
+        <div class="mrow"><div><span class="mrow__name">Gelish</span><span class="mrow__desc">Semipermanente, hasta 3 semanas</span></div><span class="mrow__dots"></span><span class="mrow__price">$350</span></div>
+        <div class="mrow"><div><span class="mrow__name">Nivelación rubber</span><span class="mrow__desc">Refuerzo flexible para uña natural</span></div><span class="mrow__dots"></span><span class="mrow__price">$420</span></div>
+        <div class="mrow"><div><span class="mrow__name">Retiro + hidratación</span></div><span class="mrow__dots"></span><span class="mrow__price">$150</span></div>
+      </div>
+
+      <div class="menu-cat" data-reveal>
+        <div class="menu-cat__head"><h3 class="menu-cat__title serif">Extensiones</h3><span class="menu-cat__rule"></span></div>
+        <div class="mrow"><div><span class="mrow__name">Acrílico esculpido</span><span class="mrow__desc">Forma a elección: almond, coffin, stiletto</span></div><span class="mrow__dots"></span><span class="mrow__price">$520</span></div>
+        <div class="mrow"><div><span class="mrow__name">Soft gel</span><span class="mrow__desc">Ligero, look natural</span></div><span class="mrow__dots"></span><span class="mrow__price">$480</span></div>
+        <div class="mrow"><div><span class="mrow__name">Refill (2–3 semanas)</span></div><span class="mrow__dots"></span><span class="mrow__price">$380</span></div>
+      </div>
+
+      <div class="menu-cat" data-reveal>
+        <div class="menu-cat__head"><h3 class="menu-cat__title serif">Pedicura</h3><span class="menu-cat__rule"></span></div>
+        <div class="mrow"><div><span class="mrow__name">Pedicura spa</span><span class="mrow__desc">Exfoliación, mascarilla y masaje</span></div><span class="mrow__dots"></span><span class="mrow__price">$380</span></div>
+        <div class="mrow"><div><span class="mrow__name">Gelish en pies</span></div><span class="mrow__dots"></span><span class="mrow__price">$320</span></div>
+      </div>
+
+      <div class="menu-cat" data-reveal>
+        <div class="menu-cat__head"><h3 class="menu-cat__title serif">Nail art</h3><span class="menu-cat__rule"></span></div>
+        <div class="mrow"><div><span class="mrow__name">Francesa moderna</span></div><span class="mrow__dots"></span><span class="mrow__price">$80</span></div>
+        <div class="mrow"><div><span class="mrow__name">Efecto chrome / aurora</span></div><span class="mrow__dots"></span><span class="mrow__price">$120</span></div>
+        <div class="mrow"><div><span class="mrow__name">Cat eye</span></div><span class="mrow__dots"></span><span class="mrow__price">$90</span></div>
+        <div class="mrow"><div><span class="mrow__name">Diseño por uña</span><span class="mrow__desc">De minimalista a 3D</span></div><span class="mrow__dots"></span><span class="mrow__price">desde $35</span></div>
+      </div>
+
+      <!-- destacado -->
+      <div class="ritual" data-reveal>
+        <div class="ritual__in">
+          <span class="ritual__badge">Firma de la casa</span>
+          <h3 class="ritual__name serif">Ritual ÓNIX</h3>
+          <p class="ritual__desc">Manicura rusa + nivelación rubber + gelish del tono que elijas,
+            con masaje de manos y aceite de cutícula.</p>
+          <div class="ritual__price">$520</div>
+          <div class="ritual__save">Ahorras $130 · 90 min</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFO -->
+  <section class="section" data-theme="cream">
+    <div class="shell">
+      <p class="eyebrow" data-reveal>Visítanos</p>
+      <h2 data-reveal>La <em>cita</em></h2>
+      <div class="info-grid">
+        <div class="info-row" data-reveal>
+          <h3>Horarios</h3>
+          <div class="hours-line"><span>Martes — Sábado</span><b>10:00 – 19:00</b></div>
+          <div class="hours-line"><span>Lunes</span><b>Solo con cita</b></div>
+          <div class="hours-line"><span>Domingo</span><b>Cerrado</b></div>
+        </div>
+        <div class="info-row" data-reveal>
+          <h3>Ubicación</h3>
+          <p>Av. Chapultepec 210, Col. Americana, Guadalajara<br>
+          <a class="mapl" href="https://maps.google.com/?q=ONIX+Nail+Atelier+Demo" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a></p>
+        </div>
+        <div class="info-row" data-reveal>
+          <h3>Políticas</h3>
+          <ul>
+            <li>Anticipo de $100 para nail art elaborado y extensiones.</li>
+            <li>Tolerancia de 15 minutos; después la cita se reagenda.</li>
+            <li>Reagenda sin costo avisando con 12 h de anticipación.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARTIR -->
+  <section class="section share" data-theme="dark">
+    <div class="shell">
+      <p class="eyebrow" data-reveal>Comparte</p>
+      <h2 data-reveal>Llévanos <em>contigo</em></h2>
+      <p class="lead" data-reveal style="margin:0 auto">Escanea el código o comparte el link directo.</p>
+      <div class="qrbox" data-reveal>
+        <img src="qr.svg" alt="Código QR de https://www.hmulink.com/demos/onix-nails/" width="180" height="180">
+      </div>
+      <a class="share__url" href="https://www.hmulink.com/demos/onix-nails/" target="_blank" rel="noopener noreferrer">hmulink.com/demos/onix-nails</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span class="serif">ÓNIX</span>
+    Página demo creada con HMU Link — datos ficticios
+  </footer>
+</div>
+
+<!-- CTA fija -->
+<div class="dock" id="dock">
+  <a href="https://wa.me/523312345678" target="_blank" rel="noopener noreferrer">💅 Reservar por WhatsApp</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  var doc=document, reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasGsap=typeof window.gsap!=='undefined';
+  if(hasGsap&&window.ScrollTrigger)gsap.registerPlugin(ScrollTrigger);
+  var cinematic=hasGsap&&!reduced;
+
+  /* ----- manifiesto: partir en palabras para el encendido ----- */
+  var mani=doc.getElementById('manifesto-copy');
+  if(mani){
+    var words=mani.textContent.trim().split(/\s+/);
+    mani.innerHTML=words.map(function(w){return '<span class="w">'+w+'</span>'}).join(' ');
+  }
+
+  /* ----- tema por sección: el fondo se funde negro <-> crema ----- */
+  var themed=doc.querySelectorAll('[data-theme]');
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          doc.body.classList.toggle('theme-cream',e.target.dataset.theme==='cream');
+        }
+      });
+    },{rootMargin:'-45% 0px -45% 0px'});
+    themed.forEach(function(s){io.observe(s)});
+  }
+
+  /* ----- CTA fija: aparece al salir del hero ----- */
+  var dock=doc.getElementById('dock'), hero=doc.querySelector('.hero');
+  if('IntersectionObserver' in window){
+    var io2=new IntersectionObserver(function(entries){
+      dock.classList.toggle('show',!entries[0].isIntersecting);
+    },{threshold:.15});
+    io2.observe(hero);
+  }else{dock.classList.add('show')}
+
+  /* ----- palabras del manifiesto se encienden con el scroll ----- */
+  var ws=doc.querySelectorAll('.manifesto .w');
+  if('IntersectionObserver' in window&&!cinematic){
+    // fallback sin GSAP: encender todo el bloque de una vez
+    var io3=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting)ws.forEach(function(w){w.classList.add('on')});
+      });
+    },{threshold:.4});
+    if(mani)io3.observe(mani);
+  }
+
+  if(!cinematic)return;
+  doc.documentElement.classList.add('gsap-on');
+
+  /* ----- intro ----- */
+  var intro=doc.getElementById('intro');
+  var tl=gsap.timeline({onComplete:function(){intro.classList.add('is-done')}});
+  tl.from('.intro__brand span',{y:60,opacity:0,duration:.8,stagger:.09,ease:'power3.out'})
+    .from('.intro__sub',{opacity:0,letterSpacing:'1em',duration:.7,ease:'power2.out'},'-=.3')
+    .to(intro,{yPercent:-100,duration:.9,ease:'power4.inOut',delay:.35});
+
+  /* ----- hero ----- */
+  tl.from('#ht .line>span',{yPercent:110,duration:1.1,stagger:.12,ease:'power4.out'},'-=.45')
+    .from(['#hk','#hl','#hc','.topbar','.hero__scroll'],{opacity:0,y:24,duration:.8,stagger:.08,ease:'power2.out'},'-=.7');
+
+  /* parallax suave del hero al hacer scroll */
+  gsap.to('.hero__body',{yPercent:-12,opacity:.25,ease:'none',
+    scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+
+  /* ----- reveals genéricos ----- */
+  ScrollTrigger.batch('[data-reveal]',{
+    start:'top 86%',
+    onEnter:function(els){
+      gsap.to(els,{opacity:1,y:0,duration:.9,stagger:.09,ease:'power3.out',overwrite:true});
+    }
+  });
+
+  /* ----- manifiesto palabra por palabra (scrub) ----- */
+  if(ws.length){
+    gsap.to(ws,{
+      onUpdate:null,
+      scrollTrigger:{
+        trigger:'.manifesto',start:'top 75%',end:'bottom 55%',scrub:true,
+        onUpdate:function(self){
+          var n=Math.floor(self.progress*ws.length);
+          ws.forEach(function(w,i){w.classList.toggle('on',i<=n)});
+        }
+      }
+    });
+  }
+
+  /* ----- botones magnéticos (solo puntero fino) ----- */
+  if(window.matchMedia('(pointer:fine)').matches){
+    doc.querySelectorAll('.btn').forEach(function(b){
+      b.addEventListener('mousemove',function(e){
+        var r=b.getBoundingClientRect();
+        gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.25,y:(e.clientY-r.top-r.height/2)*.35,duration:.4});
+      });
+      b.addEventListener('mouseleave',function(){gsap.to(b,{x:0,y:0,duration:.5,ease:'elastic.out(1,.4)'})});
+    });
+  }
+})();
+</script>
+</body>
+</html>

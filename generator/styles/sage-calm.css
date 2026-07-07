@@ -1,13 +1,12 @@
 /* sage-calm - natural, relajante, organico. Wellness / yoga / masajes / terapias holisticas.
-   Paleta: salvia / marfil / verde suave. */
+   Paleta WOW: salvia / marfil + verde bosque. Base marfil, alt bosque. */
 :root{
-  --bg:#f3f1e7; --card:#fbfaf4; --text:#2b331f; --muted:#6a7059;
-  --line:#e6e4d5; --accent:#557040; --accent-ink:#ffffff; --accent-soft:#e6ecda;
-  --radius:16px; --btn-radius:999px; --badge-radius:999px;
-  --shadow:0 6px 18px rgba(70,90,50,.12);
-  --font:"Georgia","Segoe UI",serif; --heading-font:"Georgia",serif;
-  --heading-spacing:.01em; --tagline-style:italic;
-  --hero-grad:linear-gradient(135deg,#e6ecda,#d2dcbf); --hero-ink:#4c6437;
-  --logo-bg:#557040; --logo-ink:#ffffff; --logo-border:transparent;
-  --featured-bg:#e6ecda; --qr-bg:#fbfbf5;
+  --base-bg:#f3f1e7; --base-ink:#2b331f; --base-soft:rgba(43,51,31,.62);
+  --base-hair:rgba(85,112,64,.3); --base-accent:#557040; --base-accent-ink:#f6f8f0;
+  --alt-bg:#26301f; --alt-ink:#edf2e7; --alt-soft:rgba(237,242,231,.65);
+  --alt-hair:rgba(169,196,158,.28); --alt-accent:#a9c49e; --alt-accent-ink:#26301f;
+  --panel-bg:#26301f; --panel-ink:#edf2e7; --panel-soft:rgba(237,242,231,.66);
+  --panel-hair:rgba(169,196,158,.4); --panel-accent:#a9c49e;
+  --blob-a:#c9d8bf; --blob-b:#8aa87e; --blob-c:#e4ead8; --blob-opacity:.5;
+  --dock-glow:rgba(85,112,64,.32); --dock-glow-strong:rgba(85,112,64,.5);
 }

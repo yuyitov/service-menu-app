@@ -89,7 +89,7 @@ CLIENT_LANGS = ("es", "en")
 
 # URL schemes we are willing to emit into href attributes.
 _ALLOWED_SCHEMES = ("http://", "https://")
-PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "email", "maps")
+PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "email", "other", "maps")
 
 # UI strings per language (WOW editorial template). Values marked *_html may
 # contain trusted inline markup (<em>) and are injected without re-escaping.
@@ -102,6 +102,7 @@ STRINGS = {
         "btn_website": "Sitio web",
         "btn_booking": "Reservar en linea",
         "btn_maps": "Google Maps",
+        "btn_other": "Abrir enlace",
         "view_menu": "Ver servicios",
         "scroll_hint": "Desliza",
         "services_eyebrow": "Servicios",
@@ -131,6 +132,7 @@ STRINGS = {
         "btn_website": "Website",
         "btn_booking": "Book online",
         "btn_maps": "Google Maps",
+        "btn_other": "Open link",
         "view_menu": "See services",
         "scroll_hint": "Scroll",
         "services_eyebrow": "Services",
@@ -214,6 +216,12 @@ def normalize_primary_cta(value):
         "email": "email",
         "mail": "email",
         "correo": "email",
+        "other": "other",
+        "otro": "other",
+        "other_public_link": "other",
+        "otro_enlace_publico": "other",
+        "external_link": "other",
+        "enlace_externo": "other",
         "maps": "maps",
         "map": "maps",
         "google_maps": "maps",
@@ -480,6 +488,12 @@ def _contact_options(payload: dict, s: dict) -> dict:
     mail = mailto_href(payload.get("public_email"))
     if mail:
         options["email"] = (mail, s["btn_email"])
+    other = payload.get("other_public_link")
+    if isinstance(other, dict):
+        href = safe_href(other.get("url"))
+        label = str(other.get("label", "") or "").strip() or s["btn_other"]
+        if href:
+            options["other"] = (href, esc(label))
     first_map = _first_location_map_href(payload)
     if first_map:
         options["maps"] = (first_map, s["btn_maps"])
@@ -654,6 +668,7 @@ def build_services(payload: dict, s: dict) -> str:
     """Editorial price list: italic serif category titles + dotted-leader rows."""
     services = payload.get("services") or []
     declared = payload.get("service_categories") or []
+    hide_prices = payload.get("price_display") == "hide"
 
     # Preserve declared category order, then append any leftover categories.
     order = list(declared)
@@ -665,7 +680,7 @@ def build_services(payload: dict, s: dict) -> str:
     def render_service(svc: dict) -> str:
         name = esc(svc.get("name"))
         desc = svc.get("description")
-        price = svc.get("price_label")
+        price = None if hide_prices else svc.get("price_label")
         left = f'<span class="mrow__name">{name}</span>'
         if desc:
             left += f'<span class="mrow__desc">{esc(desc)}</span>'
@@ -716,7 +731,7 @@ def build_featured(payload: dict, s: dict) -> str:
         return ""
     name = esc(pkg.get("name"))
     desc = esc(pkg.get("description"))
-    price = pkg.get("price_label")
+    price = None if payload.get("price_display") == "hide" else pkg.get("price_label")
     price_html = f'<div class="ritual__price">{esc(price)}</div>' if price else ""
     # Sin descripción (o igual al nombre) no se repite el texto.
     desc_html = f'<p class="ritual__desc">{desc}</p>' if desc and desc != name else ""
@@ -975,6 +990,7 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "primary_cta",
             "google_maps_url",
             "google_reviews_url",
+            "other_public_link",
             "locations",
         )
     }

@@ -910,6 +910,12 @@ function normalizePrimaryCta(value) {
     email: 'email',
     mail: 'email',
     correo: 'email',
+    other: 'other',
+    otro: 'other',
+    other_public_link: 'other',
+    otro_enlace_publico: 'other',
+    external_link: 'other',
+    enlace_externo: 'other',
     maps: 'maps',
     map: 'maps',
     google_maps: 'maps',
@@ -969,6 +975,7 @@ function buildHmuPublicPayload(normalized, orderId) {
     facebook: answerAny(a, ['facebook']),
     tiktok: answerAny(a, ['tiktok']),
     website: answerAny(a, ['website', 'sitio_web']),
+    other_public_link: answerAny(a, ['other_public_link', 'otro_enlace_publico']),
     booking_url: answerAny(a, ['external_booking_link', 'enlace_externo_de_reservas']),
     primary_cta: normalizePrimaryCta(answerAny(a, [
       'featured_button',
@@ -995,6 +1002,11 @@ function buildHmuPublicPayload(normalized, orderId) {
     location_1_notes: answerAny(a, ['location_1_notes', 'ubicacion_1_notas']),
     service_area_text: answerAny(a, ['where_do_you_offer_your_services', 'donde_ofreces_tus_servicios']),
     opening_hours_text: answerAny(a, ['what_are_your_business_hours', 'cuales_son_tus_horarios_de_atencion']),
+    service_categories_text: answerAny(a, ['how_do_you_group_your_services', 'como_agrupas_tus_servicios']),
+    price_display: answerAny(a, [
+      'how_should_prices_appear_on_your_public_page',
+      'como_deben_aparecer_los_precios_en_tu_pagina_publica'
+    ]),
     services_text: answerAny(a, ['list_your_services_with_prices', 'lista_tus_servicios_con_precios']),
     featured_text: answerAny(a, [
       'featured_package_promo_or_signature_offer',

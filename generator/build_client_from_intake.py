@@ -154,22 +154,78 @@ def clean_line(line: str) -> str:
     return TRAIL_SEP_RE.sub("", BULLET_RE.sub("", line.strip())).strip()
 
 
-def parse_services(services_text: str, category: str) -> list[dict]:
-    """Each non-empty line is one service; text after the last '$' is the price."""
+PRICE_HINT_RE = re.compile(
+    r"(?i)(?:"
+    r"\$[\d][\d\s,.\u00a0]*(?:mxn|usd|cad|eur)?(?:\s*(?:/|por|per)\s*[\w\s]+)?"
+    r"|(?:desde|from|starting at|starts at)\s+\$?[\d][\d\s,.\u00a0]*(?:mxn|usd|cad|eur)?"
+    r"|(?:consultar|cotizar|ask us|inquire|quote|varies)"
+    r")"
+)
+
+
+def split_price_label(line: str) -> tuple[str, str | None]:
+    """Split one service line into visible name and optional price label."""
+    match = None
+    for candidate in PRICE_HINT_RE.finditer(line):
+        match = candidate
+    if not match:
+        return line, None
+    name = TRAIL_SEP_RE.sub("", line[:match.start()]).strip()
+    price = line[match.start():].strip(" -:|")
+    if name and price and len(price) <= 60:
+        return name, price
+    return line, None
+
+
+def normalize_price_policy(value: str) -> str:
+    plain = plain_latin(value)
+    if not plain:
+        return "show"
+    if "dont" in plain or "don't" in plain or "no mostrar" in plain or "sin precios" in plain:
+        return "hide"
+    if "mixed" in plain or "mixto" in plain:
+        return "mixed"
+    return "show"
+
+
+def parse_service_categories(value: str, lang: str) -> list[str]:
+    text = (value or "").strip()
+    if not text:
+        return ["Servicios" if lang == "es" else "Services"]
+    lines = []
+    for raw in text.replace(";", "\n").splitlines():
+        for part in raw.split(","):
+            line = clean_line(part)
+            if line:
+                lines.append(line[:80])
+    out = []
+    for line in lines:
+        if line not in out:
+            out.append(line)
+    return out or ["Servicios" if lang == "es" else "Services"]
+
+
+def parse_services(services_text: str, categories: list[str], price_policy: str) -> list[dict]:
+    """Each non-empty line is one service; headings ending in ':' become categories."""
     services = []
+    current_category = categories[0] if categories else "Services"
+    known = {plain_latin(cat): cat for cat in categories}
     for raw in (services_text or "").splitlines():
         line = clean_line(raw)
         if not line:
             continue
-        name, price_label = line, None
-        idx = line.rfind("$")
-        if idx > 0:
-            candidate_name = TRAIL_SEP_RE.sub("", line[:idx]).strip()
-            candidate_price = line[idx:].strip()
-            if candidate_name and len(candidate_price) <= 40:
-                name, price_label = candidate_name, candidate_price
-        svc = {"category": category, "name": name[:120]}
-        if price_label:
+        heading = TRAIL_SEP_RE.sub("", line).strip()
+        heading_key = plain_latin(heading)
+        if raw.strip().endswith(":") or heading_key in known:
+            current_category = known.get(heading_key, heading[:80])
+            if current_category not in categories:
+                categories.append(current_category)
+                known[plain_latin(current_category)] = current_category
+            continue
+
+        name, price_label = split_price_label(line)
+        svc = {"category": current_category, "name": name[:120]}
+        if price_label and price_policy != "hide":
             svc["price_label"] = price_label
         services.append(svc)
     return services
@@ -252,6 +308,21 @@ def parse_additional_locations(locations_text: str) -> list[dict]:
     return out
 
 
+def parse_public_link(value: str) -> dict | None:
+    text = (value or "").strip()
+    if not text:
+        return None
+    url_re = re.compile(r"(https?://\S+|[\w.-]+\.[a-z]{2,}(?:/\S*)?)", re.I)
+    match = url_re.search(text)
+    if not match:
+        return None
+    url = url_or_none(match.group(1).rstrip(").,;"))
+    if not url:
+        return None
+    label = text[:match.start()].strip(" -:|") or text[match.end():].strip(" -:|")
+    return {"label": (label or "Other link")[:80], "url": url}
+
+
 def url_or_none(value: str) -> str | None:
     v = (value or "").strip()
     if not v:
@@ -291,6 +362,12 @@ def normalize_primary_cta(value: str) -> str | None:
         "email": "email",
         "mail": "email",
         "correo": "email",
+        "other": "other",
+        "otro": "other",
+        "other_public_link": "other",
+        "otro_enlace_publico": "other",
+        "external_link": "other",
+        "enlace_externo": "other",
         "maps": "maps",
         "map": "maps",
         "google_maps": "maps",
@@ -449,6 +526,7 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         "short_description": src["short_description"],
         "opening_hours_text": src["opening_hours_text"],
         "service_area_text": src.get("service_area_text", ""),
+        "service_categories": src.get("service_categories", []),
         "service_names": [s["name"] for s in src["services"]],
         "policies": src["policies"],
     }
@@ -473,6 +551,18 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         for svc, name in zip(tgt["services"], names):
             if isinstance(name, str) and name.strip():
                 svc["name"] = name[:120]
+
+    cats = translated.get("service_categories")
+    if isinstance(cats, list) and len(cats) == len(src.get("service_categories", [])):
+        if all(isinstance(c, str) for c in cats):
+            old_to_new = {}
+            for old, new in zip(tgt.get("service_categories", []), cats):
+                if str(new).strip():
+                    old_to_new[old] = str(new).strip()[:80]
+            tgt["service_categories"] = [old_to_new.get(c, c) for c in tgt.get("service_categories", [])]
+            for svc in tgt.get("services", []):
+                if isinstance(svc, dict) and svc.get("category") in old_to_new:
+                    svc["category"] = old_to_new[svc["category"]]
 
     pols = translated.get("policies")
     if isinstance(pols, list) and len(pols) == len(tgt["policies"]):
@@ -508,13 +598,18 @@ def main() -> int:
     if default_language not in ("es", "en"):
         default_language = "es"
 
-    services_es = parse_services(payload.get("services_text", ""), "Servicios")
-    services_en = parse_services(payload.get("services_text", ""), "Services")
+    price_policy = normalize_price_policy(payload.get("price_display", ""))
+    categories_es = parse_service_categories(payload.get("service_categories_text", ""), "es")
+    categories_en = parse_service_categories(payload.get("service_categories_text", ""), "en")
+    services_es = parse_services(payload.get("services_text", ""), categories_es, price_policy)
+    services_en = parse_services(payload.get("services_text", ""), categories_en, price_policy)
     if not services_es:
         fail("intake has no parseable services — manual review required")
 
     policies = parse_policies(payload.get("policies_text", ""))
     featured = parse_featured(payload.get("featured_text", ""))
+    if featured and price_policy == "hide":
+        featured.pop("price_label", None)
 
     short_description = str(payload.get("short_description", "")).strip() or str(payload.get("business_name", "")).strip()
     hours = str(payload.get("opening_hours_text", "")).strip() or "Consultar horarios / Ask us for hours"
@@ -530,7 +625,8 @@ def main() -> int:
             "address": address[:200],
             "opening_hours_text": hours[:200],
             "service_area_text": service_area[:200],
-            "service_categories": ["Servicios" if lang == "es" else "Services"],
+            "price_display": price_policy,
+            "service_categories": list(categories_es if lang == "es" else categories_en),
             "services": [dict(s) for s in (services_es if lang == "es" else services_en)],
             "policies": list(policies),
         }
@@ -562,6 +658,7 @@ def main() -> int:
         "primary_cta": normalize_primary_cta(payload.get("primary_cta", "")),
         "google_maps_url": url_or_none(payload.get("google_maps_url", "")),
         "google_reviews_url": url_or_none(payload.get("google_reviews_url", "")),
+        "other_public_link": parse_public_link(payload.get("other_public_link", "")),
         "content": {"es": content_block("es"), "en": content_block("en")},
     }
     if locations:

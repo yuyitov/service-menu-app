@@ -1,0 +1,120 @@
+{
+  "public_slug": "unveil-mexico-4ao6bay",
+  "default_language": "en",
+  "brand_style": "sage-calm",
+  "business_name": "Unveil México",
+  "logo_url": "https://www.hmulink.com/links/unveil-mexico-4ao6bay/assets/logo.png",
+  "primary_image_url": "https://www.hmulink.com/links/unveil-mexico-4ao6bay/assets/hero.jpg",
+  "whatsapp": "+523221553952",
+  "phone": "+523221553952",
+  "public_email": "veronica.perezarroyo@gmail.com",
+  "instagram": "https://instagram.com/unveilmexico",
+  "facebook": "https://Facebook.com/unveilmexicoexperiences/",
+  "tiktok": null,
+  "website": "https://www.unveilmexico.com",
+  "booking_url": "https://www.unveilmexico.com",
+  "google_maps_url": "https://maps.app.goo.gl/6UyqkfutCkthtznk7",
+  "google_reviews_url": "https://www.google.com/search?q=Unveil+Mexico+Opiniones&hl=es-419&gl=mx",
+  "content": {
+    "es": {
+      "short_description": "Unveil México ofrece experiencias culturales íntimas en Puerto Vallarta para viajeros y expats que quieren conectar con las tradiciones mexicanas más allá del tour típico. \n\nLos invitados crean un recuerdo significativo, descubren la historia detrás de él y disfrutan margaritas en un ambiente cálido",
+      "address": "Francisco, Av. Francisco Medina Ascencio 1929-interior 14, Zona Hotelera, Las Glorias, 48333 Puerto Vallarta, Jal.",
+      "opening_hours_text": "Lunes a sábado de 10:00 AM a 7:00 PM",
+      "service_categories": [
+        "Servicios"
+      ],
+      "services": [
+        {
+          "category": "Servicios",
+          "name": "🦋 Experiencia del Día de Muertos"
+        },
+        {
+          "category": "Servicios",
+          "name": "Una experiencia cultural íntima en Puerto Vallarta para descubrir el significado de Día de Muertos y crear un recuerdo s"
+        },
+        {
+          "category": "Servicios",
+          "name": "$1,800 MXN por persona"
+        },
+        {
+          "category": "Servicios",
+          "name": "🇲🇽 Mexican Folk Art Experience"
+        },
+        {
+          "category": "Servicios",
+          "name": "Una experiencia cultural inmersiva para conectar con el arte popular mexicano, conocer la historia detrás de sus símbolo"
+        },
+        {
+          "category": "Servicios",
+          "name": "$1,800 MXN por persona"
+        }
+      ],
+      "policies": [
+        "Las experiencias están sujetas a disponibilidad.",
+        "Se recomienda reservar con anticipación para confirmar fecha y horario.",
+        "Cancelaciones o cambios deben solicitarse con al menos 24 horas de anticipación.",
+        "El precio es de $1,800 MXN por persona."
+      ],
+      "featured_package": {
+        "name": "💥 Promoción para grupos",
+        "description": "Barra libre de margaritas incluida 🤪 para grupos de 4 personas o más al reservar cualquier experiencia cultural privada $1,800 MXN por persona"
+      }
+    },
+    "en": {
+      "short_description": "Unveil México ofrece experiencias culturales íntimas en Puerto Vallarta para viajeros y expats que quieren conectar con las tradiciones mexicanas más allá del tour típico. \n\nLos invitados crean un recuerdo significativo, descubren la historia detrás de él y disfrutan margaritas en un ambiente cálido",
+      "address": "Francisco, Av. Francisco Medina Ascencio 1929-interior 14, Zona Hotelera, Las Glorias, 48333 Puerto Vallarta, Jal.",
+      "opening_hours_text": "Lunes a sábado de 10:00 AM a 7:00 PM",
+      "service_categories": [
+        "Services"
+      ],
+      "services": [
+        {
+          "category": "Services",
+          "name": "🦋 Experiencia del Día de Muertos"
+        },
+        {
+          "category": "Services",
+          "name": "Una experiencia cultural íntima en Puerto Vallarta para descubrir el significado de Día de Muertos y crear un recuerdo s"
+        },
+        {
+          "category": "Services",
+          "name": "$1,800 MXN por persona"
+        },
+        {
+          "category": "Services",
+          "name": "🇲🇽 Mexican Folk Art Experience"
+        },
+        {
+          "category": "Services",
+          "name": "Una experiencia cultural inmersiva para conectar con el arte popular mexicano, conocer la historia detrás de sus símbolo"
+        },
+        {
+          "category": "Services",
+          "name": "$1,800 MXN por persona"
+        }
+      ],
+      "policies": [
+        "Las experiencias están sujetas a disponibilidad.",
+        "Se recomienda reservar con anticipación para confirmar fecha y horario.",
+        "Cancelaciones o cambios deben solicitarse con al menos 24 horas de anticipación.",
+        "El precio es de $1,800 MXN por persona."
+      ],
+      "featured_package": {
+        "name": "💥 Promoción para grupos",
+        "description": "Barra libre de margaritas incluida 🤪 para grupos de 4 personas o más al reservar cualquier experiencia cultural privada $1,800 MXN por persona"
+      }
+    }
+  },
+  "locations": [
+    {
+      "name": "Taller en Mucho Fiesta Plaza",
+      "address": "Francisco, Av. Francisco Medina Ascencio 1929-interior 14, Zona Hotelera, Las Glorias, 48333 Puerto Vallarta, Jal.",
+      "google_maps_url": "https://maps.app.goo.gl/6UyqkfutCkthtznk7"
+    },
+    {
+      "name": "Taller en Terrazo Restaurante Bar",
+      "address": "C. Mina SN-C, Proyecto escola, Centro, 48300 Puerto Vallarta, Jal.",
+      "google_maps_url": "https://maps.app.goo.gl/R2DFwE6V2pVbwMpL8"
+    }
+  ]
+}

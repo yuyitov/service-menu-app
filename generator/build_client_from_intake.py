@@ -38,6 +38,7 @@ import os
 import re
 import subprocess
 import sys
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -222,6 +223,75 @@ def social_url(value: str, base: str, handle_prefix: str = "") -> str | None:
 
 LANG_NAMES = {"es": "Spanish", "en": "English"}
 
+SPANISH_MARKER_WORDS = {
+    "artesanias",
+    "cancela",
+    "cancelaciones",
+    "conozcan",
+    "creando",
+    "cultura",
+    "descubre",
+    "divierten",
+    "economia",
+    "experiencia",
+    "extranjeros",
+    "mientras",
+    "muertos",
+    "politicas",
+    "servicios",
+}
+
+SPANISH_MARKER_PHRASES = (
+    " al menos ",
+    " antes de tu ",
+    " dia de muertos",
+    " por persona",
+    " para que ",
+    " tu experiencia",
+)
+
+
+def plain_latin(value) -> str:
+    text = unicodedata.normalize("NFD", str(value or ""))
+    text = "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
+    return text.lower()
+
+
+def spanish_signal_score(text: str) -> int:
+    plain = f" {plain_latin(text)} "
+    score = sum(2 for phrase in SPANISH_MARKER_PHRASES if phrase in plain)
+    words = set(re.findall(r"[a-z]+", plain))
+    score += sum(1 for word in SPANISH_MARKER_WORDS if word in words)
+    return score
+
+
+def content_text(block: dict) -> str:
+    parts = [
+        block.get("short_description", ""),
+        block.get("opening_hours_text", ""),
+    ]
+    parts.extend(block.get("service_categories") or [])
+    for svc in block.get("services") or []:
+        if isinstance(svc, dict):
+            parts.extend(
+                [
+                    svc.get("category", ""),
+                    svc.get("name", ""),
+                    svc.get("description", ""),
+                ]
+            )
+    parts.extend(block.get("policies") or [])
+    featured = block.get("featured_package")
+    if isinstance(featured, dict):
+        parts.extend(
+            [
+                featured.get("name", ""),
+                featured.get("description", ""),
+                featured.get("price_label", ""),
+            ]
+        )
+    return " ".join(str(part) for part in parts if part)
+
 
 def translate_block(source_lang: str, target_lang: str, fields: dict) -> dict | None:
     """Translate short_description/services/policies/featured via OpenAI.
@@ -392,11 +462,21 @@ def main() -> int:
     if len(locations) > 1:
         client["locations"] = locations
 
-    # The intake is authored in one language (default_language); translate the
-    # other one via OpenAI when OPENAI_API_KEY is configured. On any failure
-    # this just leaves the source-language text in both, unchanged from v1.
-    other_lang = "en" if default_language == "es" else "es"
-    apply_translation(client["content"], default_language, other_lang)
+    # The intake is usually authored in default_language. If the customer asks
+    # for English first but wrote the intake in Spanish, treat Spanish as the
+    # source so the default English page is actually translated before publish.
+    source_lang = default_language
+    if default_language == "en" and spanish_signal_score(content_text(client["content"]["en"])) >= 5:
+        source_lang = "es"
+
+    other_lang = "en" if source_lang == "es" else "es"
+    apply_translation(client["content"], source_lang, other_lang)
+
+    if default_language == "en" and spanish_signal_score(content_text(client["content"]["en"])) >= 5:
+        fail(
+            "default_language is 'en' but the English page still looks Spanish; "
+            "set OPENAI_API_KEY or translate the intake manually before publishing"
+        )
 
     if not (client["whatsapp"] or client["phone"] or client["public_email"] or client["booking_url"]):
         fail("no public contact (whatsapp/phone/email/booking) — manual review required")

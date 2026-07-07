@@ -45,6 +45,7 @@ import io
 import json
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 try:
@@ -208,6 +209,92 @@ def mailto_href(value):
 # --------------------------------------------------------------------------- #
 # Validation
 # --------------------------------------------------------------------------- #
+_SPANISH_MARKER_WORDS = {
+    "artesanias",
+    "cancela",
+    "cancelaciones",
+    "conozcan",
+    "creando",
+    "cultura",
+    "descubre",
+    "divierten",
+    "economia",
+    "experiencia",
+    "extranjeros",
+    "mientras",
+    "muertos",
+    "politicas",
+    "servicios",
+}
+
+_SPANISH_MARKER_PHRASES = (
+    " al menos ",
+    " antes de tu ",
+    " dia de muertos",
+    " por persona",
+    " para que ",
+    " tu experiencia",
+)
+
+
+def _plain_latin(value) -> str:
+    """Lowercase text with accents removed for lightweight language checks."""
+    text = unicodedata.normalize("NFD", str(value or ""))
+    text = "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
+    return text.lower()
+
+
+def _content_text(block: dict) -> str:
+    """Collect visible content fields that should match the block language."""
+    parts = [
+        block.get("short_description", ""),
+        block.get("opening_hours_text", ""),
+    ]
+    parts.extend(block.get("service_categories") or [])
+    for svc in block.get("services") or []:
+        if isinstance(svc, dict):
+            parts.extend(
+                [
+                    svc.get("category", ""),
+                    svc.get("name", ""),
+                    svc.get("description", ""),
+                ]
+            )
+    parts.extend(block.get("policies") or [])
+    featured = block.get("featured_package")
+    if isinstance(featured, dict):
+        parts.extend(
+            [
+                featured.get("name", ""),
+                featured.get("description", ""),
+                featured.get("price_label", ""),
+            ]
+        )
+    return " ".join(str(part) for part in parts if part)
+
+
+def _spanish_signal_score(text: str) -> int:
+    plain = f" {_plain_latin(text)} "
+    score = sum(2 for phrase in _SPANISH_MARKER_PHRASES if phrase in plain)
+    words = set(re.findall(r"[a-z]+", plain))
+    score += sum(1 for word in _SPANISH_MARKER_WORDS if word in words)
+    return score
+
+
+def validate_language_quality(payload: dict) -> None:
+    """Catch obvious untranslated English blocks before publishing."""
+    block = payload.get("content", {}).get("en")
+    if not isinstance(block, dict):
+        return
+    score = _spanish_signal_score(_content_text(block))
+    if score >= 5:
+        raise ValidationError(
+            "Cliente: content.en parece contener texto en espanol. "
+            "Traduce descripcion, servicios, horarios, politicas y destacado "
+            "antes de publicar."
+        )
+
+
 def validate_client(payload: dict) -> None:
     """Validate a bilingual real-client payload (client_payload_public v1)."""
     if not str(payload.get("public_slug", "")).strip():
@@ -248,6 +335,7 @@ def validate_client(payload: dict) -> None:
                 raise ValidationError(
                     f"Cliente: content.{lang}.services[{i}] requiere al menos 'name'."
                 )
+    validate_language_quality(payload)
 
 
 # --------------------------------------------------------------------------- #

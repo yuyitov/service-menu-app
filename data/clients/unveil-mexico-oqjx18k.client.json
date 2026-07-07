@@ -37,33 +37,35 @@
         "Cancela al menos 48 horas antes de tu experiencia."
       ],
       "featured_package": {
-        "name": "$1,800 MX por persona",
-        "description": ""
+        "name": "Experiencia de souvenir mexicano",
+        "description": "Crea tu propio souvenir mientras descubres la cultura mexicana.",
+        "price_label": "$1,800 MXN por persona"
       }
     },
     "en": {
-      "short_description": "Experiencias mexicanas para que los extranjeros conozcan la cultura mexicana mientras se divierten creando su propio souvenir y apoyando la economía local.",
+      "short_description": "Mexican experiences for international visitors to discover local culture while having fun, creating their own souvenir, and supporting the local economy.",
       "address": "Av. Francisco Medina Ascencio 1929, Zona hotelera, Las Glorias, 48333. Puerto Vallarta.",
-      "opening_hours_text": "10:00 AM a 7:00 PM",
+      "opening_hours_text": "10:00 AM to 7:00 PM",
       "service_categories": [
         "Services"
       ],
       "services": [
         {
           "category": "Services",
-          "name": "Descubre las Artesanías Mexicanas más populares"
+          "name": "Discover Mexico's most popular handicrafts"
         },
         {
           "category": "Services",
-          "name": "Día de Muertos, una experiencia Cultural"
+          "name": "Day of the Dead, a cultural experience"
         }
       ],
       "policies": [
-        "Cancela al menos 48 horas antes de tu experiencia."
+        "Cancel at least 48 hours before your experience."
       ],
       "featured_package": {
-        "name": "$1,800 MX por persona",
-        "description": ""
+        "name": "Mexican souvenir experience",
+        "description": "Create your own souvenir while discovering Mexican culture.",
+        "price_label": "$1,800 MXN per person"
       }
     }
   }

@@ -929,9 +929,13 @@ def build_info(payload: dict, s: dict) -> str:
 
     hours = str(payload.get("opening_hours_text", "") or "").strip()
     if hours:
+        # Un renglon por linea del payload (p. ej. un dia por renglon).
+        hours_html = "<br>".join(
+            esc(line.strip()) for line in hours.splitlines() if line.strip()
+        )
         rows.append(
             f'<div class="info-row" data-reveal><h3>{s["hours_title"]}</h3>'
-            f'<p>{esc(hours)}</p></div>'
+            f'<p>{hours_html}</p></div>'
         )
 
     service_area = str(payload.get("service_area_text", "") or "").strip()

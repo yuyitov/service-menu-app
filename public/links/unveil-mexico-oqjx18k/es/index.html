@@ -173,11 +173,18 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 .menu-cat__rule{flex:1;height:1px;background:var(--hair)}
 .mrow{display:flex;align-items:baseline;gap:10px;padding:14px 0;border-bottom:1px solid var(--hair)}
 .mrow:last-child{border-bottom:0}
+.mrow>div{min-width:0}
 .mrow__name{font-weight:400;font-size:15.5px}
 .mrow__desc{display:block;color:var(--soft);margin-top:3px;font-style:italic;
   font-family:var(--serif);font-size:15px}
 .mrow__dots{flex:1;border-bottom:1px dotted var(--hair);transform:translateY(-4px);min-width:24px}
 .mrow__price{font-family:var(--serif);font-size:18px;color:var(--accent);white-space:nowrap}
+
+@media (max-width:560px){
+  .mrow{display:block}
+  .mrow__dots{display:none}
+  .mrow__price{display:block;margin-top:6px;white-space:normal}
+}
 
 /* ---------- destacado (firma de la casa) ---------- */
 .section--featured{padding-top:0}
@@ -224,6 +231,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 .qrbox img{width:180px;height:180px;margin:0 auto}
 .share__url{display:inline-block;margin-top:18px;font-size:14px;color:var(--accent);
   text-decoration:none;word-break:break-all;border-bottom:1px solid var(--hair);padding-bottom:2px}
+.share__actions{display:flex;justify-content:center;margin-top:18px}
 
 /* ---------- footer ---------- */
 .footer{padding:56px 0 128px;text-align:center;color:var(--soft);font-size:12.5px;letter-spacing:.06em}
@@ -286,8 +294,8 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
   <section class="section section--featured" data-theme="base"><div class="shell"><div class="ritual" data-reveal><div class="ritual__in"><span class="ritual__badge">Destacado</span><h3 class="ritual__name serif">Experiencia de souvenir mexicano</h3><p class="ritual__desc">Crea tu propio souvenir mientras descubres la cultura mexicana.</p><div class="ritual__price">$1,800 MXN por persona</div></div></div></div></section>
   <section class="section" data-theme="alt"><div class="shell"><p class="eyebrow" data-reveal>Detalles</p><h2 data-reveal>Planea tu <em>visita</em></h2><div class="info-grid"><div class="info-row" data-reveal><h3>Horarios</h3><p>10:00 AM a 7:00 PM</p></div><div class="info-row" data-reveal><h3>Dónde estamos</h3><p>Av. Francisco Medina Ascencio 1929, Zona hotelera, Las Glorias, 48333. Puerto Vallarta.<br><a class="mapl" href="https://maps.app.goo.gl/UDxo3oS6VveBA29E7" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a></p></div><div class="info-row" data-reveal><h3>Políticas</h3><ul><li>Cancela al menos 48 horas antes de tu experiencia.</li></ul></div><div class="info-row" data-reveal><h3>Enlaces</h3><div class="cta-row"><a class="btn btn--ghost btn--sm" href="tel:+523221553952" target="_blank" rel="noopener noreferrer">Llamar</a><a class="btn btn--ghost btn--sm" href="https://www.unveilmexico.com" target="_blank" rel="noopener noreferrer">Reservar en linea</a><a class="btn btn--ghost btn--sm" href="mailto:casinosmanager.mx@gmail.com" target="_blank" rel="noopener noreferrer">Enviar correo</a><a class="btn btn--ghost btn--sm" href="https://instagram.com/unveilmexico" target="_blank" rel="noopener noreferrer">Instagram</a><a class="btn btn--ghost btn--sm" href="https://www.facebook.com/UnveilMexicoExperiences/" target="_blank" rel="noopener noreferrer">Facebook</a><a class="btn btn--ghost btn--sm" href="https://maps.app.goo.gl/UDxo3oS6VveBA29E7" target="_blank" rel="noopener noreferrer">Google Maps</a><a class="btn btn--ghost btn--sm" href="https://search.google.com/local/writereview?placeid=ChIJzwIHIuifQCMR_FNmFf52puE" target="_blank" rel="noopener noreferrer">Google Reviews</a></div></div></div></div></section>
 
-  <section class="section share" id="compartir" data-theme="base"><div class="shell"><p class="eyebrow" data-reveal>Comparte</p><h2 data-reveal>Llévanos <em>contigo</em></h2><p class="lead" data-reveal>Escanea el código o comparte el link directo.</p><div class="qrbox" data-reveal><img src="../qr.svg" alt="Codigo QR de https://www.hmulink.com/links/unveil-mexico-oqjx18k/" width="180" height="180"></div><a class="share__url" href="https://www.hmulink.com/links/unveil-mexico-oqjx18k/" target="_blank" rel="noopener noreferrer">hmulink.com/links/unveil-mexico-oqjx18k</a></div></section>
-  <footer class="footer"><span class="serif">Unveil México</span>HMU Link</footer>
+  <section class="section share" id="compartir" data-theme="base"><div class="shell"><p class="eyebrow" data-reveal>Comparte</p><h2 data-reveal>Llévanos <em>contigo</em></h2><p class="lead" data-reveal>Escanea el código o comparte el link directo.</p><div class="qrbox" data-reveal><img src="../qr.svg" alt="Codigo QR de https://www.hmulink.com/links/unveil-mexico-oqjx18k/" width="180" height="180"></div><a class="share__url" href="https://www.hmulink.com/links/unveil-mexico-oqjx18k/" target="_blank" rel="noopener noreferrer">hmulink.com/links/unveil-mexico-oqjx18k</a><div class="share__actions"><button class="btn btn--solid btn--sm share-btn" type="button" data-share-url="https://www.hmulink.com/links/unveil-mexico-oqjx18k/" data-share-title="https://www.hmulink.com/links/unveil-mexico-oqjx18k/" data-copied="Link copiado">Compartir link</button></div></div></section>
+  <footer class="footer"><span class="serif">Unveil México</span>Hecho con HMU Link</footer>
 </div>
 
 <div class="dock" id="dock"><a href="https://wa.me/523221553952" target="_blank" rel="noopener noreferrer">Reservar por WhatsApp</a></div>
@@ -399,6 +407,24 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
       b.addEventListener('mouseleave',function(){gsap.to(b,{x:0,y:0,duration:.5,ease:'elastic.out(1,.4)'})});
     });
   }
+
+  doc.querySelectorAll('.share-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var url=btn.getAttribute('data-share-url');
+      var original=btn.textContent;
+      var copied=btn.getAttribute('data-copied')||original;
+      if(navigator.share){
+        navigator.share({title:btn.getAttribute('data-share-title')||doc.title,url:url}).catch(function(){});
+        return;
+      }
+      if(navigator.clipboard&&url){
+        navigator.clipboard.writeText(url).then(function(){
+          btn.textContent=copied;
+          setTimeout(function(){btn.textContent=original},1600);
+        });
+      }
+    });
+  });
 })();
 </script>
 </body>

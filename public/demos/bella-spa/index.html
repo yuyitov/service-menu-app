@@ -170,11 +170,18 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 .menu-cat__rule{flex:1;height:1px;background:var(--hair)}
 .mrow{display:flex;align-items:baseline;gap:10px;padding:14px 0;border-bottom:1px solid var(--hair)}
 .mrow:last-child{border-bottom:0}
+.mrow>div{min-width:0}
 .mrow__name{font-weight:400;font-size:15.5px}
 .mrow__desc{display:block;color:var(--soft);margin-top:3px;font-style:italic;
   font-family:var(--serif);font-size:15px}
 .mrow__dots{flex:1;border-bottom:1px dotted var(--hair);transform:translateY(-4px);min-width:24px}
 .mrow__price{font-family:var(--serif);font-size:18px;color:var(--accent);white-space:nowrap}
+
+@media (max-width:560px){
+  .mrow{display:block}
+  .mrow__dots{display:none}
+  .mrow__price{display:block;margin-top:6px;white-space:normal}
+}
 
 /* ---------- destacado (firma de la casa) ---------- */
 .section--featured{padding-top:0}
@@ -221,6 +228,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 .qrbox img{width:180px;height:180px;margin:0 auto}
 .share__url{display:inline-block;margin-top:18px;font-size:14px;color:var(--accent);
   text-decoration:none;word-break:break-all;border-bottom:1px solid var(--hair);padding-bottom:2px}
+.share__actions{display:flex;justify-content:center;margin-top:18px}
 
 /* ---------- footer ---------- */
 .footer{padding:56px 0 128px;text-align:center;color:var(--soft);font-size:12.5px;letter-spacing:.06em}
@@ -283,8 +291,8 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
   <section class="section section--featured" data-theme="base"><div class="shell"><div class="ritual" data-reveal><div class="ritual__in"><span class="ritual__badge">Destacado</span><h3 class="ritual__name serif">Día de Spa Completo</h3><p class="ritual__desc">Facial + masaje 60 min + acceso a áreas húmedas &amp; té de cortesía</p><div class="ritual__price">$1,900 MXN</div></div></div></div></section>
   <section class="section" data-theme="alt"><div class="shell"><p class="eyebrow" data-reveal>Detalles</p><h2 data-reveal>Planea tu <em>visita</em></h2><div class="info-grid"><div class="info-row" data-reveal><h3>Horarios</h3><p>Lun–Sáb 10:00–20:00 · Dom 11:00–17:00</p></div><div class="info-row" data-reveal><h3>Dónde estamos</h3><p>Av. Reforma 123, Col. Juárez, CDMX<br><a class="mapl" href="https://maps.google.com/?q=Bella+Spa+Wellness+Demo" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a></p></div><div class="info-row" data-reveal><h3>Políticas</h3><ul><li>Cancelaciones con 24 h de anticipación.</li><li>Llega 10 min antes de tu cita.</li><li>Pago en efectivo o tarjeta al finalizar el servicio.</li></ul></div><div class="info-row" data-reveal><h3>Enlaces</h3><div class="cta-row"><a class="btn btn--ghost btn--sm" href="https://instagram.com/bellaspa.demo" target="_blank" rel="noopener noreferrer">Instagram</a><a class="btn btn--ghost btn--sm" href="https://maps.google.com/?q=Bella+Spa+Wellness+Demo" target="_blank" rel="noopener noreferrer">Google Maps</a><a class="btn btn--ghost btn--sm" href="https://g.page/r/bella-spa-demo/review" target="_blank" rel="noopener noreferrer">Google Reviews</a></div></div></div></div></section>
 
-  <section class="section share" id="compartir" data-theme="base"><div class="shell"><p class="eyebrow" data-reveal>Comparte</p><h2 data-reveal>Llévanos <em>contigo</em></h2><p class="lead" data-reveal>Escanea el código o comparte el link directo.</p><div class="qrbox" data-reveal><img src="qr.svg" alt="Codigo QR de https://www.hmulink.com/demos/bella-spa/" width="180" height="180"></div><a class="share__url" href="https://www.hmulink.com/demos/bella-spa/" target="_blank" rel="noopener noreferrer">hmulink.com/demos/bella-spa</a></div></section>
-  <footer class="footer"><span class="serif">Bella Spa &amp; Wellness</span>HMU Link - Demo</footer>
+  <section class="section share" id="compartir" data-theme="base"><div class="shell"><p class="eyebrow" data-reveal>Comparte</p><h2 data-reveal>Llévanos <em>contigo</em></h2><p class="lead" data-reveal>Escanea el código o comparte el link directo.</p><div class="qrbox" data-reveal><img src="qr.svg" alt="Codigo QR de https://www.hmulink.com/demos/bella-spa/" width="180" height="180"></div><a class="share__url" href="https://www.hmulink.com/demos/bella-spa/" target="_blank" rel="noopener noreferrer">hmulink.com/demos/bella-spa</a><div class="share__actions"><button class="btn btn--solid btn--sm share-btn" type="button" data-share-url="https://www.hmulink.com/demos/bella-spa/" data-share-title="https://www.hmulink.com/demos/bella-spa/" data-copied="Link copiado">Compartir link</button></div></div></section>
+  <footer class="footer"><span class="serif">Bella Spa &amp; Wellness</span>Demo hecho con HMU Link</footer>
 </div>
 
 <div class="dock" id="dock"><a href="https://wa.me/525512345678" target="_blank" rel="noopener noreferrer">Reservar por WhatsApp</a></div>
@@ -396,6 +404,24 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
       b.addEventListener('mouseleave',function(){gsap.to(b,{x:0,y:0,duration:.5,ease:'elastic.out(1,.4)'})});
     });
   }
+
+  doc.querySelectorAll('.share-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var url=btn.getAttribute('data-share-url');
+      var original=btn.textContent;
+      var copied=btn.getAttribute('data-copied')||original;
+      if(navigator.share){
+        navigator.share({title:btn.getAttribute('data-share-title')||doc.title,url:url}).catch(function(){});
+        return;
+      }
+      if(navigator.clipboard&&url){
+        navigator.clipboard.writeText(url).then(function(){
+          btn.textContent=copied;
+          setTimeout(function(){btn.textContent=original},1600);
+        });
+      }
+    });
+  });
 })();
 </script>
 </body>

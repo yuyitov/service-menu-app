@@ -132,6 +132,10 @@ STRINGS = {
         "share_eyebrow": "Comparte",
         "share_title_html": "Llévanos <em>contigo</em>",
         "share_lead": "Escanea el código o comparte el link directo.",
+        "share_button": "Compartir link",
+        "share_copied": "Link copiado",
+        "footer_credit": "Hecho con HMU Link",
+        "footer_demo_credit": "Demo hecho con HMU Link",
         "qr_alt": "Codigo QR de",
         "lang_switch": "View this page in English",
     },
@@ -171,6 +175,10 @@ STRINGS = {
         "share_eyebrow": "Share",
         "share_title_html": "Take us <em>with you</em>",
         "share_lead": "Scan the code or share the direct link.",
+        "share_button": "Share link",
+        "share_copied": "Link copied",
+        "footer_credit": "Made with HMU Link",
+        "footer_demo_credit": "Demo made with HMU Link",
         "qr_alt": "QR code for",
         "lang_switch": "Ver esta página en español",
     },
@@ -1042,6 +1050,13 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
         if href
         else f'<span class="share__url">{shown}</span>'
     )
+    share_button = (
+        f'<div class="share__actions"><button class="btn btn--solid btn--sm share-btn" '
+        f'type="button" data-share-url="{href}" data-share-title="{esc(public_url)}" '
+        f'data-copied="{esc(s["share_copied"])}">{s["share_button"]}</button></div>'
+        if href
+        else ""
+    )
     return (
         '<section class="section share" id="compartir" data-theme="base"><div class="shell">'
         f'<p class="eyebrow" data-reveal>{s["share_eyebrow"]}</p>'
@@ -1049,7 +1064,7 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
         f'<p class="lead" data-reveal>{s["share_lead"]}</p>'
         f'<div class="qrbox" data-reveal><img src="{esc(qr_src)}" '
         f'alt="{alt}" width="180" height="180"></div>'
-        f'{link_line}'
+        f'{link_line}{share_button}'
         "</div></section>"
     )
 
@@ -1210,7 +1225,7 @@ def build_client(json_path: Path) -> Path:
         default_lang,
         head_meta=head[default_lang],
         lang_switch_html=switch[default_lang],
-        footer_text="HMU Link",
+        footer_text=STRINGS[default_lang]["footer_credit"],
         share_url=root_url,
         qr_src=QR_ASSET_NAME,
     )
@@ -1219,7 +1234,7 @@ def build_client(json_path: Path) -> Path:
         alt_lang,
         head_meta=head[alt_lang],
         lang_switch_html=switch[alt_lang],
-        footer_text="HMU Link",
+        footer_text=STRINGS[alt_lang]["footer_credit"],
         share_url=root_url,
         qr_src=f"../{QR_ASSET_NAME}",
     )
@@ -1274,7 +1289,7 @@ def build_demo(json_path: Path) -> Path:
         default_lang,
         head_meta=DEMO_HEAD_META,
         lang_switch_html=switch[default_lang],
-        footer_text="HMU Link - Demo",
+        footer_text=STRINGS[default_lang]["footer_demo_credit"],
         share_url=root_url,
         qr_src=QR_ASSET_NAME,
     )
@@ -1283,7 +1298,7 @@ def build_demo(json_path: Path) -> Path:
         alt_lang,
         head_meta=DEMO_HEAD_META,
         lang_switch_html=switch[alt_lang],
-        footer_text="HMU Link - Demo",
+        footer_text=STRINGS[alt_lang]["footer_demo_credit"],
         share_url=root_url,
         qr_src=f"../{QR_ASSET_NAME}",
     )

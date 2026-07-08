@@ -1059,7 +1059,13 @@ function buildHmuPublicPayload(normalized, orderId) {
       'faq',
       'frequently_asked_questions',
       'common_questions',
-      'preguntas_frecuentes'
+      'questions_your_clients_ask',
+      'faq_your_clients_should_see',
+      'frequently_asked_questions_your_clients_should_see',
+      'preguntas_frecuentes',
+      'preguntas_frecuentes_que_tus_clientes_deben_ver',
+      'preguntas_que_tus_clientes_hacen',
+      'preguntas_y_respuestas_frecuentes'
     ]),
     featured_text: answerAny(a, [
       'featured_package_promo_or_signature_offer',

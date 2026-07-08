@@ -44,6 +44,20 @@
         "Cancelaciones o cambios deben solicitarse con al menos 24 horas de anticipacion.",
         "El precio es de $1,800 MXN por persona."
       ],
+      "faq": [
+        {
+          "question": "Necesito reservar con anticipacion?",
+          "answer": "Si. Te recomendamos reservar con anticipacion para confirmar fecha, horario y ubicacion disponible."
+        },
+        {
+          "question": "Donde se realizan las experiencias?",
+          "answer": "Las experiencias pueden realizarse en Mucho Fiesta Plaza o en Terrazo Restaurante Bar, segun disponibilidad."
+        },
+        {
+          "question": "Que incluye la promocion para grupos?",
+          "answer": "Para grupos de 4 personas o mas, la promocion incluye barra libre de margaritas al reservar una experiencia cultural privada."
+        }
+      ],
       "featured_package": {
         "name": "Promocion para grupos",
         "description": "Barra libre de margaritas incluida para grupos de 4 personas o mas al reservar cualquier experiencia cultural privada.",
@@ -76,6 +90,20 @@
         "Advance booking is recommended to confirm date and time.",
         "Cancellations or changes must be requested at least 24 hours in advance.",
         "The price is $1,800 MXN per person."
+      ],
+      "faq": [
+        {
+          "question": "Do I need to book in advance?",
+          "answer": "Yes. We recommend booking in advance to confirm the date, time, and available location."
+        },
+        {
+          "question": "Where do the experiences take place?",
+          "answer": "Experiences can take place at Mucho Fiesta Plaza or Terrazo Restaurante Bar, depending on availability."
+        },
+        {
+          "question": "What is included in the group promotion?",
+          "answer": "For groups of 4 or more, the promotion includes unlimited margaritas when booking a private cultural experience."
+        }
       ],
       "featured_package": {
         "name": "Group promotion",

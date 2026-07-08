@@ -158,11 +158,18 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 .menu-cat__rule{flex:1;height:1px;background:var(--hair)}
 .mrow{display:flex;align-items:baseline;gap:10px;padding:14px 0;border-bottom:1px solid var(--hair)}
 .mrow:last-child{border-bottom:0}
+.mrow>div{min-width:0}
 .mrow__name{font-weight:400;font-size:15.5px}
 .mrow__desc{display:block;color:var(--soft);margin-top:3px;font-style:italic;
   font-family:var(--serif);font-size:15px}
 .mrow__dots{flex:1;border-bottom:1px dotted var(--hair);transform:translateY(-4px);min-width:24px}
 .mrow__price{font-family:var(--serif);font-size:18px;color:var(--accent);white-space:nowrap}
+
+@media (max-width:560px){
+  .mrow{display:block}
+  .mrow__dots{display:none}
+  .mrow__price{display:block;margin-top:6px;white-space:normal}
+}
 
 /* ---------- destacado (firma de la casa) ---------- */
 .section--featured{padding-top:0}
@@ -209,6 +216,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 .qrbox img{width:180px;height:180px;margin:0 auto}
 .share__url{display:inline-block;margin-top:18px;font-size:14px;color:var(--accent);
   text-decoration:none;word-break:break-all;border-bottom:1px solid var(--hair);padding-bottom:2px}
+.share__actions{display:flex;justify-content:center;margin-top:18px}
 
 /* ---------- footer ---------- */
 .footer{padding:56px 0 128px;text-align:center;color:var(--soft);font-size:12.5px;letter-spacing:.06em}
@@ -384,6 +392,24 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
       b.addEventListener('mouseleave',function(){gsap.to(b,{x:0,y:0,duration:.5,ease:'elastic.out(1,.4)'})});
     });
   }
+
+  doc.querySelectorAll('.share-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var url=btn.getAttribute('data-share-url');
+      var original=btn.textContent;
+      var copied=btn.getAttribute('data-copied')||original;
+      if(navigator.share){
+        navigator.share({title:btn.getAttribute('data-share-title')||doc.title,url:url}).catch(function(){});
+        return;
+      }
+      if(navigator.clipboard&&url){
+        navigator.clipboard.writeText(url).then(function(){
+          btn.textContent=copied;
+          setTimeout(function(){btn.textContent=original},1600);
+        });
+      }
+    });
+  });
 })();
 </script>
 </body>

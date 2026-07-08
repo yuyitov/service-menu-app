@@ -7,6 +7,14 @@
   "business_name": "Example Business Name",
   "logo_url": null,
   "primary_image_url": null,
+  "gallery_images": [
+    {
+      "url": "https://example.com/photo-1.jpg"
+    },
+    {
+      "url": "https://example.com/photo-2.jpg"
+    }
+  ],
   "whatsapp": "+52 00 0000 0000",
   "phone": null,
   "public_email": null,

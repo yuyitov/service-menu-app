@@ -858,7 +858,7 @@ function answerAny(answers, keys) {
 }
 
 // Tally FILE_UPLOAD fields arrive as an array of { url, name, mimeType, ... }.
-// Only the first file is used (logo / main photo are single-file fields).
+// Only the first file is used for single-file fields (logo / main photo).
 function answerFileUrl(answers, keys) {
   for (const k of keys) {
     const v = getAnswer(answers, k);
@@ -869,6 +869,22 @@ function answerFileUrl(answers, keys) {
     }
   }
   return '';
+}
+
+function answerFileUrls(answers, keys, limit = 6) {
+  for (const k of keys) {
+    const v = getAnswer(answers, k);
+    if (!Array.isArray(v) || v.length === 0) continue;
+    return v
+      .map((item) => {
+        if (item && typeof item === 'object' && typeof item.url === 'string') return item.url.trim();
+        if (typeof item === 'string') return item.trim();
+        return '';
+      })
+      .filter(Boolean)
+      .slice(0, limit);
+  }
+  return [];
 }
 
 function slugify(text) {
@@ -1052,6 +1068,14 @@ function buildHmuPublicPayload(normalized, orderId) {
     policies_text: answerAny(a, ['policies_your_clients_should_see', 'politicas_que_tus_clientes_deben_ver']),
     logo_url: answerFileUrl(a, ['upload_your_logo', 'sube_tu_logo']),
     image_url: answerFileUrl(a, ['upload_a_main_photo', 'sube_una_foto_principal']),
+    gallery_image_urls: answerFileUrls(a, [
+      'more_photos',
+      'additional_photos',
+      'extra_photos',
+      'mas_fotos',
+      'fotos_adicionales',
+      'fotos_extra'
+    ], 5),
     location_1_name: answerAny(a, ['location_1_name', 'ubicacion_1_nombre']),
     location_2_name: answerAny(a, ['location_2_name', 'ubicacion_2_nombre']),
     location_2_address: answerAny(a, ['location_2_public_address', 'ubicacion_2_direccion_publica']),

@@ -111,6 +111,30 @@ def download_image(url: str, dest_dir: Path, basename: str) -> str | None:
     return filename
 
 
+def download_gallery_images(payload: dict, dest_dir: Path) -> list[str]:
+    """Download the main image plus up to five extra gallery photos."""
+    urls = []
+    main = str(payload.get("image_url", "") or "").strip()
+    if main:
+        urls.append(main)
+    extra = payload.get("gallery_image_urls") or []
+    if isinstance(extra, list):
+        urls.extend(str(url or "").strip() for url in extra)
+
+    files = []
+    seen = set()
+    for url in urls:
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        filename = download_image(url, dest_dir, f"gallery-{len(files) + 1}")
+        if filename:
+            files.append(filename)
+        if len(files) >= 6:
+            break
+    return files
+
+
 def build_locations(payload: dict) -> list[dict]:
     """Assemble the full locations list (1-3) from intake fields.
 
@@ -753,7 +777,7 @@ def main() -> int:
 
     assets_dir = LINKS_DIR / slug / "assets"
     logo_file = download_image(payload.get("logo_url", ""), assets_dir, "logo")
-    hero_file = download_image(payload.get("image_url", ""), assets_dir, "hero")
+    gallery_files = download_gallery_images(payload, assets_dir)
 
     locations = build_locations(payload)
     delivery_pickup_links = parse_public_links(
@@ -770,7 +794,13 @@ def main() -> int:
         "business_type": normalize_business_type(payload.get("business_type", "")),
         "business_name": str(payload.get("business_name", "")).strip()[:120],
         "logo_url": f"{CLIENT_BASE_URL}/{slug}/assets/{logo_file}" if logo_file else None,
-        "primary_image_url": f"{CLIENT_BASE_URL}/{slug}/assets/{hero_file}" if hero_file else None,
+        "primary_image_url": (
+            f"{CLIENT_BASE_URL}/{slug}/assets/{gallery_files[0]}" if gallery_files else None
+        ),
+        "gallery_images": [
+            {"url": f"{CLIENT_BASE_URL}/{slug}/assets/{filename}"}
+            for filename in gallery_files
+        ],
         "whatsapp": str(payload.get("whatsapp", "")).strip() or None,
         "phone": str(payload.get("phone", "")).strip() or None,
         "public_email": str(payload.get("public_email", "")).strip() or None,

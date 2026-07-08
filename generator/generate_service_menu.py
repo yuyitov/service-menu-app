@@ -105,6 +105,9 @@ STRINGS = {
         "btn_booking": "Reservar en linea",
         "btn_maps": "Google Maps",
         "btn_other": "Abrir enlace",
+        "gallery_prev": "Foto anterior",
+        "gallery_next": "Foto siguiente",
+        "gallery_photo": "Foto",
         "delivery_pickup_label": "Delivery / pickup",
         "portfolio_label": "Portafolio",
         "view_menu": "Ver servicios",
@@ -141,6 +144,9 @@ STRINGS = {
         "btn_booking": "Book online",
         "btn_maps": "Google Maps",
         "btn_other": "Open link",
+        "gallery_prev": "Previous photo",
+        "gallery_next": "Next photo",
+        "gallery_photo": "Photo",
         "delivery_pickup_label": "Delivery / pickup",
         "portfolio_label": "Portfolio",
         "view_menu": "See services",
@@ -689,15 +695,62 @@ def build_dock(payload: dict, s: dict) -> str:
     )
 
 
-def build_hero_image(payload: dict) -> str:
-    """Optional full-width photo band under the hero (scroll-scale reveal)."""
-    href = safe_href(payload.get("primary_image_url"))
-    if not href:
+def _gallery_images(payload: dict) -> list[str]:
+    images = []
+    raw = payload.get("gallery_images")
+    if isinstance(raw, list):
+        for item in raw:
+            url = item.get("url") if isinstance(item, dict) else item
+            href = safe_href(url)
+            if href and href not in images:
+                images.append(href)
+            if len(images) >= 6:
+                break
+    primary = safe_href(payload.get("primary_image_url"))
+    if primary and primary not in images:
+        images.insert(0, primary)
+    return images[:6]
+
+
+def build_hero_image(payload: dict, s: dict) -> str:
+    """Optional full-width photo band under the hero; becomes a carousel at 2+ photos."""
+    images = _gallery_images(payload)
+    if not images:
         return ""
     alt = esc(payload.get("business_name"))
+    if len(images) == 1:
+        return (
+            '<div class="shell figure" data-reveal>'
+            '<div class="figure__viewport">'
+            f'<img class="figure__media" src="{images[0]}" alt="{alt}" loading="lazy">'
+            '</div></div>'
+        )
+
+    slides = []
+    dots = []
+    for i, href in enumerate(images):
+        load = "eager" if i == 0 else "lazy"
+        slides.append(
+            '<div class="figure__slide">'
+            f'<img class="figure__media" src="{href}" alt="{alt}" loading="{load}">'
+            '</div>'
+        )
+        active = " is-active" if i == 0 else ""
+        dots.append(
+            f'<button class="gallery-dot{active}" type="button" '
+            f'aria-label="{esc(s["gallery_photo"])} {i + 1}"></button>'
+        )
     return (
-        f'<div class="shell figure" data-reveal><img src="{href}" alt="{alt}" '
-        'loading="lazy"></div>'
+        '<div class="shell figure figure--carousel" data-reveal data-gallery>'
+        '<div class="figure__viewport">'
+        '<div class="figure__track">'
+        f'{"".join(slides)}'
+        '</div>'
+        f'<button class="gallery-btn gallery-btn--prev" type="button" aria-label="{esc(s["gallery_prev"])}">‹</button>'
+        f'<button class="gallery-btn gallery-btn--next" type="button" aria-label="{esc(s["gallery_next"])}">›</button>'
+        '</div>'
+        f'<div class="gallery-dots">{"".join(dots)}</div>'
+        '</div>'
     )
 
 
@@ -1052,7 +1105,7 @@ def render_view(
         "{{HERO_KICKER_BLOCK}}": build_hero_kicker(view),
         "{{HERO_TITLE_BLOCK}}": build_hero_title(view),
         "{{CTA_ROW_BLOCK}}": build_cta_row(view, s),
-        "{{HERO_IMAGE_BLOCK}}": build_hero_image(view),
+        "{{HERO_IMAGE_BLOCK}}": build_hero_image(view, s),
         "{{MARQUEE_BLOCK}}": build_marquee(view),
         "{{SERVICES_BLOCK}}": build_services(view, s),
         "{{FEATURED_BLOCK}}": build_featured(view, s),
@@ -1083,6 +1136,7 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "business_type",
             "logo_url",
             "primary_image_url",
+            "gallery_images",
             "whatsapp",
             "phone",
             "public_email",

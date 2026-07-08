@@ -450,6 +450,9 @@ def normalize_primary_cta(value: str) -> str | None:
         "web": "website",
         "sitio_web": "website",
         "site": "website",
+        "tiktok": "tiktok",
+        "tik_tok": "tiktok",
+        "tt": "tiktok",
         "email": "email",
         "mail": "email",
         "correo": "email",
@@ -842,6 +845,7 @@ def main() -> int:
         or client["public_email"]
         or client["booking_url"]
         or client["website"]
+        or client["tiktok"]
         or client["other_public_link"]
         or client["delivery_pickup_links"]
         or client["portfolio_link"]

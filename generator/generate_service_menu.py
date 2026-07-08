@@ -89,7 +89,7 @@ CLIENT_LANGS = ("es", "en")
 
 # URL schemes we are willing to emit into href attributes.
 _ALLOWED_SCHEMES = ("http://", "https://")
-PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "email", "other", "maps")
+PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "tiktok", "email", "other", "maps")
 DELIVERY_PICKUP_TYPES = {"food", "retail"}
 PORTFOLIO_TYPES = {"creative", "beauty", "wellness", "professional", "fitness"}
 
@@ -241,6 +241,9 @@ def normalize_primary_cta(value):
         "web": "website",
         "sitio_web": "website",
         "site": "website",
+        "tiktok": "tiktok",
+        "tik_tok": "tiktok",
+        "tt": "tiktok",
         "email": "email",
         "mail": "email",
         "correo": "email",
@@ -400,7 +403,7 @@ def validate_client(payload: dict) -> None:
     if not str(payload.get("business_name", "")).strip():
         raise ValidationError("Cliente: falta business_name.")
 
-    contact_keys = ("whatsapp", "phone", "public_email", "booking_url", "website")
+    contact_keys = ("whatsapp", "phone", "public_email", "booking_url", "website", "tiktok")
     if not any(str(payload.get(k, "") or "").strip() for k in contact_keys):
         has_public_link = bool(
             payload.get("other_public_link")
@@ -501,7 +504,12 @@ def build_hero_kicker(payload: dict) -> str:
     addr = str(payload.get("address", "") or "").strip()
     if not addr:
         return ""
-    parts = [p.strip() for p in addr.split(",") if p.strip()]
+    parts = []
+    for part in addr.split(","):
+        cleaned = re.sub(r"\b(?:c\.?\s*p\.?|cp|zip)\s*[:#-]?\s*", "", part, flags=re.I)
+        cleaned = re.sub(r"\b\d{4,6}\b", "", cleaned).strip(" .,-")
+        if cleaned:
+            parts.append(cleaned)
     if len(parts) >= 2:
         text = f"{parts[-1]} · {parts[-2]}"
     else:
@@ -524,6 +532,9 @@ def _contact_options(payload: dict, s: dict) -> dict:
     web = safe_href(payload.get("website"))
     if web:
         options["website"] = (web, s["btn_website"])
+    tik = safe_href(payload.get("tiktok"))
+    if tik:
+        options["tiktok"] = (tik, "TikTok")
     mail = mailto_href(payload.get("public_email"))
     if mail:
         options["email"] = (mail, s["btn_email"])
@@ -659,6 +670,8 @@ def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
         ("facebook", "Facebook"),
         ("tiktok", "TikTok"),
     ):
+        if key == primary_kind:
+            continue
         href = safe_href(payload.get(key))
         if href:
             links.append((href, label))

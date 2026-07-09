@@ -270,7 +270,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 @keyframes floaty { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 .phone {
   border: 9px solid var(--ink); border-radius: 44px;
-  background: #fffdf9; overflow: hidden;
+  background: var(--ink); overflow: hidden;
   box-shadow: 0 40px 80px -30px rgba(20, 112, 79, 0.4), 0 12px 30px -12px rgba(31, 45, 39, 0.25);
   transition: transform 0.35s ease; transform-style: preserve-3d; will-change: transform;
 }
@@ -279,14 +279,16 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   background: var(--ink); border-radius: 0 0 14px 14px; margin: 0 auto;
   position: relative; z-index: 3;
 }
-.screen { padding: 0; margin-top: -8px; }
+.screen { padding: 0; margin-top: -20px; }
 .m-shot { display: block; width: 100%; height: auto; }
 
-/* Hero style carousel: real demo screenshots cross-fading inside the phone */
+/* Hero style carousel: the incoming screenshot fades in on top of the fully
+   opaque current one, so the phone background never bleeds through mid-fade. */
 .screen { position: relative; }
-.m-shot { opacity: 0; transition: opacity 0.9s ease; }
+.m-shot { opacity: 0; position: relative; }
 .m-shot:not(:first-child) { position: absolute; top: 0; left: 0; }
-.m-shot.is-active { opacity: 1; }
+.m-shot.is-prev { opacity: 1; z-index: 1; }
+.m-shot.is-active { opacity: 1; z-index: 2; transition: opacity 0.9s ease; }
 
 /* Linky mascot peeking beside the phone */
 .mascot {
@@ -1060,14 +1062,18 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     doc.querySelectorAll('.thumb').forEach(function (t) { addTilt(t, 10, 0); });
   }
 
-  /* Hero style carousel: cross-fade the real demo screenshots inside the phone */
+  /* Hero style carousel: the incoming shot fades in over the current one,
+     which stays fully opaque underneath until the fade finishes */
   var shots = doc.querySelectorAll('.screen .m-shot');
   if (shots.length > 1) {
     var shotIdx = 0;
     setInterval(function () {
-      shots[shotIdx].classList.remove('is-active');
+      var prevShot = shots[shotIdx];
+      prevShot.classList.remove('is-active');
+      prevShot.classList.add('is-prev');
       shotIdx = (shotIdx + 1) % shots.length;
       shots[shotIdx].classList.add('is-active');
+      setTimeout(function () { prevShot.classList.remove('is-prev'); }, 950);
     }, 3200);
   }
 

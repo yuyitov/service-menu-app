@@ -264,7 +264,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .hero-chips li::before { content: "✓ "; font-weight: 800; color: var(--avocado-deep); }
 
 /* Demo phone (pure CSS) */
-.scene { position: relative; width: min(430px, 100%); margin: 0 auto; perspective: 1000px; }
+.scene { position: relative; width: min(360px, 100%); margin: 0 auto; perspective: 1000px; }
 .phone-wrap { animation: floaty 6s ease-in-out infinite alternate; width: 262px; margin: 0 auto; }
 @keyframes floaty { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 .phone {
@@ -278,56 +278,12 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   background: var(--ink); border-radius: 0 0 14px 14px; margin: 0 auto;
   position: relative; z-index: 3;
 }
-.screen { padding: 10px 16px 20px; font-size: 0.72rem; margin-top: -8px; }
-.m-head { text-align: center; padding: 14px 0 10px; }
-.m-ava {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 46px; height: 46px; font-size: 1.35rem;
-  background: var(--ocean-soft); border: 2px solid var(--ocean); border-radius: 50%;
-}
-.m-name { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; margin-top: 7px; }
-.m-sub { display: block; color: var(--muted); font-size: 0.68rem; }
-.m-promo {
-  background: var(--banana-soft); border: 1.5px dashed var(--tangerine);
-  color: var(--tangerine-ink); font-weight: 700;
-  border-radius: 12px; padding: 7px 10px; text-align: center; margin: 8px 0 12px;
-  animation: promo-pop 3.2s ease-in-out infinite;
-}
-@keyframes promo-pop { 0%, 88%, 100% { transform: scale(1); } 94% { transform: scale(1.04); } }
-.m-cat { font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.6rem; color: var(--ocean-deep); margin-bottom: 5px; }
-.m-row {
-  display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  padding: 7px 0; border-bottom: 1px solid var(--line);
-}
-.m-row span { color: var(--ink); font-weight: 500; }
-.m-row b { color: var(--pepper); font-weight: 800; }
-.m-wa {
-  margin-top: 13px; background: var(--avocado); color: var(--pepper-ink);
-  font-weight: 800; text-align: center; border-radius: 999px; padding: 9px;
-  box-shadow: 0 3px 0 var(--avocado-deep); font-size: 0.75rem;
-}
-.m-foot { display: flex; justify-content: space-around; color: var(--muted); font-size: 0.64rem; margin-top: 11px; }
+.screen { padding: 0; margin-top: -8px; position: relative; }
 
-/* Abanico de estilos: tres capturas reales enmarcadas como teléfonos ("12 estilos para elegir") */
-.fan { position: relative; width: min(430px, 100%); height: 330px; margin: 8px auto 0; animation: floaty 6s ease-in-out infinite alternate; }
-.fan-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.35s ease; }
-.fan-phone {
-  position: absolute; top: 6px; width: 188px;
-  border: 7px solid var(--ink); border-radius: 30px; overflow: hidden; background: #fffdf9;
-  box-shadow: 0 30px 60px -26px rgba(20, 112, 79, 0.45), 0 10px 26px -14px rgba(31, 45, 39, 0.28);
-  transition: transform 0.45s var(--ease-spring);
-}
-.fan-phone::before {
-  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 58px; height: 14px; background: var(--ink); border-radius: 0 0 10px 10px; z-index: 2;
-}
-.fan-phone img { display: block; width: 100%; height: auto; }
-.fan-phone--c { left: 50%; margin-left: -94px; z-index: 3; }
-.fan-phone--l { left: 0; z-index: 1; transform: rotate(-10deg) translateY(30px) scale(0.9); transform-origin: bottom right; }
-.fan-phone--r { right: 0; z-index: 2; transform: rotate(10deg) translateY(30px) scale(0.9); transform-origin: bottom left; }
-.hero-visual:hover .fan-phone--l { transform: rotate(-13deg) translateY(24px) scale(0.92); }
-.hero-visual:hover .fan-phone--r { transform: rotate(13deg) translateY(24px) scale(0.92); }
-.hero-visual:hover .fan-phone--c { transform: translateY(-6px); }
+/* Carrusel de estilos: capturas reales de las demos en fundido dentro del teléfono */
+.m-shot { display: block; width: 100%; height: auto; opacity: 0; transition: opacity 0.9s ease; }
+.m-shot:not(:first-child) { position: absolute; top: 0; left: 0; }
+.m-shot.is-active { opacity: 1; }
 
 /* Floating chat bubbles */
 .bubble {
@@ -592,9 +548,6 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
   .bubble { max-width: 170px; font-size: 0.74rem; }
   .b1 { top: 1%; left: 0; }
   .b4 { bottom: 1%; right: 0; }
-  .fan { height: 288px; }
-  .fan-phone { width: 150px; border-width: 6px; }
-  .fan-phone--c { margin-left: -75px; }
 }
 
 /* GSAP takes over the entrance choreography when it loads (progressive enhancement):
@@ -603,8 +556,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 .gsap-on .rise,
 .gsap-on .kinetic .kw,
 .gsap-on .bubble,
-.gsap-on .hl,
-.gsap-on .m-promo { animation: none; }
+.gsap-on .hl { animation: none; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
@@ -666,16 +618,13 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <div class="bubble bubble--q b2">«¿Hasta qué hora abren hoy?»</div>
         <div class="bubble b3"><i></i><i></i><i></i></div>
         <div class="bubble b4">✨ 12 estilos para elegir</div>
-        <div class="fan">
-          <div class="fan-inner">
-            <div class="fan-phone fan-phone--l">
-              <img src="../assets/previews/soft-blush.jpg" alt="Studio Blush — una página real de HMU Link" width="188" height="250" loading="lazy">
-            </div>
-            <div class="fan-phone fan-phone--r">
-              <img src="../assets/previews/terracotta-warm.jpg" alt="Café Terra — una página real de HMU Link" width="188" height="250" loading="lazy">
-            </div>
-            <div class="fan-phone fan-phone--c">
-              <img src="../assets/previews/black-gold.jpg" alt="Bella Spa — una página real de HMU Link" width="188" height="250" loading="lazy">
+        <div class="phone-wrap">
+          <div class="phone">
+            <div class="screen">
+              <img class="m-shot is-active" src="../assets/hero-carousel/es/black-gold.jpg" alt="Bella Spa — una página real de HMU Link" width="780" height="1688">
+              <img class="m-shot" src="../assets/hero-carousel/es/soft-blush.jpg" alt="Studio Blush — una página real de HMU Link" width="780" height="1688">
+              <img class="m-shot" src="../assets/hero-carousel/es/electric-slate.jpg" alt="Pulse Fitness Studio — una página real de HMU Link" width="780" height="1688">
+              <img class="m-shot" src="../assets/hero-carousel/es/terracotta-warm.jpg" alt="Café Terra — una página real de HMU Link" width="780" height="1688">
             </div>
           </div>
         </div>
@@ -1091,7 +1040,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     el.addEventListener('pointerleave', function () { el.style.transform = ''; });
   }
   var scene = doc.querySelector('.scene');
-  var phone = doc.querySelector('.fan-inner');
+  var phone = doc.querySelector('.phone');
   if (!reduced && matchMedia('(pointer: fine)').matches) {
     if (scene && phone) {
       scene.addEventListener('pointermove', function (e) {
@@ -1104,6 +1053,17 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     }
     doc.querySelectorAll('.card').forEach(function (c) { addTilt(c, 6, 6); });
     doc.querySelectorAll('.thumb').forEach(function (t) { addTilt(t, 10, 0); });
+  }
+
+  /* Carrusel del hero: fundido entre capturas reales dentro del teléfono */
+  var shots = doc.querySelectorAll('.screen .m-shot');
+  if (shots.length > 1) {
+    var shotIdx = 0;
+    setInterval(function () {
+      shots[shotIdx].classList.remove('is-active');
+      shotIdx = (shotIdx + 1) % shots.length;
+      shots[shotIdx].classList.add('is-active');
+    }, 3200);
   }
 
   /* Style filter pills */
@@ -1132,9 +1092,9 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     tl.fromTo('.hero .cta-row', { y: 26, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 }, 1.25);
     tl.fromTo('.hero-chips li', { y: 18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, stagger: 0.07 }, 1.4);
 
-    /* Act 2: the phone fan rises and the style screens fade in one by one */
+    /* Act 2: the phone rises with a real style page on screen */
     tl.fromTo('.hero-visual', { y: 160, autoAlpha: 0, rotationX: 16, transformPerspective: 900 }, { y: 0, autoAlpha: 1, rotationX: 0, duration: 0.95 }, 0.75);
-    tl.fromTo('.fan-phone', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, stagger: 0.13 }, 1.15);
+    tl.fromTo('.phone-wrap', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 }, 1.15);
 
     /* Act 3: the chaos — question bubbles fly in like falling notifications */
     tl.fromTo('.b1', { x: -180, y: -140, rotation: -14, scale: 0.4, autoAlpha: 0 }, { x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.7, ease: 'back.out(1.7)' }, 1.75);

@@ -115,12 +115,18 @@ async function handleStripeWebhook(request, env) {
   // so every webhook receives every sale. Only checkout.session.completed
   // carries payment_link; payment_intent.succeeded can't be attributed to a
   // product, so it's ignored when the filter is configured.
-  const expectedPaymentLink = (env.STRIPE_PAYMENT_LINK_ID || '').trim();
-  if (expectedPaymentLink) {
+  // Accepts one or more payment link ids (comma-separated) so multiple HMU Link
+  // checkouts — e.g. the USD ($39) and MXN ($699) links — all resolve to this
+  // product while still filtering out other products (MyGuest) on the account.
+  const expectedPaymentLinks = (env.STRIPE_PAYMENT_LINK_ID || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (expectedPaymentLinks.length > 0) {
     if (type !== 'checkout.session.completed') {
       return jsonResponse({ ok: true, ignored: true, reason: 'unattributable_event_type' });
     }
-    if ((session.payment_link || '') !== expectedPaymentLink) {
+    if (!expectedPaymentLinks.includes(session.payment_link || '')) {
       return jsonResponse({ ok: true, ignored: true, reason: 'other_product' });
     }
   } else if (type === 'checkout.session.completed') {

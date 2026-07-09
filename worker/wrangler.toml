@@ -33,10 +33,12 @@ id      = "0743b2af26cd47fb88d4fef62e90a118"
 
 # ─── Environment Variables (no-secret) ────────────────────────────────────────
 [vars]
-# ID del Payment Link de HMU Link (plink_...). Con esto configurado el worker
-# ignora ventas de otros productos de la misma cuenta Stripe (ej. MyGuest).
+# ID(s) del Payment Link de HMU Link (plink_...). Acepta varios separados por
+# coma — p.ej. el link USD ($39) y el MXN ($699) — para que todas las compras de
+# HMU se procesen, ignorando ventas de otros productos de la cuenta (ej. MyGuest).
 # Vacío = filtro apagado (el worker loguea el plink observado para capturarlo).
-STRIPE_PAYMENT_LINK_ID = "plink_1TpW1pG4Nw60erBPpTk296oO"
+# Al crear el link MXN, agrega su plink id aquí:  "plink_USD,plink_MXN"
+STRIPE_PAYMENT_LINK_ID = "plink_1TpW1pG4Nw60erBPpTk296oO,plink_1Tr7IEG4Nw60erBPZ51f4cOC"
 GITHUB_REPO          = "yuyitov/service-menu-app"
 GITHUB_ACTIONS_EVENT = "new-hmu-service-menu"
 TALLY_FORM_URL_EN    = "https://tally.so/r/yPkN5X?order_id="

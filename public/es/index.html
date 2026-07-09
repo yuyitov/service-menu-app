@@ -264,7 +264,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .hero-chips li::before { content: "✓ "; font-weight: 800; color: var(--avocado-deep); }
 
 /* Demo phone (pure CSS) */
-.scene { position: relative; width: min(360px, 100%); margin: 0 auto; perspective: 1000px; }
+.scene { position: relative; width: min(430px, 100%); margin: 0 auto; perspective: 1000px; }
 .phone-wrap { animation: floaty 6s ease-in-out infinite alternate; width: 262px; margin: 0 auto; }
 @keyframes floaty { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 .phone {
@@ -307,6 +307,27 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   box-shadow: 0 3px 0 var(--avocado-deep); font-size: 0.75rem;
 }
 .m-foot { display: flex; justify-content: space-around; color: var(--muted); font-size: 0.64rem; margin-top: 11px; }
+
+/* Abanico de estilos: tres capturas reales enmarcadas como teléfonos ("12 estilos para elegir") */
+.fan { position: relative; width: min(430px, 100%); height: 330px; margin: 8px auto 0; animation: floaty 6s ease-in-out infinite alternate; }
+.fan-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.35s ease; }
+.fan-phone {
+  position: absolute; top: 6px; width: 188px;
+  border: 7px solid var(--ink); border-radius: 30px; overflow: hidden; background: #fffdf9;
+  box-shadow: 0 30px 60px -26px rgba(20, 112, 79, 0.45), 0 10px 26px -14px rgba(31, 45, 39, 0.28);
+  transition: transform 0.45s var(--ease-spring);
+}
+.fan-phone::before {
+  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 58px; height: 14px; background: var(--ink); border-radius: 0 0 10px 10px; z-index: 2;
+}
+.fan-phone img { display: block; width: 100%; height: auto; }
+.fan-phone--c { left: 50%; margin-left: -94px; z-index: 3; }
+.fan-phone--l { left: 0; z-index: 1; transform: rotate(-10deg) translateY(30px) scale(0.9); transform-origin: bottom right; }
+.fan-phone--r { right: 0; z-index: 2; transform: rotate(10deg) translateY(30px) scale(0.9); transform-origin: bottom left; }
+.hero-visual:hover .fan-phone--l { transform: rotate(-13deg) translateY(24px) scale(0.92); }
+.hero-visual:hover .fan-phone--r { transform: rotate(13deg) translateY(24px) scale(0.92); }
+.hero-visual:hover .fan-phone--c { transform: translateY(-6px); }
 
 /* Floating chat bubbles */
 .bubble {
@@ -538,6 +559,20 @@ footer a { color: #bfe0cd; text-decoration: none; }
 footer a:hover { color: var(--banana); }
 footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, 0.12); color: #86ab97; font-size: 0.82rem; }
 
+/* Founder pricing + guarantee */
+.founder-note { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 4px; padding: 6px 14px; border-radius: 999px; background: rgba(255, 224, 130, 0.14); border: 1px solid rgba(255, 224, 130, 0.45); color: var(--banana); font-size: 0.85rem; font-weight: 700; }
+.price-card .price-badges { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 6px 0 2px; text-align: center; }
+.price-card .price-badges li { padding: 7px 13px; font-size: 0.82rem; font-weight: 800; color: var(--pepper-ink); background: var(--banana); border-radius: 999px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18); }
+.price-card .price-badges li::before { content: none; }
+.price-card .guarantee { margin: 12px 0 0; font-size: 0.88rem; color: #cfe9da; }
+.price-card .guarantee b { color: #ffffff; }
+
+/* WhatsApp floating button */
+.wa-fab { position: fixed; right: 18px; bottom: 18px; z-index: 95; display: inline-flex; align-items: center; gap: 9px; padding: 13px 18px; border-radius: 999px; background: #25d366; color: #ffffff; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.wa-fab:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.34); color: #ffffff; }
+.wa-fab svg { width: 22px; height: 22px; fill: currentColor; flex: none; }
+@media (max-width: 640px) { .wa-fab { padding: 14px; right: 14px; bottom: 14px; } .wa-fab span { display: none; } }
+
 /* Desktop */
 @media (min-width: 900px) {
   section { padding: 92px 0; }
@@ -557,6 +592,9 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
   .bubble { max-width: 170px; font-size: 0.74rem; }
   .b1 { top: 1%; left: 0; }
   .b4 { bottom: 1%; right: 0; }
+  .fan { height: 288px; }
+  .fan-phone { width: 150px; border-width: 6px; }
+  .fan-phone--c { margin-left: -75px; }
 }
 
 /* GSAP takes over the entrance choreography when it loads (progressive enhancement):
@@ -596,7 +634,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span lang="es-MX">ES</span>
         <a href="../" hreflang="en-US" lang="en-US">EN</a>
       </div>
-      <a class="btn-mini" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Quiero mi link</a>
+      <a class="btn-mini" href="https://buy.stripe.com/14A3cv1Eyh0y4xQ9H4ffy05" target="_blank" rel="noopener noreferrer">Quiero mi link</a>
     </div>
   </div>
 </header>
@@ -613,7 +651,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       <p class="slogan rise" style="--d:.3s">Conecta tu negocio.</p>
       <p class="sub rise" style="--d:.4s">HMU Link crea una página digital para que tus clientes vean tus servicios, precios, promociones y te contacten o reserven desde un solo link.</p>
       <div class="cta-row rise" style="--d:.5s">
-        <a class="btn btn--primary" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Quiero mi HMU Link <span class="arr" aria-hidden="true">→</span></a>
+        <a class="btn btn--primary" href="https://buy.stripe.com/14A3cv1Eyh0y4xQ9H4ffy05" target="_blank" rel="noopener noreferrer">Quiero mi HMU Link <span class="arr" aria-hidden="true">→</span></a>
         <a class="btn btn--secondary" href="#estilos">Ver ejemplos de páginas</a>
       </div>
       <ul class="hero-chips rise" style="--d:.62s">
@@ -627,22 +665,17 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <div class="bubble bubble--q b1">🙋‍♀️ «Hola, ¿me pasas la lista de precios?»</div>
         <div class="bubble bubble--q b2">«¿Hasta qué hora abren hoy?»</div>
         <div class="bubble b3"><i></i><i></i><i></i></div>
-        <div class="bubble b4">✨ hmu.link/estetica-luna</div>
-        <div class="phone-wrap">
-          <div class="phone">
-            <div class="screen">
-              <div class="m-head">
-                <span class="m-ava">💇‍♀️</span>
-                <span class="m-name">Estética Luna</span>
-                <span class="m-sub">Corte · Color · Uñas · CDMX</span>
-              </div>
-              <div class="m-promo">🎉 Promo del mes: color −20%</div>
-              <div class="m-cat">Servicios</div>
-              <div class="m-row"><span>Corte + peinado</span><b>$250</b></div>
-              <div class="m-row"><span>Color completo</span><b>$890</b></div>
-              <div class="m-row"><span>Manicure gel</span><b>$320</b></div>
-              <div class="m-wa">💬 Reservar por WhatsApp</div>
-              <div class="m-foot"><span>📍 Roma Norte</span><span>⭐ 4.9</span><span>🕐 10–20 h</span></div>
+        <div class="bubble b4">✨ 12 estilos para elegir</div>
+        <div class="fan">
+          <div class="fan-inner">
+            <div class="fan-phone fan-phone--l">
+              <img src="../assets/previews/soft-blush.jpg" alt="Studio Blush — una página real de HMU Link" width="188" height="250" loading="lazy">
+            </div>
+            <div class="fan-phone fan-phone--r">
+              <img src="../assets/previews/terracotta-warm.jpg" alt="Café Terra — una página real de HMU Link" width="188" height="250" loading="lazy">
+            </div>
+            <div class="fan-phone fan-phone--c">
+              <img src="../assets/previews/black-gold.jpg" alt="Bella Spa — una página real de HMU Link" width="188" height="250" loading="lazy">
             </div>
           </div>
         </div>
@@ -861,14 +894,20 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <div class="wrap">
       <span class="blob blob--banana" aria-hidden="true"></span>
       <span class="blob blob--pink" aria-hidden="true"></span>
-      <span class="kicker" data-reveal>Precio de lanzamiento</span>
+      <span class="kicker" data-reveal>Precio fundador</span>
       <h2 data-reveal>Pago único, sin mensualidades</h2>
-      <p class="lead" data-reveal>Pago único, disponible ahora.</p>
+      <p class="lead" data-reveal>Los primeros 20 negocios entran al precio fundador. Al cerrar la venta 20, sube a $999 MXN — anunciado desde hoy, sin trucos.</p>
       <div class="price-single" data-reveal>
         <div class="price-card">
+          <p class="founder-note">🔥 Primeros 20 negocios: $699 · después $999</p>
           <h3>Tu HMU Link</h3>
-          <div class="amount"><small>MXN aprox.</small> $680</div>
-          <p class="amount-note">Precio base: $39 USD. Stripe ajusta el monto exacto a tu moneda local al momento de pagar.</p>
+          <div class="amount"><small>MXN</small> $699</div>
+          <p class="amount-note">Pago único con tarjeta, en pesos mexicanos. Sin mensualidades.</p>
+          <ul class="price-badges">
+            <li>💳 Pago único</li>
+            <li>🚫 Sin suscripciones</li>
+            <li>⚡ Entrega el mismo día</li>
+          </ul>
           <ul>
             <li>1 página digital publicada</li>
             <li>1 estilo visual a elegir</li>
@@ -876,7 +915,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
             <li>Código QR + link compartible</li>
             <li>1 modificación incluida</li>
           </ul>
-          <a class="btn btn--primary" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Quiero mi HMU Link <span aria-hidden="true">→</span></a>
+          <a class="btn btn--primary" href="https://buy.stripe.com/14A3cv1Eyh0y4xQ9H4ffy05" target="_blank" rel="noopener noreferrer">Quiero mi HMU Link <span aria-hidden="true">→</span></a>
+          <p class="guarantee"><b>Garantía:</b> si tu página no te encanta, te devolvemos tu dinero.</p>
         </div>
       </div>
       <p class="fine" data-reveal>Pago único por la creación y publicación de tu página. ¿Necesitas un cambio después? Las modificaciones extra cuestan aprox. $40 MXN ($3 USD).</p>
@@ -929,6 +969,10 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <div class="fa">Sí. Tu paquete incluye una modificación sin costo. Después de usarla, los cambios adicionales se cobran aparte como modificación extra.</div>
       </details>
       <details>
+        <summary>¿Y si no me gusta mi página?</summary>
+        <div class="fa">Primero la corregimos sin costo: si algo salió mal de nuestro lado, lo arreglamos gratis. Y si aun así no te encanta, te devolvemos tu dinero. Así de simple.</div>
+      </details>
+      <details>
         <summary>¿Incluye reservas?</summary>
         <div class="fa">La reserva y el contacto se hacen por WhatsApp, Instagram, Google Maps o un link externo tuyo (por ejemplo, tu sistema de citas si ya tienes uno). No hay un sistema interno de reservas todavía.</div>
       </details>
@@ -953,6 +997,12 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 </section>
 
 </main>
+
+<!-- WhatsApp flotante -->
+<a class="wa-fab" href="https://wa.me/523221553952?text=Hola%2C%20tengo%20una%20pregunta%20sobre%20HMU%20Link" target="_blank" rel="noopener noreferrer" aria-label="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
+  <span>¿Dudas? Escríbenos</span>
+</a>
 
 <!-- Footer -->
 <footer>
@@ -1041,7 +1091,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     el.addEventListener('pointerleave', function () { el.style.transform = ''; });
   }
   var scene = doc.querySelector('.scene');
-  var phone = doc.querySelector('.phone');
+  var phone = doc.querySelector('.fan-inner');
   if (!reduced && matchMedia('(pointer: fine)').matches) {
     if (scene && phone) {
       scene.addEventListener('pointermove', function (e) {
@@ -1082,16 +1132,9 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     tl.fromTo('.hero .cta-row', { y: 26, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 }, 1.25);
     tl.fromTo('.hero-chips li', { y: 18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, stagger: 0.07 }, 1.4);
 
-    /* Act 2: the phone rises and its screen builds itself, prices counting up */
+    /* Act 2: the phone fan rises and the style screens fade in one by one */
     tl.fromTo('.hero-visual', { y: 160, autoAlpha: 0, rotationX: 16, transformPerspective: 900 }, { y: 0, autoAlpha: 1, rotationX: 0, duration: 0.95 }, 0.75);
-    tl.fromTo(['.m-ava', '.m-name', '.m-sub'], { scale: 0.4, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.45, ease: 'back.out(2)', stagger: 0.08 }, 1.1);
-    tl.fromTo('.m-promo', { y: -18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.4, ease: 'back.out(2)' }, 1.4);
-    tl.fromTo(['.m-cat', '.m-row', '.m-wa', '.m-foot'], { x: -24, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.45, stagger: 0.08 }, 1.5);
-    doc.querySelectorAll('.m-row b').forEach(function (el, i) {
-      var target = parseInt(el.textContent.replace(/[^0-9]/g, ''), 10) || 0;
-      var o = { v: 0 };
-      tl.to(o, { v: target, duration: 0.7, ease: 'power2.out', onUpdate: function () { el.textContent = '$' + Math.round(o.v); } }, 1.55 + i * 0.08);
-    });
+    tl.fromTo('.fan-phone', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, stagger: 0.13 }, 1.15);
 
     /* Act 3: the chaos — question bubbles fly in like falling notifications */
     tl.fromTo('.b1', { x: -180, y: -140, rotation: -14, scale: 0.4, autoAlpha: 0 }, { x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.7, ease: 'back.out(1.7)' }, 1.75);
@@ -1106,7 +1149,6 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 
     /* Idle life after the entrance */
     gsap.to('.mascot', { rotation: 4, duration: 2.6, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 4 });
-    gsap.to('.m-promo', { scale: 1.04, duration: 0.35, yoyo: true, repeat: -1, repeatDelay: 2.6, ease: 'sine.inOut', delay: 4.2 });
 
     /* Mouse depth: layers shift at different rates (x only; y belongs to the scroll scrub) */
     var hero = doc.querySelector('.hero');
@@ -1145,5 +1187,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 })();
 </script>
 
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5700add7510a483fbbe2453150fee21b"}'></script>
 </body>
 </html>

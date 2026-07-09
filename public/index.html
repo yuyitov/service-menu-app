@@ -265,7 +265,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .hero-chips li::before { content: "✓ "; font-weight: 800; color: var(--avocado-deep); }
 
 /* Demo phone (pure CSS) */
-.scene { position: relative; width: min(360px, 100%); margin: 0 auto; perspective: 1000px; }
+.scene { position: relative; width: min(430px, 100%); margin: 0 auto; perspective: 1000px; }
 .phone-wrap { animation: floaty 6s ease-in-out infinite alternate; width: 262px; margin: 0 auto; }
 @keyframes floaty { from { transform: translateY(0); } to { transform: translateY(-14px); } }
 .phone {
@@ -281,6 +281,27 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 }
 .screen { padding: 0; margin-top: -8px; }
 .m-shot { display: block; width: 100%; height: auto; }
+
+/* Style fan: three real demo screenshots framed as phones ("12 styles to choose") */
+.fan { position: relative; width: min(430px, 100%); height: 330px; margin: 8px auto 0; animation: floaty 6s ease-in-out infinite alternate; }
+.fan-inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.35s ease; }
+.fan-phone {
+  position: absolute; top: 6px; width: 188px;
+  border: 7px solid var(--ink); border-radius: 30px; overflow: hidden; background: #fffdf9;
+  box-shadow: 0 30px 60px -26px rgba(20, 112, 79, 0.45), 0 10px 26px -14px rgba(31, 45, 39, 0.28);
+  transition: transform 0.45s var(--ease-spring);
+}
+.fan-phone::before {
+  content: ""; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 58px; height: 14px; background: var(--ink); border-radius: 0 0 10px 10px; z-index: 2;
+}
+.fan-phone img { display: block; width: 100%; height: auto; }
+.fan-phone--c { left: 50%; margin-left: -94px; z-index: 3; }
+.fan-phone--l { left: 0; z-index: 1; transform: rotate(-10deg) translateY(30px) scale(0.9); transform-origin: bottom right; }
+.fan-phone--r { right: 0; z-index: 2; transform: rotate(10deg) translateY(30px) scale(0.9); transform-origin: bottom left; }
+.hero-visual:hover .fan-phone--l { transform: rotate(-13deg) translateY(24px) scale(0.92); }
+.hero-visual:hover .fan-phone--r { transform: rotate(13deg) translateY(24px) scale(0.92); }
+.hero-visual:hover .fan-phone--c { transform: translateY(-6px); }
 
 /* Linky mascot peeking beside the phone */
 .mascot {
@@ -513,6 +534,20 @@ footer a { color: #bfe0cd; text-decoration: none; }
 footer a:hover { color: var(--banana); }
 footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, 0.12); color: #86ab97; font-size: 0.82rem; }
 
+/* Founder pricing + guarantee */
+.founder-note { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 4px; padding: 6px 14px; border-radius: 999px; background: rgba(255, 224, 130, 0.14); border: 1px solid rgba(255, 224, 130, 0.45); color: var(--banana); font-size: 0.85rem; font-weight: 700; }
+.price-card .price-badges { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 6px 0 2px; text-align: center; }
+.price-card .price-badges li { padding: 7px 13px; font-size: 0.82rem; font-weight: 800; color: var(--pepper-ink); background: var(--banana); border-radius: 999px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18); }
+.price-card .price-badges li::before { content: none; }
+.price-card .guarantee { margin: 12px 0 0; font-size: 0.88rem; color: #cfe9da; }
+.price-card .guarantee b { color: #ffffff; }
+
+/* WhatsApp floating button */
+.wa-fab { position: fixed; right: 18px; bottom: 18px; z-index: 95; display: inline-flex; align-items: center; gap: 9px; padding: 13px 18px; border-radius: 999px; background: #25d366; color: #ffffff; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.wa-fab:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.34); color: #ffffff; }
+.wa-fab svg { width: 22px; height: 22px; fill: currentColor; flex: none; }
+@media (max-width: 640px) { .wa-fab { padding: 14px; right: 14px; bottom: 14px; } .wa-fab span { display: none; } }
+
 /* Desktop */
 @media (min-width: 900px) {
   section { padding: 92px 0; }
@@ -533,6 +568,9 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
   .b1 { top: 1%; left: 0; }
   .b4 { bottom: 1%; right: 0; }
   .mascot { width: 106px; left: -8px; bottom: -10px; }
+  .fan { height: 288px; }
+  .fan-phone { width: 150px; border-width: 6px; }
+  .fan-phone--c { margin-left: -75px; }
 }
 
 /* GSAP takes over the entrance choreography when it loads (progressive enhancement):
@@ -603,11 +641,17 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <div class="bubble bubble--q b1">🙋 “Hi! Do you have a price list?”</div>
         <div class="bubble bubble--q b2">“How late are you open today?”</div>
         <div class="bubble b3"><i></i><i></i><i></i></div>
-        <div class="bubble b4">✨ hmu.link/aqua-wellness</div>
-        <div class="phone-wrap">
-          <div class="phone">
-            <div class="screen">
-              <img class="m-shot" src="assets/hero-phone-aqua.jpg" alt="Aqua Wellness Spa — a real HMU Link page" width="680" height="1452" loading="lazy">
+        <div class="bubble b4">✨ 12 styles — pick yours</div>
+        <div class="fan">
+          <div class="fan-inner">
+            <div class="fan-phone fan-phone--l">
+              <img src="assets/previews/en/soft-blush.jpg" alt="Studio Blush — a real HMU Link page" width="188" height="250" loading="lazy">
+            </div>
+            <div class="fan-phone fan-phone--r">
+              <img src="assets/previews/en/terracotta-warm.jpg" alt="Café Terra — a real HMU Link page" width="188" height="250" loading="lazy">
+            </div>
+            <div class="fan-phone fan-phone--c">
+              <img src="assets/previews/en/black-gold.jpg" alt="Bella Spa — a real HMU Link page" width="188" height="250" loading="lazy">
             </div>
           </div>
         </div>
@@ -710,7 +754,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <div class="grid grid--3" id="style-grid" data-stagger>
       <a class="card style-card" data-category="beauty" href="demos/bella-spa/en/" style="--th-b:#17171a; --th-a:#c9a24b;">
         <div class="thumb">
-          <img src="assets/previews/black-gold.jpg" alt="Real screenshot of the Bella Spa demo, Black Gold style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/black-gold.jpg" alt="Real screenshot of the Bella Spa demo, Black Gold style" width="390" height="520" loading="lazy">
         </div>
         <h3>Black Gold</h3>
         <p>Dark elegance with gold accents. Premium, sophisticated presence.</p>
@@ -719,7 +763,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/studio-blush/en/" style="--th-b:#fdf3f4; --th-a:#c96f7d;">
         <div class="thumb">
-          <img src="assets/previews/soft-blush.jpg" alt="Real screenshot of the Studio Blush demo, Soft Blush style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/soft-blush.jpg" alt="Real screenshot of the Studio Blush demo, Soft Blush style" width="390" height="520" loading="lazy">
         </div>
         <h3>Soft Blush</h3>
         <p>Soft, delicate pink tones. Warm, welcoming, and feminine.</p>
@@ -728,7 +772,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/north-barber/en/" style="--th-b:#33373d; --th-a:#9fb2bd;">
         <div class="thumb">
-          <img src="assets/previews/charcoal-clean.jpg" alt="Real screenshot of the North Barber demo, Charcoal Clean style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/charcoal-clean.jpg" alt="Real screenshot of the North Barber demo, Charcoal Clean style" width="390" height="520" loading="lazy">
         </div>
         <h3>Charcoal Clean</h3>
         <p>Charcoal gray, understated and direct. Masculine, contemporary look.</p>
@@ -737,7 +781,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/glow-nails/en/" style="--th-b:#f7efe2; --th-a:#a97b3f;">
         <div class="thumb">
-          <img src="assets/previews/warm-sand.jpg" alt="Real screenshot of the Glow Nails demo, Warm Sand style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/warm-sand.jpg" alt="Real screenshot of the Glow Nails demo, Warm Sand style" width="390" height="520" loading="lazy">
         </div>
         <h3>Warm Sand</h3>
         <p>Sand and earth tones. Natural, warm, and artisanal.</p>
@@ -746,7 +790,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/aqua-wellness/en/" style="--th-b:#eaf7f8; --th-a:#2f8f96;">
         <div class="thumb">
-          <img src="assets/previews/aqua-clean.jpg" alt="Real screenshot of the Aqua Wellness demo, Aqua Clean style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/aqua-clean.jpg" alt="Real screenshot of the Aqua Wellness demo, Aqua Clean style" width="390" height="520" loading="lazy">
         </div>
         <h3>Aqua Clean</h3>
         <p>Fresh, clean aqua blues. Communicates hygiene, water, and calm.</p>
@@ -755,7 +799,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/sage-studio/en/" style="--th-b:#eef2ea; --th-a:#6d8a63;">
         <div class="thumb">
-          <img src="assets/previews/sage-calm.jpg" alt="Real screenshot of the Sage Studio demo, Sage Calm style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/sage-calm.jpg" alt="Real screenshot of the Sage Studio demo, Sage Calm style" width="390" height="520" loading="lazy">
         </div>
         <h3>Sage Calm</h3>
         <p>Serene, balanced sage green. Minimal and organic.</p>
@@ -764,7 +808,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/pawsome-grooming/en/" style="--th-b:#fffaf0; --th-a:#ff9f1c;">
         <div class="thumb">
-          <img src="assets/previews/sunny-paws.jpg" alt="Real screenshot of the Pawsome Grooming demo, Sunny Paws style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/sunny-paws.jpg" alt="Real screenshot of the Pawsome Grooming demo, Sunny Paws style" width="390" height="520" loading="lazy">
         </div>
         <h3>Sunny Paws</h3>
         <p>Bright yellow and orange. Playful, friendly, full of energy.</p>
@@ -773,7 +817,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="fitness" href="demos/pulse-fitness/en/" style="--th-b:#101214; --th-a:#c6ff3d;">
         <div class="thumb">
-          <img src="assets/previews/electric-slate.jpg" alt="Real screenshot of the Pulse Fitness Studio demo, Electric Slate style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/electric-slate.jpg" alt="Real screenshot of the Pulse Fitness Studio demo, Electric Slate style" width="390" height="520" loading="lazy">
         </div>
         <h3>Electric Slate</h3>
         <p>Bold charcoal with electric lime accents. High-performance and motivating.</p>
@@ -782,7 +826,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="fitness" href="demos/horizon-tours/en/" style="--th-b:#f5f1e6; --th-a:#0f6e6e;">
         <div class="thumb">
-          <img src="assets/previews/horizon-teal.jpg" alt="Real screenshot of the Horizon City Tours demo, Horizon Teal style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/horizon-teal.jpg" alt="Real screenshot of the Horizon City Tours demo, Horizon Teal style" width="390" height="520" loading="lazy">
         </div>
         <h3>Horizon Teal</h3>
         <p>Deep teal with warm sand accents. Adventurous and fresh.</p>
@@ -791,7 +835,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="food" href="demos/cafe-terra/en/" style="--th-b:#fbf1e6; --th-a:#b5502f;">
         <div class="thumb">
-          <img src="assets/previews/terracotta-warm.jpg" alt="Real screenshot of the Café Terra demo, Terracotta Warm style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/terracotta-warm.jpg" alt="Real screenshot of the Café Terra demo, Terracotta Warm style" width="390" height="520" loading="lazy">
         </div>
         <h3>Terracotta Warm</h3>
         <p>Deep terracotta and warm cream. Cozy, artisanal, and appetizing.</p>
@@ -800,7 +844,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="creative" href="demos/iron-ink-tattoo/en/" style="--th-b:#0c0c0e; --th-a:#c0203a;">
         <div class="thumb">
-          <img src="assets/previews/midnight-ink.jpg" alt="Real screenshot of the Iron &amp; Ink Tattoo demo, Midnight Ink style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/midnight-ink.jpg" alt="Real screenshot of the Iron &amp; Ink Tattoo demo, Midnight Ink style" width="390" height="520" loading="lazy">
         </div>
         <h3>Midnight Ink</h3>
         <p>Deep black with crimson accents. Bold and artistic.</p>
@@ -809,7 +853,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="creative" href="demos/clarity-coaching/en/" style="--th-b:#f7f6f2; --th-a:#1f3a5f;">
         <div class="thumb">
-          <img src="assets/previews/clarity-editorial.jpg" alt="Real screenshot of the Clarity Coaching Co. demo, Clarity Editorial style" width="390" height="520" loading="lazy">
+          <img src="assets/previews/en/clarity-editorial.jpg" alt="Real screenshot of the Clarity Coaching Co. demo, Clarity Editorial style" width="390" height="520" loading="lazy">
         </div>
         <h3>Clarity Editorial</h3>
         <p>Navy and cream, minimal and professional.</p>
@@ -826,13 +870,19 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <div class="wrap">
       <span class="blob blob--banana" aria-hidden="true"></span>
       <span class="blob blob--pink" aria-hidden="true"></span>
-      <span class="kicker" data-reveal>Launch pricing</span>
+      <span class="kicker" data-reveal>Founder pricing</span>
       <h2 data-reveal>One-time payment, no subscriptions</h2>
-      <p class="lead" data-reveal>One-time payment for the US and Canada. Checkout is open now.</p>
+      <p class="lead" data-reveal>The first 20 businesses get founder pricing. After sale #20, the price goes up to $59 — announced today, no fake countdowns.</p>
       <div class="price-single" data-reveal>
         <div class="price-card">
+          <p class="founder-note">🔥 First 20 businesses: $39 · then $59</p>
           <h3>Your HMU Link</h3>
           <div class="amount"><small>USD</small> <b class="amt" data-count="39">$39</b></div>
+          <ul class="price-badges">
+            <li>💳 One-time payment</li>
+            <li>🚫 No subscriptions</li>
+            <li>⚡ Same-day delivery</li>
+          </ul>
           <ul>
             <li>1 published service page</li>
             <li>1 visual style of your choice</li>
@@ -841,6 +891,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
             <li>1 modification included</li>
           </ul>
           <a class="btn btn--primary" href="https://buy.stripe.com/aFa28rcjcdOmaWe4mKffy01" target="_blank" rel="noopener noreferrer">Get my HMU Link <span class="arr" aria-hidden="true">→</span></a>
+          <p class="guarantee"><b>Guarantee:</b> if you don't love your page, you get your money back.</p>
         </div>
       </div>
       <p class="fine" data-reveal>One-time payment for creating and publishing your page. Need a change later? Extra modifications are just $3.</p>
@@ -893,6 +944,10 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <div class="fa">Yes. Your package includes one free modification. After that, additional changes are billed separately as extra modifications.</div>
       </details>
       <details>
+        <summary>What if I don't love my page?</summary>
+        <div class="fa">First we fix it for free — if anything is off on our end, we correct it at no cost. And if you still don't love it, you get your money back. Simple as that.</div>
+      </details>
+      <details>
         <summary>Does it include booking?</summary>
         <div class="fa">Booking and contact happen through WhatsApp, Instagram, Google Maps, or your external booking link (for example, your existing scheduling tool). There's no built-in booking system yet.</div>
       </details>
@@ -917,6 +972,12 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 </section>
 
 </main>
+
+<!-- Floating WhatsApp -->
+<a class="wa-fab" href="https://wa.me/523221553952?text=Hi!%20I%20have%20a%20question%20about%20HMU%20Link" target="_blank" rel="noopener noreferrer" aria-label="Chat with us on WhatsApp">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
+  <span>Questions? Chat with us</span>
+</a>
 
 <!-- Footer -->
 <footer>
@@ -1005,7 +1066,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     el.addEventListener('pointerleave', function () { el.style.transform = ''; });
   }
   var scene = doc.querySelector('.scene');
-  var phone = doc.querySelector('.phone');
+  var phone = doc.querySelector('.fan-inner');
   if (!reduced && matchMedia('(pointer: fine)').matches) {
     if (scene && phone) {
       scene.addEventListener('pointermove', function (e) {
@@ -1046,9 +1107,9 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     tl.fromTo('.hero .cta-row', { y: 26, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 }, 1.25);
     tl.fromTo('.hero-chips li', { y: 18, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, stagger: 0.07 }, 1.4);
 
-    /* Act 2: the phone rises and its screen builds itself, prices counting up */
+    /* Act 2: the phone fan rises and the style screens fade in one by one */
     tl.fromTo('.hero-visual', { y: 160, autoAlpha: 0, rotationX: 16, transformPerspective: 900 }, { y: 0, autoAlpha: 1, rotationX: 0, duration: 0.95 }, 0.75);
-    tl.fromTo('.m-shot', { autoAlpha: 0, scale: 1.05, y: 14 }, { autoAlpha: 1, scale: 1, y: 0, duration: 0.7, ease: 'power2.out' }, 1.15);
+    tl.fromTo('.fan-phone', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, stagger: 0.13 }, 1.15);
 
     /* Act 3: the chaos — question bubbles fly in like falling notifications */
     tl.fromTo('.b1', { x: -180, y: -140, rotation: -14, scale: 0.4, autoAlpha: 0 }, { x: 0, y: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.7, ease: 'back.out(1.7)' }, 1.75);
@@ -1101,5 +1162,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 })();
 </script>
 
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "5700add7510a483fbbe2453150fee21b"}'></script>
 </body>
 </html>

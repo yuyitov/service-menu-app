@@ -227,8 +227,8 @@ async function handleStripeWebhook(request, env) {
       subject: isMxnBuyer
         ? 'Completa tu página HMU Link — solo falta un formulario'
         : 'Complete your HMU Link service menu — one form to go',
-      html: buildPostPaymentEmail({ formUrlEN, formUrlES }),
-      text: buildPostPaymentText({ formUrlEN, formUrlES })
+      html: buildPostPaymentEmail({ formUrlEN, formUrlES, lang: isMxnBuyer ? 'es' : 'en' }),
+      text: buildPostPaymentText({ formUrlEN, formUrlES, lang: isMxnBuyer ? 'es' : 'en' })
     });
   } catch (err) {
     console.error('post-payment email failed:', safeError(err));
@@ -531,18 +531,21 @@ async function handleNotify(request, env) {
     return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
   }
 
+  // Idioma del cuerpo = idioma del comprador (moneda MXN → español), igual que el asunto.
+  const deliveryLang = (order.currency || '').toLowerCase() === 'mxn' ? 'es' : 'en';
   try {
     await sendEmail({
       env,
       to: customerEmail,
-      subject: (order.currency || '').toLowerCase() === 'mxn'
+      subject: deliveryLang === 'es'
         ? '¡Tu página HMU Link está lista! 🎉'
         : 'Your HMU Link service menu is ready! 🎉',
       html: buildDeliveryEmail({
         pageUrl,
-        slug
+        slug,
+        lang: deliveryLang
       }),
-      text: buildDeliveryText({ pageUrl })
+      text: buildDeliveryText({ pageUrl, lang: deliveryLang })
     });
   } catch (err) {
     console.error('delivery email failed:', safeError(err));
@@ -1272,7 +1275,35 @@ function jsonResponse(data, status = 200) {
 // EMAIL TEMPLATES
 // ─────────────────────────────────────────────────────────────────────────────
 
-function buildPostPaymentEmail({ formUrlEN, formUrlES }) {
+// El cuerpo va en el idioma del comprador (lang derivado de la moneda). Un asunto
+// en inglés con cuerpo en español (o viceversa) confunde y dispara filtros de spam
+// por incongruencia de idioma — el asunto ya se localiza, así que el cuerpo también.
+// El correo enlaza AMBOS formularios; el del idioma del comprador va primero.
+function buildPostPaymentEmail({ formUrlEN, formUrlES, lang }) {
+  const es = lang !== 'en';
+  const btnES = `<a href="${formUrlES}" style="display: inline-block; background: #f478b0; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">Abrir Formulario (Español)</a>`;
+  const btnEN = `<a href="${formUrlEN}" style="display: inline-block; background: #00a0b5; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">Open Form (English)</a>`;
+  const t = es
+    ? {
+        heading: '¡Tu página de servicios está casi lista!',
+        greeting: 'Hola,',
+        intro: 'Gracias por tu compra en HMU Link. Solo falta un paso: completa tu formulario de información para que generemos tu página.',
+        cta: '📋 Completa tu información:',
+        or: 'o',
+        firstBtn: btnES,
+        secondBtn: btnEN,
+        closing: 'Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.'
+      }
+    : {
+        heading: 'Your service page is almost ready!',
+        greeting: 'Hi,',
+        intro: 'Thanks for your purchase at HMU Link. Just one step left: fill out your info form so we can generate your page.',
+        cta: '📋 Complete your information:',
+        or: 'or',
+        firstBtn: btnEN,
+        secondBtn: btnES,
+        closing: "Once you complete the form, we'll generate your page and you'll get a link to share with your customers."
+      };
   return `
 <!DOCTYPE html>
 <html>
@@ -1282,18 +1313,18 @@ function buildPostPaymentEmail({ formUrlEN, formUrlES }) {
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; margin: 0; padding: 20px;">
   <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <h2 style="margin-top: 0; color: #1a1a1a;">¡Tu página de servicios está casi lista!</h2>
-    <p>Hola,</p>
-    <p>Gracias por tu compra en HMU Link. Solo falta un paso: completa tu formulario de información para que generemos tu página.</p>
+    <h2 style="margin-top: 0; color: #1a1a1a;">${t.heading}</h2>
+    <p>${t.greeting}</p>
+    <p>${t.intro}</p>
 
     <div style="margin: 30px 0;">
-      <p style="color: #666; font-size: 14px; margin-bottom: 10px;">📋 Completa tu información:</p>
-      <a href="${formUrlES}" style="display: inline-block; background: #f478b0; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">Abrir Formulario (Español)</a>
-      <p style="margin: 15px 0; color: #999;">o</p>
-      <a href="${formUrlEN}" style="display: inline-block; background: #00a0b5; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">Open Form (English)</a>
+      <p style="color: #666; font-size: 14px; margin-bottom: 10px;">${t.cta}</p>
+      ${t.firstBtn}
+      <p style="margin: 15px 0; color: #999;">${t.or}</p>
+      ${t.secondBtn}
     </div>
 
-    <p style="color: #666; font-size: 14px;">Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.</p>
+    <p style="color: #666; font-size: 14px;">${t.closing}</p>
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
     <p style="color: #999; font-size: 12px; margin: 0;">HMU Link — Service Menus for Small Businesses</p>
@@ -1304,16 +1335,33 @@ function buildPostPaymentEmail({ formUrlEN, formUrlES }) {
 }
 
 // Versión text/plain del correo post-pago (multipart mejora deliverability).
-function buildPostPaymentText({ formUrlEN, formUrlES }) {
+function buildPostPaymentText({ formUrlEN, formUrlES, lang }) {
+  const es = lang !== 'en';
+  const lineES = `Completa tu formulario (Español): ${formUrlES}`;
+  const lineEN = `Open your form (English): ${formUrlEN}`;
+  if (es) {
+    return [
+      '¡Tu página de servicios está casi lista!',
+      '',
+      'Gracias por tu compra en HMU Link. Solo falta un paso: completa tu formulario de información para que generemos tu página.',
+      '',
+      lineES,
+      lineEN,
+      '',
+      'Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.',
+      '',
+      'HMU Link — hmulink.com'
+    ].join('\n');
+  }
   return [
-    '¡Tu página de servicios está casi lista!',
+    'Your service page is almost ready!',
     '',
-    'Gracias por tu compra en HMU Link. Solo falta un paso: completa tu formulario de información para que generemos tu página.',
+    'Thanks for your purchase at HMU Link. Just one step left: fill out your info form so we can generate your page.',
     '',
-    `Completa tu formulario (Español): ${formUrlES}`,
-    `Open your form (English): ${formUrlEN}`,
+    lineEN,
+    lineES,
     '',
-    'Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.',
+    "Once you complete the form, we'll generate your page and you'll get a link to share with your customers.",
     '',
     'HMU Link — hmulink.com'
   ].join('\n');
@@ -1322,7 +1370,39 @@ function buildPostPaymentText({ formUrlEN, formUrlES }) {
 // La corrección gratuita se pide respondiendo al correo (reply_to va al buzón
 // real). El flujo automatizado con correction_token queda para v2 — el token
 // se sigue generando y guardando en KV para cuando exista.
-function buildDeliveryEmail({ pageUrl, slug }) {
+function buildDeliveryEmail({ pageUrl, slug, lang }) {
+  const es = lang !== 'en';
+  const t = es
+    ? {
+        heading: '¡Tu página de servicios está lista! 🎉',
+        greeting: 'Hola,',
+        intro: 'Tu página de servicios en HMU Link ha sido generada exitosamente. Aquí está tu link público:',
+        label: 'Tu página pública:',
+        note: 'Nota: tu página puede tardar unos minutos en estar activa mientras se publica.',
+        stepsTitle: 'Próximos pasos:',
+        steps: [
+          'Abre tu página y verifica que todo se vea correcto',
+          'Descarga el código QR desde tu página para compartir fácilmente',
+          'Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.'
+        ],
+        correctionTitle: '✏️ Incluido: Una corrección gratuita',
+        correctionBody: 'Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tienes derecho a una corrección gratuita: <strong>simplemente responde a este correo</strong> con los cambios que quieras y los aplicamos por ti.'
+      }
+    : {
+        heading: 'Your service page is ready! 🎉',
+        greeting: 'Hi,',
+        intro: 'Your HMU Link service page has been generated successfully. Here is your public link:',
+        label: 'Your public page:',
+        note: 'Note: your page may take a few minutes to go live while it publishes.',
+        stepsTitle: 'Next steps:',
+        steps: [
+          'Open your page and check that everything looks right',
+          'Download the QR code from your page to share it easily',
+          'Share the link in your Instagram bio, WhatsApp, business cards, etc.'
+        ],
+        correctionTitle: '✏️ Included: One free correction',
+        correctionBody: 'If you need to change your info (hours, services, prices, etc.), you get one free correction: <strong>simply reply to this email</strong> with the changes you want and we\'ll apply them for you.'
+      };
   return `
 <!DOCTYPE html>
 <html>
@@ -1332,27 +1412,27 @@ function buildDeliveryEmail({ pageUrl, slug }) {
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; margin: 0; padding: 20px;">
   <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <h2 style="margin-top: 0; color: #1a1a1a;">¡Tu página de servicios está lista! 🎉</h2>
-    <p>Hola,</p>
-    <p>Tu página de servicios en HMU Link ha sido generada exitosamente. Aquí está tu link público:</p>
+    <h2 style="margin-top: 0; color: #1a1a1a;">${t.heading}</h2>
+    <p>${t.greeting}</p>
+    <p>${t.intro}</p>
 
     <div style="margin: 30px 0; padding: 20px; background: #f0f8ff; border-left: 4px solid #00a0b5; border-radius: 4px;">
-      <p style="margin: 0 0 10px 0; color: #666; font-size: 12px;">Tu página pública:</p>
+      <p style="margin: 0 0 10px 0; color: #666; font-size: 12px;">${t.label}</p>
       <a href="${pageUrl}" style="display: inline-block; color: #00a0b5; font-size: 18px; font-weight: 500; text-decoration: none; word-break: break-all;">${pageUrl}</a>
     </div>
 
-    <p style="color: #999; font-size: 13px;">Nota: tu página puede tardar unos minutos en estar activa mientras se publica.</p>
+    <p style="color: #999; font-size: 13px;">${t.note}</p>
 
-    <h3 style="color: #1a1a1a; margin-top: 30px;">Próximos pasos:</h3>
+    <h3 style="color: #1a1a1a; margin-top: 30px;">${t.stepsTitle}</h3>
     <ul style="color: #666;">
-      <li>Abre tu página y verifica que todo se vea correcto</li>
-      <li>Descarga el código QR desde tu página para compartir fácilmente</li>
-      <li>Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.</li>
+      <li>${t.steps[0]}</li>
+      <li>${t.steps[1]}</li>
+      <li>${t.steps[2]}</li>
     </ul>
 
     <div style="margin: 30px 0; padding: 20px; background: #fff9e6; border-left: 4px solid #ffa934; border-radius: 4px;">
-      <p style="margin: 0 0 15px 0; color: #333; font-weight: 500;">✏️ Incluido: Una corrección gratuita</p>
-      <p style="margin: 0; color: #666; font-size: 14px;">Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tienes derecho a una corrección gratuita: <strong>simplemente responde a este correo</strong> con los cambios que quieras y los aplicamos por ti.</p>
+      <p style="margin: 0 0 15px 0; color: #333; font-weight: 500;">${t.correctionTitle}</p>
+      <p style="margin: 0; color: #666; font-size: 14px;">${t.correctionBody}</p>
     </div>
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
@@ -1364,20 +1444,39 @@ function buildDeliveryEmail({ pageUrl, slug }) {
 }
 
 // Versión text/plain del correo de entrega.
-function buildDeliveryText({ pageUrl }) {
+function buildDeliveryText({ pageUrl, lang }) {
+  const es = lang !== 'en';
+  if (es) {
+    return [
+      '¡Tu página de servicios está lista!',
+      '',
+      `Tu página pública: ${pageUrl}`,
+      '',
+      'Nota: tu página puede tardar unos minutos en estar activa mientras se publica.',
+      '',
+      'Próximos pasos:',
+      '- Abre tu página y verifica que todo se vea correcto',
+      '- Descarga el código QR desde tu página para compartir fácilmente',
+      '- Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.',
+      '',
+      'Incluido: una corrección gratuita. Si necesitas cambios (horarios, servicios, precios, etc.), responde a este correo con los cambios que quieras y los aplicamos por ti.',
+      '',
+      'HMU Link — hmulink.com'
+    ].join('\n');
+  }
   return [
-    '¡Tu página de servicios está lista!',
+    'Your service page is ready!',
     '',
-    `Tu página pública: ${pageUrl}`,
+    `Your public page: ${pageUrl}`,
     '',
-    'Nota: tu página puede tardar unos minutos en estar activa mientras se publica.',
+    'Note: your page may take a few minutes to go live while it publishes.',
     '',
-    'Próximos pasos:',
-    '- Abre tu página y verifica que todo se vea correcto',
-    '- Descarga el código QR desde tu página para compartir fácilmente',
-    '- Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.',
+    'Next steps:',
+    '- Open your page and check that everything looks right',
+    '- Download the QR code from your page to share it easily',
+    '- Share the link in your Instagram bio, WhatsApp, business cards, etc.',
     '',
-    'Incluido: una corrección gratuita. Si necesitas cambios (horarios, servicios, precios, etc.), responde a este correo con los cambios que quieras y los aplicamos por ti.',
+    'Included: one free correction. If you need changes (hours, services, prices, etc.), reply to this email with the changes you want and we\'ll apply them for you.',
     '',
     'HMU Link — hmulink.com'
   ].join('\n');

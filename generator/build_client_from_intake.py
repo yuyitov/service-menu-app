@@ -821,8 +821,11 @@ def main() -> int:
     gallery_files = download_gallery_images(payload, assets_dir)
 
     locations = build_locations(payload)
+    # Pass an empty default so unlabeled links keep an empty label; each page
+    # then renders the localized group label via s["delivery_pickup_label"]
+    # (Entrega / recoger — Delivery / pickup) instead of a frozen English one.
     delivery_pickup_links = parse_public_links(
-        payload.get("delivery_pickup_links_text", ""), "Delivery / pickup"
+        payload.get("delivery_pickup_links_text", ""), ""
     )
     # An unlabeled portfolio link keeps its empty label so each page renders the
     # localized heading (Portafolio / Portfolio) via s["portfolio_label"].

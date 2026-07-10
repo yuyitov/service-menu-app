@@ -108,7 +108,7 @@ STRINGS = {
         "gallery_prev": "Foto anterior",
         "gallery_next": "Foto siguiente",
         "gallery_photo": "Foto",
-        "delivery_pickup_label": "Delivery / pickup",
+        "delivery_pickup_label": "Entrega / recoger",
         "portfolio_label": "Portafolio",
         "view_menu": "Ver servicios",
         "scroll_hint": "Desliza",

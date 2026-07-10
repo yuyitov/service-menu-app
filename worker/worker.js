@@ -127,6 +127,8 @@ async function handleStripeWebhook(request, env) {
       return jsonResponse({ ok: true, ignored: true, reason: 'unattributable_event_type' });
     }
     if (!expectedPaymentLinks.includes(session.payment_link || '')) {
+      // Diagnostic: surface filter mismatches (plink ids are not secrets).
+      console.log('ignored other_product — observed plink:', session.payment_link || '(none)', '| expected:', expectedPaymentLinks.join(','));
       return jsonResponse({ ok: true, ignored: true, reason: 'other_product' });
     }
   } else if (type === 'checkout.session.completed') {

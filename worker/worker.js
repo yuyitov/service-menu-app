@@ -913,6 +913,31 @@ function answerAny(answers, keys) {
   return '';
 }
 
+// Fallback for a handful of business-type fields (class schedule / tour details /
+// pet notes) whose exact Tally wording varies across the ES and EN forms, so an
+// exhaustive alias list is fragile. Each entry in tokenSets is a list of tokens
+// that must ALL appear in a normalized answer key; the first matching, non-empty
+// answer wins. Tokens are chosen to be specific enough to avoid false positives
+// (e.g. ['class','schedule'] won't match the plain business-hours question).
+function answerContains(answers, tokenSets) {
+  if (!answers || typeof answers !== 'object') return '';
+  for (const tokens of tokenSets) {
+    for (const key of Object.keys(answers)) {
+      const nk = normalizeKey(key);
+      if (!tokens.every((t) => nk.includes(t))) continue;
+      const v = answers[key];
+      if (Array.isArray(v)) {
+        const joined = v.map((x) => cleanValue(x)).filter(Boolean).join(', ');
+        if (joined) return joined;
+        continue;
+      }
+      const cleaned = cleanValue(v);
+      if (cleaned) return cleaned;
+    }
+  }
+  return '';
+}
+
 // Tally FILE_UPLOAD fields arrive as an array of { url, name, mimeType, ... }.
 // Only the first file is used for single-file fields (logo / main photo).
 function answerFileUrl(answers, keys) {
@@ -1119,7 +1144,7 @@ function buildHmuPublicPayload(normalized, orderId) {
       'your_class_schedule',
       'horario_de_clases',
       'horario_clases'
-    ]),
+    ]) || answerContains(a, [['class', 'schedule'], ['class', 'timetable'], ['horario', 'clase']]),
     tour_details_text: answerAny(a, [
       'tour_details',
       'tour_or_experience_details',
@@ -1128,7 +1153,7 @@ function buildHmuPublicPayload(normalized, orderId) {
       'detalles_de_tus_tours_o_experiencias',
       'detalles_de_tu_tour_o_experiencia',
       'detalles_de_tour'
-    ]),
+    ]) || answerContains(a, [['tour'], ['experience', 'detail'], ['experiencia', 'detalle']]),
     pet_notes_text: answerAny(a, [
       'pet_notes',
       'anything_clients_should_know_before_bringing_their_pet',
@@ -1136,7 +1161,7 @@ function buildHmuPublicPayload(normalized, orderId) {
       'before_bringing_your_pet',
       'algo_que_los_clientes_deban_saber_antes_de_traer_a_su_mascota',
       'antes_de_traer_a_su_mascota'
-    ]),
+    ]) || answerContains(a, [['pet'], ['mascota']]),
     opening_hours_text: answerAny(a, ['what_are_your_business_hours', 'cuales_son_tus_horarios_de_atencion']),
     service_categories_text: answerAny(a, ['how_do_you_group_your_services', 'como_agrupas_tus_servicios']),
     price_display: answerAny(a, [

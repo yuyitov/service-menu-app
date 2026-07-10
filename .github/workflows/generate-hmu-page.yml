@@ -73,7 +73,10 @@ jobs:
             echo "WORKER_URL or NOTIFY_SECRET not configured — skipping notify"
             exit 0
           fi
+          # Build the JSON with jq so submission_id (a Tally-supplied value) is
+          # escaped, not string-interpolated into the body.
+          payload=$(jq -nc --arg slug "$SLUG" --arg sid "$SUBMISSION_ID" '{slug:$slug,submission_id:$sid}')
           curl -sS -X POST "$WORKER_URL/notify" \
             -H "Authorization: Bearer $NOTIFY_SECRET" \
             -H "Content-Type: application/json" \
-            -d "{\"slug\":\"$SLUG\",\"submission_id\":\"$SUBMISSION_ID\"}"
+            -d "$payload"

@@ -390,10 +390,20 @@ def validate_language_quality(payload: dict) -> None:
         )
 
 
+# Slug shape guard so the rendering stage is self-defending: the output path
+# is built from public_slug, so it must never contain path separators, dots, or
+# anything outside a safe slug alphabet — even though the intake builder also
+# validates it upstream.
+CLIENT_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$")
+
+
 def validate_client(payload: dict) -> None:
     """Validate a bilingual real-client payload (client_payload_public v1)."""
-    if not str(payload.get("public_slug", "")).strip():
+    slug = str(payload.get("public_slug", "")).strip()
+    if not slug:
         raise ValidationError("Cliente: falta public_slug.")
+    if not CLIENT_SLUG_RE.match(slug):
+        raise ValidationError(f"Cliente: public_slug invalido: {slug!r}.")
     if payload.get("default_language") not in CLIENT_LANGS:
         raise ValidationError("Cliente: default_language debe ser 'es' o 'en'.")
     if payload.get("brand_style") not in BRAND_STYLES:

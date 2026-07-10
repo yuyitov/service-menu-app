@@ -54,6 +54,11 @@ export default {
       }
 
       if (request.method === 'POST' && pathname === '/stripe/webhook') {
+        // Cap junk floods before spending CPU on HMAC verification. Stripe's
+        // real volume for this business is far below 60/min per source IP;
+        // a 429 just makes Stripe retry with backoff.
+        const allowed = await checkRateLimit(env, `hmu_rl:stripe:${ip}:${minuteSlot}`, 60, 120);
+        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
         return await handleStripeWebhook(request, env);
       }
 
@@ -122,18 +127,26 @@ async function handleStripeWebhook(request, env) {
     .split(',')
     .map((id) => id.trim())
     .filter(Boolean);
-  if (expectedPaymentLinks.length > 0) {
-    if (type !== 'checkout.session.completed') {
-      return jsonResponse({ ok: true, ignored: true, reason: 'unattributable_event_type' });
+
+  // FAIL CLOSED: the Stripe account is shared with other products (MyGuest,
+  // Dr Link, ...) and Stripe fans every signed event to this endpoint. If the
+  // allowlist is unset/mistyped (e.g. during a deploy or key rotation) we must
+  // NOT process arbitrary payments — that would email the wrong customer the
+  // HMU intake form. We still log the observed payment_link so a new one can be
+  // captured, but we never create an order or send mail without a match.
+  if (expectedPaymentLinks.length === 0) {
+    if (type === 'checkout.session.completed') {
+      console.log('stripe payment_link observed (filter not configured):', session.payment_link || '(none)');
     }
-    if (!expectedPaymentLinks.includes(session.payment_link || '')) {
-      // Diagnostic: surface filter mismatches (plink ids are not secrets).
-      console.log('ignored other_product — observed plink:', session.payment_link || '(none)', '| expected:', expectedPaymentLinks.join(','));
-      return jsonResponse({ ok: true, ignored: true, reason: 'other_product' });
-    }
-  } else if (type === 'checkout.session.completed') {
-    // Filter not configured yet — log the plink id so it can be captured.
-    console.log('stripe payment_link observed:', session.payment_link || '(none)');
+    return jsonResponse({ ok: true, ignored: true, reason: 'filter_not_configured' });
+  }
+  if (type !== 'checkout.session.completed') {
+    return jsonResponse({ ok: true, ignored: true, reason: 'unattributable_event_type' });
+  }
+  if (!expectedPaymentLinks.includes(session.payment_link || '')) {
+    // Diagnostic: surface filter mismatches (plink ids are not secrets).
+    console.log('ignored other_product — observed plink:', session.payment_link || '(none)', '| expected:', expectedPaymentLinks.join(','));
+    return jsonResponse({ ok: true, ignored: true, reason: 'other_product' });
   }
 
   const paymentIntentId =
@@ -198,6 +211,11 @@ async function handleStripeWebhook(request, env) {
   const formUrlEN = `${baseFormEN}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
   const formUrlES = `${baseFormES}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
 
+  // Reserve the idempotency marker BEFORE sending so a concurrent duplicate
+  // (Stripe retry / race) can't double-send the email. If the send fails we
+  // clear the marker so Stripe's own retry can try again.
+  await env.SERVICE_MENU_KV.put(processedKey, '1', { expirationTtl: 604800 }).catch(() => {});
+
   // Send post-payment email. Asunto en el idioma del comprador (moneda MXN →
   // español): un asunto en inglés a un cliente mexicano confunde y dispara
   // filtros de spam por incongruencia de idioma.
@@ -214,11 +232,9 @@ async function handleStripeWebhook(request, env) {
     });
   } catch (err) {
     console.error('post-payment email failed:', safeError(err));
+    await env.SERVICE_MENU_KV.delete(processedKey).catch(() => {});
     return jsonResponse({ ok: false, error: 'Failed to send post-payment email' }, 500);
   }
-
-  // Mark as processed
-  await env.SERVICE_MENU_KV.put(processedKey, '1', { expirationTtl: 604800 });
 
   return jsonResponse({ ok: true, paymentIntentId, hasEmail: true });
 }
@@ -615,10 +631,26 @@ async function validateStripeSignature(rawBody, signatureHeader, secret) {
   if (!secret || !signatureHeader) return false;
 
   try {
-    const [timestamp, signature] = signatureHeader.split(',').map(s => {
-      const [k, v] = s.split('=');
-      return v;
-    });
+    // Stripe header: "t=<ts>,v1=<sig>[,v1=<sig>...]". Parse by key, not by
+    // position, and collect every v1 (Stripe may send more than one).
+    let timestamp = '';
+    const v1Signatures = [];
+    for (const part of signatureHeader.split(',')) {
+      const idx = part.indexOf('=');
+      if (idx === -1) continue;
+      const k = part.slice(0, idx).trim();
+      const v = part.slice(idx + 1).trim();
+      if (k === 't') timestamp = v;
+      else if (k === 'v1') v1Signatures.push(v);
+    }
+    if (!timestamp || v1Signatures.length === 0) return false;
+
+    // Reject signatures outside a 5-minute tolerance to bound replay of a
+    // captured, validly-signed request. Stripe re-signs with a fresh timestamp
+    // on every delivery (including manual "Resend"), so this never blocks
+    // legitimate deliveries.
+    const ts = Number(timestamp);
+    if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > 300) return false;
 
     const signedContent = `${timestamp}.${rawBody}`;
     const key = await crypto.subtle.importKey(
@@ -633,7 +665,7 @@ async function validateStripeSignature(rawBody, signatureHeader, secret) {
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
 
-    return timingSafeEqual(signature, expectedSignature);
+    return v1Signatures.some((s) => timingSafeEqual(s, expectedSignature));
   } catch {
     return false;
   }
@@ -1161,8 +1193,11 @@ function safeError(error) {
 }
 
 function corsHeaders() {
+  // This API is server-to-server only (Stripe, Tally, GitHub Actions) — no
+  // browser calls it, so no wildcard is needed. Scope to the site origin
+  // instead of '*' to shrink the surface.
   return {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': 'https://www.hmulink.com',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
   };

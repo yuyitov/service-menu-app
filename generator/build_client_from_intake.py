@@ -75,6 +75,26 @@ def _allowed_image_url(url: str) -> bool:
     return host == "tally.so" or host.endswith(ALLOWED_IMAGE_HOSTS_SUFFIX)
 
 
+class _AllowlistRedirect(urllib.request.HTTPRedirectHandler):
+    """Re-apply the host allowlist on every redirect hop.
+
+    A redirect to a non-Tally host would otherwise let an attacker-influenced
+    URL reach an arbitrary server (SSRF). Redirects that stay on Tally storage
+    (e.g. a signed URL bouncing to its CDN) are still allowed, so legitimate
+    downloads keep working.
+    """
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not _allowed_image_url(newurl):
+            raise urllib.error.HTTPError(
+                req.full_url, code, f"redirect to disallowed host blocked: {newurl}", headers, fp
+            )
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_IMAGE_OPENER = urllib.request.build_opener(_AllowlistRedirect)
+
+
 def download_image(url: str, dest_dir: Path, basename: str) -> str | None:
     """Download a Tally-hosted image and publish it under dest_dir.
 
@@ -91,7 +111,7 @@ def download_image(url: str, dest_dir: Path, basename: str) -> str | None:
         return None
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "hmulink-generator/1.0"})
-        with urllib.request.urlopen(req, timeout=20) as resp:
+        with _IMAGE_OPENER.open(req, timeout=20) as resp:
             content_type = resp.headers.get("Content-Type", "").split(";")[0].strip().lower()
             ext = IMAGE_EXT_BY_CONTENT_TYPE.get(content_type)
             if not ext:

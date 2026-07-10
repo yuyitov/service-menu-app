@@ -663,6 +663,9 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         "service_area_text": src.get("service_area_text", ""),
         "client_care_text": src.get("client_care_text", ""),
         "reservations_text": src.get("reservations_text", ""),
+        "class_schedule_text": src.get("class_schedule_text", ""),
+        "tour_details_text": src.get("tour_details_text", ""),
+        "pet_notes_text": src.get("pet_notes_text", ""),
         "service_categories": src.get("service_categories", []),
         "service_names": [s["name"] for s in src["services"]],
         "policies": src["policies"],
@@ -688,6 +691,12 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         tgt["client_care_text"] = translated["client_care_text"][:200]
     if isinstance(translated.get("reservations_text"), str) and translated["reservations_text"].strip():
         tgt["reservations_text"] = translated["reservations_text"][:200]
+    if isinstance(translated.get("class_schedule_text"), str) and translated["class_schedule_text"].strip():
+        tgt["class_schedule_text"] = translated["class_schedule_text"][:300]
+    if isinstance(translated.get("tour_details_text"), str) and translated["tour_details_text"].strip():
+        tgt["tour_details_text"] = translated["tour_details_text"][:400]
+    if isinstance(translated.get("pet_notes_text"), str) and translated["pet_notes_text"].strip():
+        tgt["pet_notes_text"] = translated["pet_notes_text"][:300]
 
     names = translated.get("service_names")
     if isinstance(names, list) and len(names) == len(tgt["services"]):
@@ -775,6 +784,9 @@ def main() -> int:
     service_area = str(payload.get("service_area_text", "")).strip()
     client_care = str(payload.get("client_care_text", "")).strip()
     reservations = str(payload.get("reservations_text", "")).strip()
+    class_schedule = str(payload.get("class_schedule_text", "")).strip()
+    tour_details = str(payload.get("tour_details_text", "")).strip()
+    pet_notes = str(payload.get("pet_notes_text", "")).strip()
     address = str(payload.get("address", "")).strip()
 
     def content_block(lang: str) -> dict:
@@ -788,6 +800,9 @@ def main() -> int:
             "service_area_text": service_area[:200],
             "client_care_text": client_care[:200],
             "reservations_text": reservations[:200],
+            "class_schedule_text": class_schedule[:300],
+            "tour_details_text": tour_details[:400],
+            "pet_notes_text": pet_notes[:300],
             "price_display": price_policy,
             "service_categories": list(categories_es if lang == "es" else categories_en),
             "services": [dict(s) for s in (services_es if lang == "es" else services_en)],

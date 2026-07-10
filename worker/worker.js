@@ -1113,6 +1113,30 @@ function buildHmuPublicPayload(normalized, orderId) {
       'si_aceptas_reservaciones',
       'aceptas_reservaciones'
     ]),
+    class_schedule_text: answerAny(a, [
+      'class_schedule',
+      'class_timetable',
+      'your_class_schedule',
+      'horario_de_clases',
+      'horario_clases'
+    ]),
+    tour_details_text: answerAny(a, [
+      'tour_details',
+      'tour_or_experience_details',
+      'details_of_your_tours_or_experiences',
+      'details_of_your_tour_or_experience',
+      'detalles_de_tus_tours_o_experiencias',
+      'detalles_de_tu_tour_o_experiencia',
+      'detalles_de_tour'
+    ]),
+    pet_notes_text: answerAny(a, [
+      'pet_notes',
+      'anything_clients_should_know_before_bringing_their_pet',
+      'anything_your_clients_should_know_before_bringing_their_pet',
+      'before_bringing_your_pet',
+      'algo_que_los_clientes_deban_saber_antes_de_traer_a_su_mascota',
+      'antes_de_traer_a_su_mascota'
+    ]),
     opening_hours_text: answerAny(a, ['what_are_your_business_hours', 'cuales_son_tus_horarios_de_atencion']),
     service_categories_text: answerAny(a, ['how_do_you_group_your_services', 'como_agrupas_tus_servicios']),
     price_display: answerAny(a, [

@@ -126,6 +126,9 @@ STRINGS = {
         "address_map": "Ver en Google Maps",
         "location_label": "Ubicacion",
         "service_area_title": "Area de servicio",
+        "class_schedule_title": "Horario de clases",
+        "tour_details_title": "Sobre la experiencia",
+        "pet_notes_title": "Antes de tu visita",
         "policies_title": "Políticas",
         "links_title": "Enlaces",
         "faq_eyebrow": "FAQ",
@@ -170,6 +173,9 @@ STRINGS = {
         "address_map": "View on Google Maps",
         "location_label": "Location",
         "service_area_title": "Service area",
+        "class_schedule_title": "Class schedule",
+        "tour_details_title": "About the experience",
+        "pet_notes_title": "Before your visit",
         "policies_title": "Policies",
         "links_title": "Links",
         "faq_eyebrow": "FAQ",
@@ -349,6 +355,9 @@ def _content_text(block: dict) -> str:
         block.get("service_area_text", ""),
         block.get("client_care_text", ""),
         block.get("reservations_text", ""),
+        block.get("class_schedule_text", ""),
+        block.get("tour_details_text", ""),
+        block.get("pet_notes_text", ""),
     ]
     parts.extend(block.get("service_categories") or [])
     for svc in block.get("services") or []:
@@ -989,6 +998,30 @@ def build_info(payload: dict, s: dict) -> str:
         rows.append(
             f'<div class="info-row" data-reveal><h3>{s["reservations_title"]}</h3>'
             f'<p>{esc(reservations)}</p></div>'
+        )
+
+    class_schedule = str(payload.get("class_schedule_text", "") or "").strip()
+    if class_schedule:
+        sched_html = "<br>".join(esc(l.strip()) for l in class_schedule.splitlines() if l.strip())
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["class_schedule_title"]}</h3>'
+            f'<p>{sched_html}</p></div>'
+        )
+
+    tour_details = str(payload.get("tour_details_text", "") or "").strip()
+    if tour_details:
+        tour_html = "<br>".join(esc(l.strip()) for l in tour_details.splitlines() if l.strip())
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["tour_details_title"]}</h3>'
+            f'<p>{tour_html}</p></div>'
+        )
+
+    pet_notes = str(payload.get("pet_notes_text", "") or "").strip()
+    if pet_notes:
+        pet_html = "<br>".join(esc(l.strip()) for l in pet_notes.splitlines() if l.strip())
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["pet_notes_title"]}</h3>'
+            f'<p>{pet_html}</p></div>'
         )
 
     address_body = _address_row_body(payload, s)

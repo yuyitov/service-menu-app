@@ -246,6 +246,12 @@ def normalize_primary_cta(value):
         "tiktok": "tiktok",
         "tik_tok": "tiktok",
         "tt": "tiktok",
+        "instagram": "instagram",
+        "ig": "instagram",
+        "insta": "instagram",
+        "facebook": "facebook",
+        "fb": "facebook",
+        "face": "facebook",
         "email": "email",
         "mail": "email",
         "correo": "email",
@@ -547,6 +553,12 @@ def _contact_options(payload: dict, s: dict) -> dict:
     tik = safe_href(payload.get("tiktok"))
     if tik:
         options["tiktok"] = (tik, "TikTok")
+    ig = safe_href(payload.get("instagram"))
+    if ig:
+        options["instagram"] = (ig, "Instagram")
+    fb = safe_href(payload.get("facebook"))
+    if fb:
+        options["facebook"] = (fb, "Facebook")
     mail = mailto_href(payload.get("public_email"))
     if mail:
         options["email"] = (mail, s["btn_email"])

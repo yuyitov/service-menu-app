@@ -115,6 +115,7 @@ STRINGS = {
         "services_eyebrow": "Servicios",
         "menu_title_html": "Nuestros <em>servicios</em>",
         "services_fallback": "Servicios",
+        "price_ask": "Consultar",
         "featured_badge": "Destacado",
         "visit_eyebrow": "Detalles",
         "visit_title_html": "Planea tu <em>visita</em>",
@@ -158,6 +159,7 @@ STRINGS = {
         "services_eyebrow": "Services",
         "menu_title_html": "Our <em>services</em>",
         "services_fallback": "Services",
+        "price_ask": "Ask us",
         "featured_badge": "Featured",
         "visit_eyebrow": "Details",
         "visit_title_html": "Plan your <em>visit</em>",
@@ -830,9 +832,17 @@ def build_services(payload: dict, s: dict) -> str:
         left = f'<span class="mrow__name">{name}</span>'
         if desc:
             left += f'<span class="mrow__desc">{esc(desc)}</span>'
+        # Con precio → se muestra. Sin precio y política "mostrar" → leyenda
+        # "Consultar"/"Ask us" (se ve intencional). Política "ocultar" → nada.
+        if price:
+            price_text = esc(price)
+        elif not hide_prices:
+            price_text = esc(s["price_ask"])
+        else:
+            price_text = ""
         price_html = (
-            f'<span class="mrow__dots"></span><span class="mrow__price">{esc(price)}</span>'
-            if price
+            f'<span class="mrow__dots"></span><span class="mrow__price">{price_text}</span>'
+            if price_text
             else ""
         )
         return f'<div class="mrow"><div>{left}</div>{price_html}</div>'

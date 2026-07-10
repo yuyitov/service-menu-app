@@ -892,7 +892,7 @@ def build_featured(payload: dict, s: dict) -> str:
     # Sin descripción (o igual al nombre) no se repite el texto.
     desc_html = f'<p class="ritual__desc">{desc}</p>' if desc and desc != name else ""
     return (
-        '<section class="section section--featured" data-theme="base"><div class="shell">'
+        '<section class="section section--featured" data-theme="alt"><div class="shell">'
         '<div class="ritual" data-reveal><div class="ritual__in">'
         f'<span class="ritual__badge">{s["featured_badge"]}</span>'
         f'<h3 class="ritual__name serif">{name}</h3>'

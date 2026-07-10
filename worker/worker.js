@@ -198,13 +198,19 @@ async function handleStripeWebhook(request, env) {
   const formUrlEN = `${baseFormEN}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
   const formUrlES = `${baseFormES}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
 
-  // Send post-payment email
+  // Send post-payment email. Asunto en el idioma del comprador (moneda MXN →
+  // español): un asunto en inglés a un cliente mexicano confunde y dispara
+  // filtros de spam por incongruencia de idioma.
+  const isMxnBuyer = currency.toLowerCase() === 'mxn';
   try {
     await sendEmail({
       env,
       to: customerEmail,
-      subject: 'Complete your HMU Link service menu — one form to go',
-      html: buildPostPaymentEmail({ formUrlEN, formUrlES })
+      subject: isMxnBuyer
+        ? 'Completa tu página HMU Link — solo falta un formulario'
+        : 'Complete your HMU Link service menu — one form to go',
+      html: buildPostPaymentEmail({ formUrlEN, formUrlES }),
+      text: buildPostPaymentText({ formUrlEN, formUrlES })
     });
   } catch (err) {
     console.error('post-payment email failed:', safeError(err));
@@ -513,11 +519,14 @@ async function handleNotify(request, env) {
     await sendEmail({
       env,
       to: customerEmail,
-      subject: 'Your HMU Link service menu is ready! 🎉',
+      subject: (order.currency || '').toLowerCase() === 'mxn'
+        ? '¡Tu página HMU Link está lista! 🎉'
+        : 'Your HMU Link service menu is ready! 🎉',
       html: buildDeliveryEmail({
         pageUrl,
         slug
-      })
+      }),
+      text: buildDeliveryText({ pageUrl })
     });
   } catch (err) {
     console.error('delivery email failed:', safeError(err));
@@ -694,12 +703,16 @@ async function checkRateLimit(env, key, limit, ttl) {
   return true;
 }
 
-async function sendEmail({ env, to, subject, html }) {
+async function sendEmail({ env, to, subject, html, text }) {
   if (!env.SENDGRID_API_KEY) {
     throw new Error('SENDGRID_API_KEY not configured');
   }
 
-  const fromEmail = (env.FROM_EMAIL || 'hello@hmulink.com').split('<').pop().replace('>', '').trim();
+  const fromRaw = env.FROM_EMAIL || 'HMU Link <hello@hmulink.com>';
+  const fromEmail = fromRaw.split('<').pop().replace('>', '').trim();
+  // Display name del remitente: sin él, los clientes ven "hello" a secas y
+  // los filtros de spam desconfían más.
+  const fromName = fromRaw.includes('<') ? fromRaw.split('<')[0].trim() : 'HMU Link';
   // hello@hmulink.com no es un buzón real: las respuestas del cliente
   // (incluida la solicitud de corrección gratuita) deben llegar a un correo
   // monitoreado, no rebotar.
@@ -712,8 +725,11 @@ async function sendEmail({ env, to, subject, html }) {
         subject
       }
     ],
-    from: { email: fromEmail },
+    from: fromName ? { email: fromEmail, name: fromName } : { email: fromEmail },
+    // Multipart text/plain + text/html mejora deliverability (HTML-only es
+    // señal clásica de spam). SendGrid exige text/plain ANTES de text/html.
     content: [
+      ...(text ? [{ type: 'text/plain', value: text }] : []),
       { type: 'text/html', value: html }
     ]
   };
@@ -1197,6 +1213,22 @@ function buildPostPaymentEmail({ formUrlEN, formUrlES }) {
   `;
 }
 
+// Versión text/plain del correo post-pago (multipart mejora deliverability).
+function buildPostPaymentText({ formUrlEN, formUrlES }) {
+  return [
+    '¡Tu página de servicios está casi lista!',
+    '',
+    'Gracias por tu compra en HMU Link. Solo falta un paso: completa tu formulario de información para que generemos tu página.',
+    '',
+    `Completa tu formulario (Español): ${formUrlES}`,
+    `Open your form (English): ${formUrlEN}`,
+    '',
+    'Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.',
+    '',
+    'HMU Link — hmulink.com'
+  ].join('\n');
+}
+
 // La corrección gratuita se pide respondiendo al correo (reply_to va al buzón
 // real). El flujo automatizado con correction_token queda para v2 — el token
 // se sigue generando y guardando en KV para cuando exista.
@@ -1239,4 +1271,24 @@ function buildDeliveryEmail({ pageUrl, slug }) {
 </body>
 </html>
   `;
+}
+
+// Versión text/plain del correo de entrega.
+function buildDeliveryText({ pageUrl }) {
+  return [
+    '¡Tu página de servicios está lista!',
+    '',
+    `Tu página pública: ${pageUrl}`,
+    '',
+    'Nota: tu página puede tardar unos minutos en estar activa mientras se publica.',
+    '',
+    'Próximos pasos:',
+    '- Abre tu página y verifica que todo se vea correcto',
+    '- Descarga el código QR desde tu página para compartir fácilmente',
+    '- Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.',
+    '',
+    'Incluido: una corrección gratuita. Si necesitas cambios (horarios, servicios, precios, etc.), responde a este correo con los cambios que quieras y los aplicamos por ti.',
+    '',
+    'HMU Link — hmulink.com'
+  ].join('\n');
 }

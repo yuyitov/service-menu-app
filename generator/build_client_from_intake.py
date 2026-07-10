@@ -407,7 +407,10 @@ def parse_public_link(value: str) -> dict | None:
     if not url:
         return None
     label = text[:match.start()].strip(" -:|") or text[match.end():].strip(" -:|")
-    return {"label": (label or "Other link")[:80], "url": url}
+    # Leave the label empty when the user gave no explicit label; the generator
+    # fills a language-appropriate default per page (Portafolio/Open link/…),
+    # so a hardcoded English label never leaks onto the Spanish page.
+    return {"label": label[:80], "url": url}
 
 
 def parse_public_links(value: str, default_label: str) -> list[dict]:
@@ -424,7 +427,7 @@ def parse_public_links(value: str, default_label: str) -> list[dict]:
         link = parse_public_link(line)
         if not link:
             continue
-        if link["label"] == "Other link":
+        if not link["label"]:
             link["label"] = default_label
         key = link["url"].lower()
         if key in seen:
@@ -821,9 +824,9 @@ def main() -> int:
     delivery_pickup_links = parse_public_links(
         payload.get("delivery_pickup_links_text", ""), "Delivery / pickup"
     )
+    # An unlabeled portfolio link keeps its empty label so each page renders the
+    # localized heading (Portafolio / Portfolio) via s["portfolio_label"].
     portfolio_link = parse_public_link(payload.get("portfolio_link", ""))
-    if portfolio_link and portfolio_link.get("label") == "Other link":
-        portfolio_link["label"] = "Portfolio"
 
     client = {
         "public_slug": slug,

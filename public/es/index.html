@@ -447,6 +447,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .price-card .amount { font-family: var(--font-display); font-size: 2.8rem; font-weight: 700; color: var(--banana); line-height: 1; }
 .price-card .amount small { font-size: 0.95rem; font-weight: 600; color: #bfe0cd; font-family: var(--font-body); }
 .price-card .amount-note { margin: 8px 0 0; font-size: 0.85rem; color: #bfe0cd; }
+.price-card .amount-was { font-size: 1.5rem; font-weight: 600; color: #8fae9c; text-decoration: line-through; margin-right: 6px; opacity: 0.85; }
 .price-card ul { list-style: none; text-align: left; align-self: stretch; }
 .price-card li { padding: 7px 0 7px 26px; position: relative; font-size: 0.95rem; color: #cfe9da; }
 .price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--avocado); font-weight: 800; }
@@ -845,14 +846,14 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <div class="wrap">
       <span class="blob blob--banana" aria-hidden="true"></span>
       <span class="blob blob--pink" aria-hidden="true"></span>
-      <span class="kicker" data-reveal>Precio fundador</span>
+      <span class="kicker" data-reveal>Oferta por tiempo limitado</span>
       <h2 data-reveal>Pago único, sin mensualidades</h2>
-      <p class="lead" data-reveal>Los primeros 20 negocios entran al precio fundador. Al cerrar la venta 20, sube a $999 MXN — anunciado desde hoy, sin trucos.</p>
+      <p class="lead" data-reveal>Precio de lanzamiento por tiempo limitado — pago único, sin mensualidades, sin sorpresas.</p>
       <div class="price-single" data-reveal>
         <div class="price-card">
-          <p class="founder-note">🔥 Primeros 20 negocios: $699 · después $999</p>
+          <p class="founder-note">🔥 Precio de lanzamiento por tiempo limitado</p>
           <h3>Tu HMU Link</h3>
-          <div class="amount"><small>MXN</small> $699</div>
+          <div class="amount"><small>MXN</small> <s class="amount-was">$1,459</s> $699</div>
           <p class="amount-note">Pago único con tarjeta, en pesos mexicanos. Sin mensualidades.</p>
           <ul class="price-badges">
             <li>💳 Pago único</li>
@@ -976,6 +977,12 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <h4>Idioma</h4>
         <ul>
           <li><a href="../" hreflang="en-US" lang="en-US">English (USA/Canada)</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="privacidad/">Aviso de Privacidad</a></li>
         </ul>
       </div>
     </div>

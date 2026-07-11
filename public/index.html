@@ -27,7 +27,7 @@
 /* Home landing (English default, USD) — HMU Link visual identity.    */
 /* Official palette: Bubblegum #f478b0 · Tangerine #ffa934 · Ocean     */
 /* Blue #00a0b5 · Banana #ffef5a · Avocado #98c54e · Bell Pepper       */
-/* #14704f. Static: no backend, no forms, no tracking. Minimal inline  */
+/* #14704f. Static: no backend, no forms; cookieless analytics only.  */
 /* JS for animations only (reveal, ticker, tilt). Fonts: Google Fonts. */
 /* ------------------------------------------------------------------- */
 :root {
@@ -451,6 +451,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .price-card .amount b { font-weight: inherit; }
 .price-card .amount small { font-size: 0.95rem; font-weight: 600; color: #bfe0cd; font-family: var(--font-body); }
 .price-card .amount-note { margin: 8px 0 0; font-size: 0.85rem; color: #bfe0cd; }
+.price-card .amount-was { font-size: 1.5rem; font-weight: 600; color: #8fae9c; text-decoration: line-through; margin-right: 6px; opacity: 0.85; }
 .price-card ul { list-style: none; text-align: left; align-self: stretch; }
 .price-card li { padding: 7px 0 7px 26px; position: relative; font-size: 0.95rem; color: #cfe9da; }
 .price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--avocado); font-weight: 800; }
@@ -852,14 +853,14 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <div class="wrap">
       <span class="blob blob--banana" aria-hidden="true"></span>
       <span class="blob blob--pink" aria-hidden="true"></span>
-      <span class="kicker" data-reveal>Founder pricing</span>
+      <span class="kicker" data-reveal>Limited-time offer</span>
       <h2 data-reveal>One-time payment, no subscriptions</h2>
-      <p class="lead" data-reveal>The first 20 businesses get founder pricing. After sale #20, the price goes up to $59 — announced today, no fake countdowns.</p>
+      <p class="lead" data-reveal>Introductory launch price for a limited time — one-time payment, no subscriptions, no surprises.</p>
       <div class="price-single" data-reveal>
         <div class="price-card">
-          <p class="founder-note">🔥 First 20 businesses: $39 · then $59</p>
+          <p class="founder-note">🔥 Limited-time launch price</p>
           <h3>Your HMU Link</h3>
-          <div class="amount"><small>USD</small> <b class="amt" data-count="39">$39</b></div>
+          <div class="amount"><small>USD</small> <s class="amount-was">$89</s> <b class="amt" data-count="39">$39</b></div>
           <p class="amount-note">One-time card payment in US dollars. No monthly fees.</p>
           <ul class="price-badges">
             <li>💳 One-time payment</li>
@@ -983,6 +984,12 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <h4>Language</h4>
         <ul>
           <li><a href="es/" hreflang="es-MX" lang="es-MX">Español (México)</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="privacy/">Privacy Policy</a></li>
         </ul>
       </div>
     </div>

@@ -35,7 +35,7 @@
     "es": {
       "short_description": "Servicios de masaje a domicilio personalizados, en tu casa, hotel o renta vacacional en todo Miami.\n\nServicio bilingüe en inglés y español.",
       "address": "",
-      "opening_hours_text": "Lunes a sábado: 10:00 AM - 9:00 PM\nDomingo: 11:00 AM - 6:00 PM",
+      "opening_hours_text": "Lunes a sábado: 10:00 AM - 9:00 PM\nDomingo: 10:00 AM - 6:00 PM",
       "service_area_text": "Masajes a domicilio en casas, hoteles y rentas vacacionales en todo el condado de Miami-Dade, incluyendo Miami, Miami Beach, Brickell, el centro de Miami, Coral Gables y Aventura.",
       "client_care_text": "",
       "reservations_text": "",
@@ -117,7 +117,7 @@
     "en": {
       "short_description": "Personalized mobile massage services delivered to your home, hotel, or vacation rental throughout Miami.\n\nBilingual service in English and Spanish.5t",
       "address": "",
-      "opening_hours_text": "Monday - Saturday: 10:00 AM - 9:00 PM\nSunday: 11:00 AM - 6:00 PM",
+      "opening_hours_text": "Monday - Saturday: 10:00 AM - 9:00 PM\nSunday: 10:00 AM - 6:00 PM",
       "service_area_text": "Mobile massages services at homes, hotels, and vacation rentals throughout Miami-Dade County, including Miami, Miami Beach, Brickell, downtown Miami, Coral Gables and Aventura.",
       "client_care_text": "",
       "reservations_text": "",

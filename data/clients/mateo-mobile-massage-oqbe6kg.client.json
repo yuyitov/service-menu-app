@@ -51,41 +51,48 @@
       "services": [
         {
           "category": "Relajación y bienestar",
-          "name": "Relajación y bienestar — Masaje de relajación Signature — Presión suave a media para relajar todo el cuerpo, 60 minutos",
+          "name": "Masaje de relajación Signature",
+          "description": "Presión suave a media para relajar todo el cuerpo, 60 minutos",
           "price_label": "$120 USD"
         },
         {
           "category": "Relajación y bienestar",
-          "name": "Relajación y bienestar — Masaje de relajación Signature — Sesión extendida de relajación de cuerpo completo, 90 minutos",
+          "name": "Masaje de relajación Signature",
+          "description": "Sesión extendida de relajación de cuerpo completo, 90 minutos",
           "price_label": "$165 USD"
         },
         {
-          "category": "Relajación y bienestar",
-          "name": "Terapéutico y recuperación — Masaje de tejido profundo — Presión focalizada para aliviar tensión y rigidez muscular, 60 minutos",
+          "category": "Terapéutico y recuperación",
+          "name": "Masaje de tejido profundo",
+          "description": "Presión focalizada para aliviar tensión y rigidez muscular, 60 minutos",
           "price_label": "$145 USD"
         },
         {
-          "category": "Relajación y bienestar",
-          "name": "Terapéutico y recuperación — Masaje de tejido profundo — Tratamiento extendido y dirigido para tensión crónica, 90 minutos",
+          "category": "Terapéutico y recuperación",
+          "name": "Masaje de tejido profundo",
+          "description": "Tratamiento extendido y dirigido para tensión crónica, 90 minutos",
           "price_label": "$190 USD"
         },
         {
-          "category": "Relajación y bienestar",
-          "name": "Terapéutico y recuperación — Masaje de recuperación deportiva — Masaje dirigido para clientes activos, recuperación muscular y movilidad, 6",
+          "category": "Terapéutico y recuperación",
+          "name": "Masaje de recuperación deportiva",
+          "description": "Masaje dirigido para clientes activos, recuperación muscular y movilidad, 60 minutos",
           "price_label": "$150 USD"
         },
         {
-          "category": "Relajación y bienestar",
-          "name": "Extras — Aromaterapia — Aceites esenciales agregados a tu sesión de masaje",
+          "category": "Extras",
+          "name": "Aromaterapia",
+          "description": "Aceites esenciales agregados a tu sesión de masaje",
           "price_label": "$15 USD"
         },
         {
-          "category": "Relajación y bienestar",
-          "name": "Extras — Toallas calientes y masaje de cuero cabelludo — Toallas tibias seguidas de un relajante masaje de cuero cabelludo",
+          "category": "Extras",
+          "name": "Toallas calientes y masaje de cuero cabelludo",
+          "description": "Toallas tibias seguidas de un relajante masaje de cuero cabelludo",
           "price_label": "$20 USD"
         },
         {
-          "category": "Relajación y bienestar",
+          "category": "Extras",
           "name": "Viajar fuera del área de servicio estándar de Miami puede requerir un cargo adicional según la ubicación."
         }
       ],
@@ -96,8 +103,8 @@
       ],
       "faq": [],
       "featured_package": {
-        "name": "Paquete Miami Reset — Masaje Signature de 90 min con aromaterapia, toallas calientes y masaje de cuero cabelludo",
-        "description": "",
+        "name": "Paquete Miami Reset",
+        "description": "Masaje Signature de 90 min con aromaterapia, toallas calientes y masaje de cuero cabelludo",
         "price_label": "$185 USD"
       }
     },
@@ -120,41 +127,48 @@
       "services": [
         {
           "category": "Relaxation & Wellness",
-          "name": "Relaxation & Wellness — Signature Relaxation Massage — Gentle-to-medium pressure for full-body relaxation, 60 minutes",
+          "name": "Signature Relaxation Massage",
+          "description": "Gentle-to-medium pressure for full-body relaxation, 60 minutes",
           "price_label": "$120 USD"
         },
         {
           "category": "Relaxation & Wellness",
-          "name": "Relaxation & Wellness — Signature Relaxation Massage — Extended full-body relaxation session, 90 minutes",
+          "name": "Signature Relaxation Massage",
+          "description": "Extended full-body relaxation session, 90 minutes",
           "price_label": "$165 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Therapeutic & Recovery — Deep Tissue Massage — Focused pressure to relieve muscle tension and stiffness, 60 minutes",
+          "category": "Therapeutic & Recovery",
+          "name": "Deep Tissue Massage",
+          "description": "Focused pressure to relieve muscle tension and stiffness, 60 minutes",
           "price_label": "$145 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Therapeutic & Recovery — Deep Tissue Massage — Extended targeted treatment for chronic tension, 90 minutes",
+          "category": "Therapeutic & Recovery",
+          "name": "Deep Tissue Massage",
+          "description": "Extended targeted treatment for chronic tension, 90 minutes",
           "price_label": "$190 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Therapeutic & Recovery — Sports Recovery Massage — Targeted massage for active clients, muscle recovery, and mobility, 6",
+          "category": "Therapeutic & Recovery",
+          "name": "Sports Recovery Massage",
+          "description": "Targeted massage for active clients, muscle recovery, and mobility, 60 minutes",
           "price_label": "$150 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Enhancements — Aromatherapy — Essential oils added to your massage session",
+          "category": "Enhancements",
+          "name": "Aromatherapy",
+          "description": "Essential oils added to your massage session",
           "price_label": "$15 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Enhancements — Hot Towels and Scalp Massage — Warm towels followed by a relaxing scalp massage",
+          "category": "Enhancements",
+          "name": "Hot Towels and Scalp Massage",
+          "description": "Warm towels followed by a relaxing scalp massage",
           "price_label": "$20 USD"
         },
         {
-          "category": "Relaxation & Wellness",
+          "category": "Enhancements",
           "name": "Travel outside the standard Miami service area may require an additional fee based on location."
         }
       ],
@@ -165,8 +179,8 @@
       ],
       "faq": [],
       "featured_package": {
-        "name": "Miami Reset Package — A 90-minute Signature Relaxation Massage with aromatherapy, hot towels, and a relaxing scalp massa",
-        "description": "",
+        "name": "Miami Reset Package",
+        "description": "A 90-minute Signature Relaxation Massage with aromatherapy, hot towels, and a relaxing scalp massage",
         "price_label": "$185 USD"
       }
     }

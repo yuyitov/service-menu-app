@@ -514,24 +514,34 @@ def social_url(value: str, base: str, handle_prefix: str = "") -> str | None:
 
 
 def normalize_business_type(value: str) -> str | None:
+    """Map a business-type answer (Tally dropdown option or free text) to a
+    closed category. Whole-word matching (substring matching classified
+    "Barbería"/"Barbershop" as food via "bar" and "Spanish" as beauty via
+    "spa"); the category with the most matching words wins, ties break by
+    the order below (pets before beauty so "Estética para mascotas" → pets).
+    """
     plain = plain_latin(value)
     if not plain:
         return None
+    words = set(re.findall(r"[a-z]+", plain))
     checks = (
-        ("food", ("restaurant", "restaurante", "cafe", "coffee", "bar", "food", "comida", "bakery", "panaderia")),
-        ("fitness", ("fitness", "gym", "gimnasio", "yoga", "pilates", "class", "clase", "training", "entrenamiento")),
-        ("tours", ("tour", "tours", "experience", "experiencia", "travel", "viaje", "actividad")),
-        ("pets", ("pet", "pets", "mascota", "mascotas", "dog", "perro", "grooming", "veterinaria")),
-        ("creative", ("creative", "creativo", "photography", "fotografia", "photo", "artist", "artista", "design", "diseno", "tattoo", "tatuaje")),
-        ("beauty", ("beauty", "belleza", "spa", "salon", "nails", "unas", "lashes", "cejas", "hair", "cabello")),
-        ("wellness", ("wellness", "bienestar", "therapy", "terapia", "massage", "masaje", "holistic", "holistico")),
-        ("professional", ("professional", "profesional", "consult", "consultoria", "coach", "coaching", "clinic", "clinica")),
-        ("retail", ("retail", "tienda", "store", "boutique", "shop", "producto", "products")),
+        ("food", ("restaurant", "restaurante", "cafe", "coffee", "bar", "food", "comida", "bakery", "panaderia", "cocina", "taqueria")),
+        ("fitness", ("fitness", "gym", "gimnasio", "yoga", "pilates", "class", "classes", "clase", "clases", "taller", "talleres", "workshop", "workshops", "training", "entrenamiento", "danza", "dance", "crossfit")),
+        ("tours", ("tour", "tours", "experience", "experiences", "experiencia", "experiencias", "travel", "viaje", "viajes", "actividad", "actividades", "excursion", "excursiones")),
+        ("pets", ("pet", "pets", "mascota", "mascotas", "grooming", "dog", "perro", "perros", "veterinaria", "veterinario")),
+        ("creative", ("creative", "creativo", "photography", "fotografia", "photo", "photographer", "fotografo", "artist", "artista", "design", "diseno", "designer", "tattoo", "tattoos", "tatuaje", "tatuajes", "piercing", "arte")),
+        ("wellness", ("wellness", "bienestar", "spa", "therapy", "terapia", "therapist", "terapeuta", "massage", "massages", "masaje", "masajes", "holistic", "holistico")),
+        ("beauty", ("beauty", "belleza", "salon", "barbershop", "barber", "barberia", "nails", "unas", "lashes", "pestanas", "brows", "cejas", "hair", "cabello", "facial", "facials", "faciales", "estetica", "makeup", "maquillaje")),
+        ("professional", ("professional", "profesional", "profesionales", "consulting", "consultant", "consultor", "consultora", "consultoria", "consult", "coach", "coaching", "clinic", "clinica", "lawyer", "abogado", "accountant", "contador")),
+        ("retail", ("retail", "tienda", "store", "boutique", "shop", "producto", "products", "productos")),
     )
+    best_category = None
+    best_score = 0
     for category, needles in checks:
-        if any(needle in plain for needle in needles):
-            return category
-    return "general"
+        score = sum(1 for needle in needles if needle in words)
+        if score > best_score:
+            best_category, best_score = category, score
+    return best_category or "general"
 
 
 LANG_NAMES = {"es": "Spanish", "en": "English"}

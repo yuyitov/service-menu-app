@@ -1488,6 +1488,7 @@ function buildHmuPublicPayload(normalized, orderId) {
     business_type: answerAny(a, [
       'business_type',
       'type_of_business',
+      'what_type_of_business_is_it',
       'what_type_of_business_is_this',
       'what_type_of_business_do_you_have',
       'tipo_de_negocio',
@@ -1512,7 +1513,8 @@ function buildHmuPublicPayload(normalized, orderId) {
       'links_for_delivery_or_pickup',
       'links_de_delivery_pickup',
       'links_de_delivery_o_pickup',
-      'enlaces_de_delivery_o_pickup'
+      'enlaces_de_delivery_o_pickup',
+      'enlaces_de_entrega_a_domicilio_o_para_llevar'
     ]),
     portfolio_link: answerAny(a, ['portfolio_link', 'portfolio_url', 'enlace_de_portafolio', 'link_de_portafolio']),
     booking_url: answerAny(a, ['external_booking_link', 'enlace_externo_de_reservas']),
@@ -1539,14 +1541,24 @@ function buildHmuPublicPayload(normalized, orderId) {
     google_reviews_url: answerAny(a, ['google_reviews_link', 'enlace_de_google_reviews']),
     address: answerAny(a, ['location_1_public_address', 'ubicacion_1_direccion_publica']),
     location_1_notes: answerAny(a, ['location_1_notes', 'ubicacion_1_notas']),
-    service_area_text: answerAny(a, ['where_do_you_offer_your_services', 'donde_ofreces_tus_servicios']),
+    service_area_text: answerAny(a, [
+      'where_do_you_offer_your_services',
+      'donde_ofreces_tus_servicios',
+      'what_areas_do_you_cover',
+      'que_zonas_cubres'
+    ]),
     client_care_text: answerAny(a, [
+      'how_do_clients_get_service',
+      'como_atiendes_a_tus_clientes',
+      'do_you_work_with_clients_online_in_person_or_both',
+      'trabajas_con_clientes_en_linea_en_persona_o_ambas',
       'how_do_you_serve_your_clients',
       'how_do_you_work_with_clients',
-      'how_do_you_attend_to_your_clients',
-      'como_atiendes_a_tus_clientes'
+      'how_do_you_attend_to_your_clients'
     ]),
     reservations_text: answerAny(a, [
+      'do_you_take_reservations',
+      'aceptan_reservaciones',
       'do_you_accept_reservations',
       'do_you_accept_bookings',
       'accept_reservations',
@@ -1585,6 +1597,8 @@ function buildHmuPublicPayload(normalized, orderId) {
     ]),
     services_text: answerAny(a, ['list_your_services_with_prices', 'lista_tus_servicios_con_precios']),
     faq_text: answerAny(a, [
+      'faq_for_your_page',
+      'preguntas_frecuentes_para_tu_pagina',
       'faq',
       'frequently_asked_questions',
       'common_questions',

@@ -93,6 +93,12 @@
         },
         {
           "category": "Extras",
+          "name": "Recorte de barba",
+          "description": "",
+          "price_label": "$150 USD"
+        },
+        {
+          "category": "Extras",
           "name": "Viajar fuera del área de servicio estándar de Miami puede requerir un cargo adicional según la ubicación."
         }
       ],
@@ -166,6 +172,12 @@
           "name": "Hot Towels and Scalp Massage",
           "description": "Warm towels followed by a relaxing scalp massage",
           "price_label": "$20 USD"
+        },
+        {
+          "category": "Enhancements",
+          "name": "Beard trim",
+          "description": "",
+          "price_label": "$150 USD"
         },
         {
           "category": "Enhancements",

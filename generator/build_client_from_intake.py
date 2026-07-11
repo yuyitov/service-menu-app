@@ -563,6 +563,40 @@ SPANISH_MARKER_PHRASES = (
     " tu experiencia",
 )
 
+ENGLISH_MARKER_WORDS = {
+    "and",
+    "are",
+    "at",
+    "available",
+    "before",
+    "booking",
+    "for",
+    "from",
+    "hours",
+    "of",
+    "or",
+    "our",
+    "please",
+    "the",
+    "this",
+    "to",
+    "we",
+    "with",
+    "you",
+    "your",
+}
+
+ENGLISH_MARKER_PHRASES = (
+    " at least ",
+    " for the ",
+    " in the ",
+    " of the ",
+    " per person",
+    " to the ",
+    " we recommend ",
+    " your ",
+)
+
 
 def plain_latin(value) -> str:
     text = unicodedata.normalize("NFD", str(value or ""))
@@ -575,6 +609,14 @@ def spanish_signal_score(text: str) -> int:
     score = sum(2 for phrase in SPANISH_MARKER_PHRASES if phrase in plain)
     words = set(re.findall(r"[a-z]+", plain))
     score += sum(1 for word in SPANISH_MARKER_WORDS if word in words)
+    return score
+
+
+def english_signal_score(text: str) -> int:
+    plain = f" {plain_latin(text)} "
+    score = sum(2 for phrase in ENGLISH_MARKER_PHRASES if phrase in plain)
+    words = set(re.findall(r"[a-z]+", plain))
+    score += sum(1 for word in ENGLISH_MARKER_WORDS if word in words)
     return score
 
 
@@ -864,12 +906,21 @@ def main() -> int:
     if locations:
         client["locations"] = locations
 
-    # The intake is usually authored in default_language. If the customer asks
-    # for English first but wrote the intake in Spanish, treat Spanish as the
-    # source so the default English page is actually translated before publish.
+    # The intake is usually authored in default_language, but not always: a
+    # customer can fill the English form and still pick Spanish as the default
+    # page language (or vice versa). Translate FROM the language the text is
+    # actually written in — otherwise the "translation" runs in the wrong
+    # direction and the default page publishes untranslated.
     source_lang = default_language
-    if default_language == "en" and spanish_signal_score(content_text(client["content"]["en"])) >= 5:
+    default_text = content_text(client["content"][default_language])
+    if default_language == "en" and spanish_signal_score(default_text) >= 5:
         source_lang = "es"
+    elif (
+        default_language == "es"
+        and english_signal_score(default_text) >= 5
+        and english_signal_score(default_text) > spanish_signal_score(default_text)
+    ):
+        source_lang = "en"
 
     other_lang = "en" if source_lang == "es" else "es"
     apply_translation(client["content"], source_lang, other_lang)
@@ -879,6 +930,13 @@ def main() -> int:
             "default_language is 'en' but the English page still looks Spanish; "
             "set OPENAI_API_KEY or translate the intake manually before publishing"
         )
+    if default_language == "es":
+        es_text = content_text(client["content"]["es"])
+        if english_signal_score(es_text) >= 5 and english_signal_score(es_text) > spanish_signal_score(es_text):
+            fail(
+                "default_language is 'es' but the Spanish page still looks English; "
+                "set OPENAI_API_KEY or translate the intake manually before publishing"
+            )
 
     if not (
         client["whatsapp"]

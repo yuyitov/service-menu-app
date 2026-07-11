@@ -33,10 +33,10 @@
   "portfolio_link": null,
   "content": {
     "es": {
-      "short_description": "Personalized mobile massage services delivered to your home, hotel, or vacation rental throughout Miami.\n\nBilingual service in English and Spanish.5t",
+      "short_description": "Servicios de masaje a domicilio personalizados, en tu casa, hotel o renta vacacional en todo Miami.\n\nServicio bilingüe en inglés y español.",
       "address": "",
-      "opening_hours_text": "Monday - Saturday: 10:00 AM - 9:00 PM\nSunday: 11:00 AM - 6:00 PM",
-      "service_area_text": "Mobile massages services at homes, hotels, and vacation rentals throughout Miami-Dade County, including Miami, Miami Beach, Brickell, downtown Miami, Coral Gables and Aventura.",
+      "opening_hours_text": "Lunes a sábado: 10:00 AM - 9:00 PM\nDomingo: 11:00 AM - 6:00 PM",
+      "service_area_text": "Masajes a domicilio en casas, hoteles y rentas vacacionales en todo el condado de Miami-Dade, incluyendo Miami, Miami Beach, Brickell, el centro de Miami, Coral Gables y Aventura.",
       "client_care_text": "",
       "reservations_text": "",
       "class_schedule_text": "",
@@ -44,59 +44,59 @@
       "pet_notes_text": "",
       "price_display": "mixed",
       "service_categories": [
-        "Relaxation & Wellness",
-        "Therapeutic & Recovery",
-        "Enchancements"
+        "Relajación y bienestar",
+        "Terapéutico y recuperación",
+        "Extras"
       ],
       "services": [
         {
-          "category": "Relaxation & Wellness",
-          "name": "Relaxation & Wellness — Signature Relaxation Massage — Gentle-to-medium pressure for full-body relaxation, 60 minutes",
+          "category": "Relajación y bienestar",
+          "name": "Relajación y bienestar — Masaje de relajación Signature — Presión suave a media para relajar todo el cuerpo, 60 minutos",
           "price_label": "$120 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Relaxation & Wellness — Signature Relaxation Massage — Extended full-body relaxation session, 90 minutes",
+          "category": "Relajación y bienestar",
+          "name": "Relajación y bienestar — Masaje de relajación Signature — Sesión extendida de relajación de cuerpo completo, 90 minutos",
           "price_label": "$165 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Therapeutic & Recovery — Deep Tissue Massage — Focused pressure to relieve muscle tension and stiffness, 60 minutes",
+          "category": "Relajación y bienestar",
+          "name": "Terapéutico y recuperación — Masaje de tejido profundo — Presión focalizada para aliviar tensión y rigidez muscular, 60 minutos",
           "price_label": "$145 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Therapeutic & Recovery — Deep Tissue Massage — Extended targeted treatment for chronic tension, 90 minutes",
+          "category": "Relajación y bienestar",
+          "name": "Terapéutico y recuperación — Masaje de tejido profundo — Tratamiento extendido y dirigido para tensión crónica, 90 minutos",
           "price_label": "$190 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Therapeutic & Recovery — Sports Recovery Massage — Targeted massage for active clients, muscle recovery, and mobility, 6",
+          "category": "Relajación y bienestar",
+          "name": "Terapéutico y recuperación — Masaje de recuperación deportiva — Masaje dirigido para clientes activos, recuperación muscular y movilidad, 6",
           "price_label": "$150 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Enhancements — Aromatherapy — Essential oils added to your massage session",
+          "category": "Relajación y bienestar",
+          "name": "Extras — Aromaterapia — Aceites esenciales agregados a tu sesión de masaje",
           "price_label": "$15 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Enhancements — Hot Towels and Scalp Massage — Warm towels followed by a relaxing scalp massage",
+          "category": "Relajación y bienestar",
+          "name": "Extras — Toallas calientes y masaje de cuero cabelludo — Toallas tibias seguidas de un relajante masaje de cuero cabelludo",
           "price_label": "$20 USD"
         },
         {
-          "category": "Relaxation & Wellness",
-          "name": "Travel outside the standard Miami service area may require an additional fee based on location."
+          "category": "Relajación y bienestar",
+          "name": "Viajar fuera del área de servicio estándar de Miami puede requerir un cargo adicional según la ubicación."
         }
       ],
       "policies": [
-        "Appointments are available by advance booking only. A 30% deposit is required to reserve your appointment, and the remaining balance is due at the time of service.",
-        "Please provide at least 24 hours’ notice to cancel or reschedule. Deposits are non-refundable for cancellations made less than 24 hours before the appointment.",
-        "Please disclose any injuries, allergies, pregnancy, recent surgeries, or relevant medical conditions before your session."
+        "Las citas están disponibles solo con reservación anticipada. Se requiere un depósito del 30% para reservar tu cita, y el saldo restante se paga al momento del servicio.",
+        "Por favor avisa con al menos 24 horas de anticipación para cancelar o reprogramar. Los depósitos no son reembolsables en cancelaciones hechas con menos de 24 horas de anticipación.",
+        "Por favor informa sobre lesiones, alergias, embarazo, cirugías recientes o condiciones médicas relevantes antes de tu sesión."
       ],
       "faq": [],
       "featured_package": {
-        "name": "Miami Reset Package — A 90-minute Signature Relaxation Massage with aromatherapy, hot towels, and a relaxing scalp massa",
+        "name": "Paquete Miami Reset — Masaje Signature de 90 min con aromaterapia, toallas calientes y masaje de cuero cabelludo",
         "description": "",
         "price_label": "$185 USD"
       }

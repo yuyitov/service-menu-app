@@ -1,0 +1,200 @@
+{
+  "public_slug": "prueba-correcciones-x7k2q9z",
+  "default_language": "es",
+  "brand_style": "sage-calm",
+  "business_type": "beauty",
+  "business_name": "Prueba Correcciones (temporal)",
+  "logo_url": "https://www.hmulink.com/links/spa-verde-serena-puerto-vallarta-9nj2eq5/assets/logo.png",
+  "primary_image_url": "https://www.hmulink.com/links/spa-verde-serena-puerto-vallarta-9nj2eq5/assets/gallery-1.png",
+  "gallery_images": [
+    {
+      "url": "https://www.hmulink.com/links/spa-verde-serena-puerto-vallarta-9nj2eq5/assets/gallery-1.png"
+    },
+    {
+      "url": "https://www.hmulink.com/links/spa-verde-serena-puerto-vallarta-9nj2eq5/assets/gallery-2.png"
+    },
+    {
+      "url": "https://www.hmulink.com/links/spa-verde-serena-puerto-vallarta-9nj2eq5/assets/gallery-3.png"
+    },
+    {
+      "url": "https://www.hmulink.com/links/spa-verde-serena-puerto-vallarta-9nj2eq5/assets/gallery-4.png"
+    }
+  ],
+  "whatsapp": "+523221553952",
+  "phone": "+523221553952",
+  "public_email": "veronica.perezarroyo@gmail.com",
+  "instagram": "https://instagram.com/instagram",
+  "facebook": "https://facebook.com/facebook",
+  "tiktok": "https://www.tiktok.com/@tiktok",
+  "website": "https://www.hmulink.com",
+  "booking_url": "https://www.opentable.com.mx/",
+  "primary_cta": "phone",
+  "google_maps_url": "https://maps.google.com/?q=Olas+Altas+Zona+Romantica+Puerto+Vallarta",
+  "google_reviews_url": "https://www.google.com",
+  "other_public_link": {
+    "label": "Other link",
+    "url": "https://www.youtube.com"
+  },
+  "delivery_pickup_links": [],
+  "portfolio_link": null,
+  "content": {
+    "es": {
+      "short_description": "Un oasis de relajación en el corazón de la Zona Romántica de Puerto Vallarta. Masajes, faciales y rituales de bienestar con productos naturales y terapeutas certificados.",
+      "address": "Calle Olas Altas 425, Zona Romántica, 48380 Puerto Vallarta, Jalisco",
+      "opening_hours_text": "Lunes a sábado de 10:00 a 20:00. Domingos de 11:00 a 18:00. \nRevisa el horario de cada sucursal.",
+      "service_area_text": "",
+      "client_care_text": "Ambas — con cita y sin cita",
+      "reservations_text": "",
+      "price_display": "mixed",
+      "service_categories": [
+        "Masajes",
+        "Faciales",
+        "Rituales de spa",
+        "Paquetes de pareja"
+      ],
+      "services": [
+        {
+          "category": "Masajes",
+          "name": "Masaje relajante (60 min)",
+          "price_label": "$850"
+        },
+        {
+          "category": "Masajes",
+          "name": "Masaje de tejido profundo (60 min)",
+          "price_label": "$950"
+        },
+        {
+          "category": "Masajes",
+          "name": "Masaje con piedras calientes (75 min)",
+          "price_label": "$1,150"
+        },
+        {
+          "category": "Masajes",
+          "name": "Masaje a cuatro manos (60 min)",
+          "price_label": "$1,600"
+        },
+        {
+          "category": "Faciales",
+          "name": "Facial hidratante (50 min)",
+          "price_label": "$780"
+        },
+        {
+          "category": "Faciales",
+          "name": "Facial anti-edad (60 min)",
+          "price_label": "$1,050"
+        },
+        {
+          "category": "Rituales de spa",
+          "name": "Ritual maya de bienestar (90 min)"
+        },
+        {
+          "category": "Rituales de spa",
+          "name": "Exfoliación corporal + masaje (90 min)"
+        },
+        {
+          "category": "Paquetes de pareja",
+          "name": "Escape romántico para dos (2 hrs)",
+          "price_label": "$3,200"
+        }
+      ],
+      "policies": [
+        "Cancelaciones con 12 horas de anticipación. Llega 10 minutos antes de tu cita."
+      ],
+      "faq": [],
+      "featured_package": {
+        "name": "Escape romántico para dos: 2 masajes relajantes + acceso a jacuzzi + copa de vino de bienvenida.",
+        "description": "",
+        "price_label": "$3,200 para dos personas."
+      }
+    },
+    "en": {
+      "short_description": "An oasis of relaxation in the heart of the Zona Romántica of Puerto Vallarta. Massages, facials, and wellness rituals with natural products and certified therapists.",
+      "address": "Calle Olas Altas 425, Zona Romántica, 48380 Puerto Vallarta, Jalisco",
+      "opening_hours_text": "Monday to Saturday from 10:00 AM to 8:00 PM. Sundays from 11:00 AM to 6:00 PM. \nCheck the hours for each branch.",
+      "service_area_text": "",
+      "client_care_text": "Both — with appointment and walk-ins",
+      "reservations_text": "",
+      "price_display": "mixed",
+      "service_categories": [
+        "Massages",
+        "Facials",
+        "Spa rituals",
+        "Couples packages"
+      ],
+      "services": [
+        {
+          "category": "Massages",
+          "name": "Relaxing massage (60 min)",
+          "price_label": "$850"
+        },
+        {
+          "category": "Massages",
+          "name": "Deep tissue massage (60 min)",
+          "price_label": "$950"
+        },
+        {
+          "category": "Massages",
+          "name": "Hot stone massage (75 min)",
+          "price_label": "$1,150"
+        },
+        {
+          "category": "Massages",
+          "name": "Four hands massage (60 min)",
+          "price_label": "$1,600"
+        },
+        {
+          "category": "Facials",
+          "name": "Hydrating facial (50 min)",
+          "price_label": "$780"
+        },
+        {
+          "category": "Facials",
+          "name": "Anti-aging facial (60 min)",
+          "price_label": "$1,050"
+        },
+        {
+          "category": "Spa rituals",
+          "name": "Mayan wellness ritual (90 min)"
+        },
+        {
+          "category": "Spa rituals",
+          "name": "Body scrub + massage (90 min)"
+        },
+        {
+          "category": "Couples packages",
+          "name": "Romantic escape for two (2 hrs)",
+          "price_label": "$3,200"
+        }
+      ],
+      "policies": [
+        "Cancellations with 12 hours notice. Arrive 10 minutes before your appointment."
+      ],
+      "faq": [],
+      "featured_package": {
+        "name": "Romantic escape for two: 2 relaxing massages + access to jacuzzi + welcome glass of wine.",
+        "description": "",
+        "price_label": "$3,200 para dos personas."
+      }
+    }
+  },
+  "locations": [
+    {
+      "name": "Spa Serena Zona Romántica",
+      "address": "Calle Olas Altas 425, Zona Romántica, 48380 Puerto Vallarta, Jalisco",
+      "google_maps_url": "https://maps.google.com/?q=Olas+Altas+Zona+Romantica+Puerto+Vallarta",
+      "notes": "A dos cuadras de la playa Los Muertos."
+    },
+    {
+      "name": "Spa Serena Marina",
+      "address": "Local 12, Plaza Marina, Marina Vallarta, 48335 Puerto Vallarta, Jalisco",
+      "google_maps_url": "https://maps.google.com/?q=Plaza+Marina+Vallarta",
+      "notes": "WhatsApp: +52 322 145 8891 · Lunes a domingo de 9:00 a 21:00"
+    },
+    {
+      "name": "Spa Serena Nuevo Vallarta",
+      "address": "Av. Paseo de los Cocoteros 55, Nuevo Vallarta, 63735 Bahía de Banderas, Nayarit",
+      "google_maps_url": "https://maps.google.com/?q=Paseo+de+los+Cocoteros+Nuevo+Vallarta",
+      "notes": "WhatsApp: +52 322 145 8892 · Solo con cita · Martes a domingo de 10:00 a 19:00"
+    }
+  ]
+}

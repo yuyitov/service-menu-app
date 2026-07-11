@@ -41,7 +41,7 @@
     "es": {
       "short_description": "Un oasis de relajación en el corazón de la Zona Romántica de Puerto Vallarta. Masajes, faciales y rituales de bienestar con productos naturales y terapeutas certificados.",
       "address": "Calle Olas Altas 425, Zona Romántica, 48380 Puerto Vallarta, Jalisco",
-      "opening_hours_text": "Lunes a sábado de 10:00 a 14:00. Domingos de 11:00 a 18:00. \nRevisa el horario de cada sucursal.",
+      "opening_hours_text": "Lunes a viernes de 10:00 a 20:00. Sábado de 10:00 a 14:00. Domingos de 11:00 a 18:00. \nRevisa el horario de cada sucursal.",
       "service_area_text": "",
       "client_care_text": "Ambas — con cita y sin cita",
       "reservations_text": "",
@@ -56,7 +56,7 @@
         {
           "category": "Masajes",
           "name": "Masaje relajante (60 min)",
-          "price_label": "$950"
+          "price_label": "$850"
         },
         {
           "category": "Masajes",
@@ -110,7 +110,7 @@
     "en": {
       "short_description": "An oasis of relaxation in the heart of the Zona Romántica of Puerto Vallarta. Massages, facials, and wellness rituals with natural products and certified therapists.",
       "address": "Calle Olas Altas 425, Zona Romántica, 48380 Puerto Vallarta, Jalisco",
-      "opening_hours_text": "Monday to Saturday from 10:00 AM to 2:00 PM. Sundays from 11:00 AM to 6:00 PM. \nCheck the hours for each branch.",
+      "opening_hours_text": "Monday to Friday from 10:00 AM to 8:00 PM. Saturday from 10:00 AM to 2:00 PM. Sundays from 11:00 AM to 6:00 PM. \nCheck the hours for each branch.",
       "service_area_text": "",
       "client_care_text": "Both — with appointment and walk-ins",
       "reservations_text": "",
@@ -125,7 +125,7 @@
         {
           "category": "Massages",
           "name": "Relaxing massage (60 min)",
-          "price_label": "$950"
+          "price_label": "$850"
         },
         {
           "category": "Massages",

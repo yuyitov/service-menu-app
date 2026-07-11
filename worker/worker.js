@@ -922,13 +922,9 @@ async function handleCorrectionPurchase(session, env) {
     return jsonResponse({ ok: false, error: 'Failed to send correction email' }, 500);
   }
 
-  await notifyAdmin(env, `HMU corrección adicional comprada — ${slug}`, [
-    `Corrección adicional pagada (${CORRECTION_PRICE[currency === 'mxn' ? 'mxn' : 'usd'].label}).`,
-    `Página: ${pageUrl}`,
-    `Token enviado a: ${ownerEmail}`,
-    `payment_intent: ${paymentIntentId}`
-  ]);
-
+  // Sin copia de admin por la compra en sí: el recibo de Stripe ya registra el
+  // pago, y el aviso "HMU corrección solicitada" (handleCorrectionRequest) llega
+  // con el cambio real cuando el comprador lo envía.
   return jsonResponse({ ok: true, paymentIntentId, slug });
 }
 

@@ -140,6 +140,7 @@ STRINGS = {
         "share_button": "Compartir link",
         "share_copied": "Link copiado",
         "footer_credit": "Hecho con HMU Link",
+        "footer_privacy": "Privacidad",
         "footer_demo_credit": "Demo hecho con HMU Link",
         "qr_alt": "Codigo QR de",
         "lang_switch": "View this page in English",
@@ -189,6 +190,7 @@ STRINGS = {
         "share_copied": "Link copied",
         "footer_credit": "Made with HMU Link",
         "footer_demo_credit": "Demo made with HMU Link",
+        "footer_privacy": "Privacy",
         "qr_alt": "QR code for",
         "lang_switch": "Ver esta página en español",
     },
@@ -1153,12 +1155,31 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
     )
 
 
-def build_footer(payload: dict, text: str = "HMU Link - Demo") -> str:
+def build_footer(
+    payload: dict,
+    text: str = "HMU Link - Demo",
+    privacy_url: str = "",
+    privacy_label: str = "",
+) -> str:
     name = esc(payload.get("business_name"))
+    # Attribution credit links back to HMU Link; a minimal privacy link points
+    # to HMU Link's own policy (the page hosting these public pages). Links are
+    # underlined so they don't rely on color alone (WCAG 1.4.1).
+    credit = (
+        f'<a class="footer__link" href="https://www.hmulink.com/" '
+        f'target="_blank" rel="noopener">{esc(text)}</a>'
+    )
+    legal = ""
+    if privacy_url and privacy_label:
+        legal = (
+            '<span class="footer__sep" aria-hidden="true"> · </span>'
+            f'<a class="footer__link" href="{esc(privacy_url)}" '
+            f'target="_blank" rel="noopener">{esc(privacy_label)}</a>'
+        )
     return (
         '<footer class="footer">'
         f'<span class="serif">{name}</span>'
-        f'{esc(text)}'
+        f'{credit}{legal}'
         "</footer>"
     )
 
@@ -1211,7 +1232,12 @@ def render_view(
         "{{INFO_BLOCK}}": build_info(view, s),
         "{{FAQ_BLOCK}}": build_faq(view, s),
         "{{SHARE_BLOCK}}": build_share(share_url, s, qr_src),
-        "{{FOOTER_BLOCK}}": build_footer(view, footer_text),
+        "{{FOOTER_BLOCK}}": build_footer(
+            view,
+            footer_text,
+            "https://www.hmulink.com/privacy/" if lang == "en" else "https://www.hmulink.com/es/privacidad/",
+            s["footer_privacy"],
+        ),
         "{{DOCK_BLOCK}}": build_dock(view, s),
         "{{SCROLL_HINT}}": s["scroll_hint"],
         "{{SKIP_LINK_BLOCK}}": f'<a class="skip" href="#content">{esc(s["skip_to_content"])}</a>',

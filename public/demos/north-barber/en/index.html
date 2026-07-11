@@ -23,7 +23,7 @@
 :root{
   --base-bg:#26282c; --base-ink:#eef1f4; --base-soft:rgba(238,241,244,.6);
   --base-hair:rgba(159,178,189,.25); --base-accent:#9fb2bd; --base-accent-ink:#1d2024;
-  --alt-bg:#eef1f4; --alt-ink:#23272c; --alt-soft:rgba(35,39,44,.62);
+  --alt-bg:#eef1f4; --alt-ink:#23272c; --alt-soft:rgba(35,39,44,.66);
   --alt-hair:rgba(85,112,126,.3); --alt-accent:#55707e; --alt-accent-ink:#f2f5f7;
   --panel-bg:#1a1d20; --panel-ink:#eef1f4; --panel-soft:rgba(238,241,244,.66);
   --panel-hair:rgba(159,178,189,.4); --panel-accent:#9fb2bd;
@@ -50,6 +50,10 @@ body.theme-alt{
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* ---- accesibilidad: foco visible por teclado + saltar al contenido ---- */
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:12px;z-index:200;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none}
+.skip:focus{left:12px}
 body{margin:0;font-family:var(--sans);font-weight:300;line-height:1.6;
   -webkit-text-size-adjust:100%;overflow-x:hidden}
 h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;margin:0}
@@ -259,6 +263,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 </style>
 </head>
 <body class="style-charcoal-clean">
+<a class="skip" href="#content">Skip to content</a>
 
 <div class="liquid" aria-hidden="true">
   <div class="blob blob--a"></div>
@@ -269,7 +274,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 
 <div class="intro" id="intro" aria-hidden="true"><div class="intro__brand"><span>North</span><span>Barber</span><span>Co.</span></div><div class="intro__sub">Services</div></div>
 
-<div class="page">
+<div class="page" id="content">
 
   <header class="hero" data-theme="base">
     <div class="shell topbar">

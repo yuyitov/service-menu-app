@@ -22,11 +22,11 @@
    Paleta WOW: negro profundo + carmesi. Base negra, alt hueso rosado. */
 :root{
   --base-bg:#0c0c0e; --base-ink:#eceae7; --base-soft:rgba(236,234,231,.6);
-  --base-hair:rgba(217,46,78,.3); --base-accent:#d92e4e; --base-accent-ink:#fff5f5;
+  --base-hair:rgba(217,46,78,.3); --base-accent:#dc3f5d; --base-accent-ink:#0c0c0e;
   --alt-bg:#f4eef0; --alt-ink:#201317; --alt-soft:rgba(32,19,23,.62);
   --alt-hair:rgba(161,25,48,.3); --alt-accent:#a11930; --alt-accent-ink:#fdf1f3;
   --panel-bg:#161618; --panel-ink:#eceae7; --panel-soft:rgba(236,234,231,.66);
-  --panel-hair:rgba(217,46,78,.4); --panel-accent:#d92e4e;
+  --panel-hair:rgba(217,46,78,.4); --panel-accent:#de4c68;
   --blob-a:#c0203a; --blob-b:#4a0e18; --blob-c:#2a2a2e; --blob-opacity:.4;
   --dock-glow:rgba(217,46,78,.35); --dock-glow-strong:rgba(217,46,78,.55);
 }
@@ -50,6 +50,10 @@ body.theme-alt{
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* ---- accesibilidad: foco visible por teclado + saltar al contenido ---- */
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:12px;z-index:200;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none}
+.skip:focus{left:12px}
 body{margin:0;font-family:var(--sans);font-weight:300;line-height:1.6;
   -webkit-text-size-adjust:100%;overflow-x:hidden}
 h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;margin:0}
@@ -259,6 +263,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 </style>
 </head>
 <body class="style-midnight-ink">
+<a class="skip" href="#content">Saltar al contenido</a>
 
 <div class="liquid" aria-hidden="true">
   <div class="blob blob--a"></div>
@@ -269,7 +274,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 
 <div class="intro" id="intro" aria-hidden="true"><div class="intro__brand"><span>Iron</span><span>&amp;</span><span>Ink</span><span>Tattoo</span></div><div class="intro__sub">Servicios</div></div>
 
-<div class="page">
+<div class="page" id="content">
 
   <header class="hero" data-theme="base">
     <div class="shell topbar">

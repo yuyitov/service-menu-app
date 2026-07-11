@@ -23,8 +23,8 @@
 :root{
   --base-bg:#101018; --base-ink:#efe7d6; --base-soft:rgba(239,231,214,.6);
   --base-hair:rgba(201,162,75,.25); --base-accent:#c9a24b; --base-accent-ink:#14140f;
-  --alt-bg:#f0e8d6; --alt-ink:#262214; --alt-soft:rgba(38,34,20,.62);
-  --alt-hair:rgba(138,106,31,.3); --alt-accent:#8a6a1f; --alt-accent-ink:#f7f1e3;
+  --alt-bg:#f0e8d6; --alt-ink:#262214; --alt-soft:rgba(38,34,20,.66);
+  --alt-hair:rgba(138,106,31,.3); --alt-accent:#82641d; --alt-accent-ink:#f7f1e3;
   --panel-bg:#191922; --panel-ink:#efe7d6; --panel-soft:rgba(239,231,214,.66);
   --panel-hair:rgba(201,162,75,.4); --panel-accent:#c9a24b;
   --blob-a:#c9a24b; --blob-b:#6b5a2e; --blob-c:#2b2c4a; --blob-opacity:.45;
@@ -50,6 +50,10 @@ body.theme-alt{
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* ---- accesibilidad: foco visible por teclado + saltar al contenido ---- */
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:12px;z-index:200;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none}
+.skip:focus{left:12px}
 body{margin:0;font-family:var(--sans);font-weight:300;line-height:1.6;
   -webkit-text-size-adjust:100%;overflow-x:hidden}
 h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;margin:0}
@@ -259,6 +263,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 </style>
 </head>
 <body class="style-black-gold">
+<a class="skip" href="#content">Skip to content</a>
 
 <div class="liquid" aria-hidden="true">
   <div class="blob blob--a"></div>
@@ -269,7 +274,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 
 <div class="intro" id="intro" aria-hidden="true"><div class="intro__brand"><span>Bella</span><span>Spa</span><span>&amp;</span><span>Wellness</span></div><div class="intro__sub">Services</div></div>
 
-<div class="page">
+<div class="page" id="content">
 
   <header class="hero" data-theme="base">
     <div class="shell topbar">

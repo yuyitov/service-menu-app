@@ -24,7 +24,7 @@
   --base-bg:#101214; --base-ink:#f2f5f2; --base-soft:rgba(242,245,242,.6);
   --base-hair:rgba(198,255,61,.22); --base-accent:#c6ff3d; --base-accent-ink:#111a04;
   --alt-bg:#eef3e2; --alt-ink:#161c0e; --alt-soft:rgba(22,28,14,.62);
-  --alt-hair:rgba(90,125,0,.3); --alt-accent:#5a7d00; --alt-accent-ink:#f4f9e8;
+  --alt-hair:rgba(90,125,0,.3); --alt-accent:#567800; --alt-accent-ink:#f4f9e8;
   --panel-bg:#1a1d20; --panel-ink:#f2f5f2; --panel-soft:rgba(242,245,242,.66);
   --panel-hair:rgba(198,255,61,.35); --panel-accent:#c6ff3d;
   --blob-a:#c6ff3d; --blob-b:#3d5c10; --blob-c:#2a3138; --blob-opacity:.3;
@@ -50,6 +50,10 @@ body.theme-alt{
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* ---- accesibilidad: foco visible por teclado + saltar al contenido ---- */
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:12px;z-index:200;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none}
+.skip:focus{left:12px}
 body{margin:0;font-family:var(--sans);font-weight:300;line-height:1.6;
   -webkit-text-size-adjust:100%;overflow-x:hidden}
 h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;margin:0}
@@ -259,6 +263,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 </style>
 </head>
 <body class="style-electric-slate">
+<a class="skip" href="#content">Saltar al contenido</a>
 
 <div class="liquid" aria-hidden="true">
   <div class="blob blob--a"></div>
@@ -269,7 +274,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 
 <div class="intro" id="intro" aria-hidden="true"><div class="intro__brand"><span>Pulse</span><span>Fitness</span><span>Studio</span></div><div class="intro__sub">Servicios</div></div>
 
-<div class="page">
+<div class="page" id="content">
 
   <header class="hero" data-theme="base">
     <div class="shell topbar">

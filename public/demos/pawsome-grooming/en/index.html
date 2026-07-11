@@ -21,8 +21,8 @@
 /* sunny-paws - alegre, jugueton, amigable. Pet grooming / servicios para mascotas.
    Paleta WOW: amarillo sol + naranja + blanco calido. Base clara, alt miel oscura. */
 :root{
-  --base-bg:#fffaf0; --base-ink:#46351d; --base-soft:rgba(70,53,29,.62);
-  --base-hair:rgba(255,159,28,.35); --base-accent:#f08c00; --base-accent-ink:#fff8ec;
+  --base-bg:#fffaf0; --base-ink:#46351d; --base-soft:rgba(70,53,29,.7);
+  --base-hair:rgba(255,159,28,.35); --base-accent:#a35f00; --base-accent-ink:#fff8ec;
   --alt-bg:#3b2a10; --alt-ink:#fdf3e3; --alt-soft:rgba(253,243,227,.65);
   --alt-hair:rgba(255,193,105,.3); --alt-accent:#ffc169; --alt-accent-ink:#3b2a10;
   --panel-bg:#3b2a10; --panel-ink:#fdf3e3; --panel-soft:rgba(253,243,227,.66);
@@ -50,6 +50,10 @@ body.theme-alt{
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* ---- accesibilidad: foco visible por teclado + saltar al contenido ---- */
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:12px;z-index:200;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none}
+.skip:focus{left:12px}
 body{margin:0;font-family:var(--sans);font-weight:300;line-height:1.6;
   -webkit-text-size-adjust:100%;overflow-x:hidden}
 h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;margin:0}
@@ -259,6 +263,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 </style>
 </head>
 <body class="style-sunny-paws">
+<a class="skip" href="#content">Skip to content</a>
 
 <div class="liquid" aria-hidden="true">
   <div class="blob blob--a"></div>
@@ -269,7 +274,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 
 <div class="intro" id="intro" aria-hidden="true"><div class="intro__brand"><span>Pawsome</span><span>Grooming</span></div><div class="intro__sub">Services</div></div>
 
-<div class="page">
+<div class="page" id="content">
 
   <header class="hero" data-theme="base">
     <div class="shell topbar">

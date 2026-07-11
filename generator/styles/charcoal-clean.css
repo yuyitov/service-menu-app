@@ -3,7 +3,7 @@
 :root{
   --base-bg:#26282c; --base-ink:#eef1f4; --base-soft:rgba(238,241,244,.6);
   --base-hair:rgba(159,178,189,.25); --base-accent:#9fb2bd; --base-accent-ink:#1d2024;
-  --alt-bg:#eef1f4; --alt-ink:#23272c; --alt-soft:rgba(35,39,44,.62);
+  --alt-bg:#eef1f4; --alt-ink:#23272c; --alt-soft:rgba(35,39,44,.66);
   --alt-hair:rgba(85,112,126,.3); --alt-accent:#55707e; --alt-accent-ink:#f2f5f7;
   --panel-bg:#1a1d20; --panel-ink:#eef1f4; --panel-soft:rgba(238,241,244,.66);
   --panel-hair:rgba(159,178,189,.4); --panel-accent:#9fb2bd;

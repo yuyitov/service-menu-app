@@ -21,8 +21,8 @@
 /* soft-blush - femenino, estetico, delicado. Estetica / lashes / brows / nails / faciales.
    Paleta WOW: blush / nude rosado + vino rosado profundo. Base clara, alt vino. */
 :root{
-  --base-bg:#fbf1f0; --base-ink:#4a2c30; --base-soft:rgba(74,44,48,.62);
-  --base-hair:rgba(189,110,125,.3); --base-accent:#bd6e7d; --base-accent-ink:#fffafa;
+  --base-bg:#fbf1f0; --base-ink:#4a2c30; --base-soft:rgba(74,44,48,.7);
+  --base-hair:rgba(189,110,125,.3); --base-accent:#ae4f61; --base-accent-ink:#fffafa;
   --alt-bg:#371820; --alt-ink:#fbeef0; --alt-soft:rgba(251,238,240,.65);
   --alt-hair:rgba(230,163,175,.28); --alt-accent:#e6a3af; --alt-accent-ink:#371820;
   --panel-bg:#371820; --panel-ink:#fbeef0; --panel-soft:rgba(251,238,240,.66);
@@ -50,6 +50,10 @@ body.theme-alt{
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* ---- accesibilidad: foco visible por teclado + saltar al contenido ---- */
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:12px;z-index:200;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none}
+.skip:focus{left:12px}
 body{margin:0;font-family:var(--sans);font-weight:300;line-height:1.6;
   -webkit-text-size-adjust:100%;overflow-x:hidden}
 h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;margin:0}
@@ -259,6 +263,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 </style>
 </head>
 <body class="style-soft-blush">
+<a class="skip" href="#content">Saltar al contenido</a>
 
 <div class="liquid" aria-hidden="true">
   <div class="blob blob--a"></div>
@@ -269,7 +274,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 
 <div class="intro" id="intro" aria-hidden="true"><div class="intro__brand"><span>Studio</span><span>Blush</span><span>—</span><span>Lashes</span><span>&amp;</span><span>Brows</span></div><div class="intro__sub">Servicios</div></div>
 
-<div class="page">
+<div class="page" id="content">
 
   <header class="hero" data-theme="base">
     <div class="shell topbar">

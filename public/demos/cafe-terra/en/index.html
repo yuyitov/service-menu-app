@@ -21,7 +21,7 @@
 /* terracotta-warm - acogedor, artesanal, sabroso. Restaurantes / cafes / hospitalidad.
    Paleta WOW: terracota profundo + crema calido. Base crema, alt barro oscuro. */
 :root{
-  --base-bg:#fbf1e6; --base-ink:#43281c; --base-soft:rgba(67,40,28,.62);
+  --base-bg:#fbf1e6; --base-ink:#43281c; --base-soft:rgba(67,40,28,.68);
   --base-hair:rgba(181,80,47,.3); --base-accent:#b5502f; --base-accent-ink:#fff8f0;
   --alt-bg:#40200f; --alt-ink:#f9ecdf; --alt-soft:rgba(249,236,223,.65);
   --alt-hair:rgba(226,138,95,.3); --alt-accent:#e28a5f; --alt-accent-ink:#40200f;
@@ -50,6 +50,10 @@ body.theme-alt{
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* ---- accesibilidad: foco visible por teclado + saltar al contenido ---- */
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-9999px;top:12px;z-index:200;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;text-decoration:none}
+.skip:focus{left:12px}
 body{margin:0;font-family:var(--sans);font-weight:300;line-height:1.6;
   -webkit-text-size-adjust:100%;overflow-x:hidden}
 h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;margin:0}
@@ -259,6 +263,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 </style>
 </head>
 <body class="style-terracotta-warm">
+<a class="skip" href="#content">Skip to content</a>
 
 <div class="liquid" aria-hidden="true">
   <div class="blob blob--a"></div>
@@ -269,7 +274,7 @@ img.monogram{object-fit:cover;border-color:var(--hair)}
 
 <div class="intro" id="intro" aria-hidden="true"><div class="intro__brand"><span>Café</span><span>Terra</span></div><div class="intro__sub">Services</div></div>
 
-<div class="page">
+<div class="page" id="content">
 
   <header class="hero" data-theme="base">
     <div class="shell topbar">

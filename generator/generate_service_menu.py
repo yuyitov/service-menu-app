@@ -112,6 +112,7 @@ STRINGS = {
         "portfolio_label": "Portafolio",
         "view_menu": "Ver servicios",
         "scroll_hint": "Desliza",
+        "skip_to_content": "Saltar al contenido",
         "services_eyebrow": "Servicios",
         "menu_title_html": "Nuestros <em>servicios</em>",
         "services_fallback": "Servicios",
@@ -159,6 +160,7 @@ STRINGS = {
         "portfolio_label": "Portfolio",
         "view_menu": "See services",
         "scroll_hint": "Scroll",
+        "skip_to_content": "Skip to content",
         "services_eyebrow": "Services",
         "menu_title_html": "Our <em>services</em>",
         "services_fallback": "Services",
@@ -1212,6 +1214,7 @@ def render_view(
         "{{FOOTER_BLOCK}}": build_footer(view, footer_text),
         "{{DOCK_BLOCK}}": build_dock(view, s),
         "{{SCROLL_HINT}}": s["scroll_hint"],
+        "{{SKIP_LINK_BLOCK}}": f'<a class="skip" href="#content">{esc(s["skip_to_content"])}</a>',
     }
 
     out = template

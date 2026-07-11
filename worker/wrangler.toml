@@ -30,6 +30,11 @@ id      = "0743b2af26cd47fb88d4fef62e90a118"
 # - GITHUB_TOKEN — GitHub Personal Access Token (repo dispatch scope)
 # - SENDGRID_API_KEY — obtén de: https://sendgrid.com/login → API Keys
 # - NOTIFY_SECRET — genera uno: openssl rand -base64 32 (solo para ti, guardar seguro)
+# - STRIPE_SECRET_KEY — OPCIONAL: activa la compra de correcciones adicionales
+#   (/buy-correction crea Checkout Sessions al vuelo). Crear en Stripe una key
+#   RESTRINGIDA con permiso Write solo en "Checkout Sessions" y subirla con:
+#     npx wrangler secret put STRIPE_SECRET_KEY
+#   Sin esta key, el botón de compra cae a la página de contacto (WhatsApp).
 
 # ─── Environment Variables (no-secret) ────────────────────────────────────────
 [vars]
@@ -47,4 +52,7 @@ FROM_EMAIL           = "HMU Link <hello@hmulink.com>"
 # hello@ no es buzón real; las respuestas (p.ej. corrección gratuita) van aquí.
 REPLY_TO_EMAIL       = "veronica.perezarroyo@gmail.com"
 PUBLIC_BOOK_BASE_URL = "https://www.hmulink.com"
+# URL pública de este worker — la usan los links de "comprar corrección
+# adicional" (/buy-correction) que van en correos y en la página /correct/.
+WORKER_PUBLIC_URL    = "https://service-menu-worker.veronica-perezarroyo.workers.dev"
 

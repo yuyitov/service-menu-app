@@ -8,7 +8,24 @@
  * 2. Send post-payment email with Tally form link (pre-filled with order_id)
  * 3. Customer fills Tally → webhook → validate order + save submission
  * 4. Dispatch GitHub Actions to generate service menu page
- * 5. GitHub Actions calls /notify → send delivery email
+ * 5. GitHub Actions calls /notify → send delivery email (includes a one-time
+ *    correction link to https://www.hmulink.com/correct/?t=<token>)
+ *
+ * Flujo de correcciones (gratuita incluida + adicionales de pago):
+ * a. /notify genera un correction_token de un solo uso (KV hmu_correction:*)
+ *    y el correo de entrega enlaza la página /correct/ con ese token.
+ * b. La página estática /correct/ llama GET /correction-status y luego
+ *    POST /correct — el token autentica; no hay formulario de Tally.
+ * c. /correct despacha GitHub Actions (is_correction) → apply_correction.py
+ *    edita data/clients/<slug>.client.json y regenera la página; Actions llama
+ *    /notify con correction_id + correction_status (applied|manual) y aquí se
+ *    manda el correo de confirmación (y copia a REPLY_TO_EMAIL).
+ * d. Correcciones adicionales ($3 USD / $40 MXN, sección 3/6 de los Términos):
+ *    GET /buy-correction?slug=… crea un Stripe Checkout Session (requiere el
+ *    secret STRIPE_SECRET_KEY; sin él redirige a la página de contacto). El
+ *    webhook detecta metadata hmu_correction=1, acuña un token nuevo y se lo
+ *    manda por correo al email del pedido original (nunca al comprador si no
+ *    coincide — pagar por la página de otro solo le regala la corrección).
  *
  * Environment variables (non-secret):
  * - GITHUB_REPO = yuyitov/service-menu-app
@@ -25,6 +42,9 @@
  * - GITHUB_TOKEN
  * - SENDGRID_API_KEY
  * - NOTIFY_SECRET
+ * - STRIPE_SECRET_KEY (opcional — solo lo usa /buy-correction para crear
+ *   Checkout Sessions de correcciones adicionales; usar una key RESTRINGIDA
+ *   con permiso de escritura solo en Checkout Sessions)
  */
 
 const VALID_BRAND_STYLES = [
@@ -32,6 +52,19 @@ const VALID_BRAND_STYLES = [
   'aqua-clean', 'sage-calm', 'electric-slate', 'terracotta-warm',
   'sunny-paws', 'midnight-ink', 'clarity-editorial', 'horizon-teal'
 ];
+
+// Precio de la corrección adicional — DEBE coincidir con la sección 3 de los
+// Términos publicados (public/terms/ y public/es/terminos/): ~$3 USD / ~$40 MXN.
+const CORRECTION_PRICE = {
+  usd: { unit_amount: 300, label: '$3 USD' },
+  mxn: { unit_amount: 4000, label: '$40 MXN' }
+};
+
+const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/;
+// Límites del texto libre de corrección: viaja en client_payload (visible en
+// logs públicos de Actions) y se pega en el prompt del LLM — acotarlo.
+const CORRECTION_TEXT_MIN = 5;
+const CORRECTION_TEXT_MAX = 3000;
 
 export default {
   async fetch(request, env, ctx) {
@@ -72,6 +105,25 @@ export default {
         const allowed = await checkRateLimit(env, `hmu_rl:notify:${ip}:${minuteSlot}`, 20, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
         return await handleNotify(request, env);
+      }
+
+      // Correcciones: consumidos por la página estática /correct/ del sitio.
+      if (request.method === 'GET' && pathname === '/correction-status') {
+        const allowed = await checkRateLimit(env, `hmu_rl:corrstatus:${ip}:${minuteSlot}`, 30, 120);
+        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
+        return await handleCorrectionStatus(url, env);
+      }
+
+      if (request.method === 'POST' && pathname === '/correct') {
+        const allowed = await checkRateLimit(env, `hmu_rl:correct:${ip}:${minuteSlot}`, 10, 120);
+        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
+        return await handleCorrectionRequest(request, env);
+      }
+
+      if (request.method === 'GET' && pathname === '/buy-correction') {
+        const allowed = await checkRateLimit(env, `hmu_rl:buycorr:${ip}:${minuteSlot}`, 10, 120);
+        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
+        return await handleBuyCorrection(url, env);
       }
 
       return jsonResponse({ ok: false, error: 'Not found' }, 404);
@@ -115,6 +167,13 @@ async function handleStripeWebhook(request, env) {
   }
 
   const session = event?.data?.object || {};
+
+  // Compras de corrección adicional: son Checkout Sessions creadas por este
+  // mismo worker en /buy-correction (no payment links), marcadas con metadata.
+  // Se atienden ANTES del filtro de payment_link — no traen payment_link.
+  if (type === 'checkout.session.completed' && session?.metadata?.hmu_correction === '1') {
+    return await handleCorrectionPurchase(session, env);
+  }
 
   // Product filter: the Stripe account is shared with other products (MyGuest),
   // so every webhook receives every sale. Only checkout.session.completed
@@ -274,12 +333,6 @@ async function handleTallyWebhook(request, env) {
   }
 
   const normalized = normalizeTallyPayload(rawPayload);
-
-  // Handle corrections (form_type: corrections)
-  const formType = cleanValue(getAnswer(normalized.answers, 'form_type')) || '';
-  if (formType === 'corrections') {
-    return await handleCorrectionsSubmission(normalized, env);
-  }
 
   if (!normalized.submission_id) {
     return jsonResponse({ ok: false, error: 'Missing submission_id' }, 400);
@@ -459,6 +512,12 @@ async function handleNotify(request, env) {
     return jsonResponse({ ok: false, error: 'Invalid JSON' }, 400);
   }
 
+  // Notificación de corrección aplicada (Actions manda correction_id en vez
+  // de submission_id) — camino separado del delivery inicial.
+  if ((body?.correction_id || '').trim()) {
+    return await handleCorrectionNotify(body, env);
+  }
+
   const slug = (body?.slug || '').trim();
   const submissionId = (body?.submission_id || '').trim();
   let orderId = (body?.order_id || '').trim();
@@ -498,12 +557,18 @@ async function handleNotify(request, env) {
   const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
   const pageUrl = `${baseUrl}/links/${slug}/`;
 
-  // Save correction token
+  // Idioma del cuerpo = idioma del comprador (moneda MXN → español), igual que
+  // el asunto. Se guarda también en el token para los correos de corrección.
+  const deliveryLang = (order.currency || '').toLowerCase() === 'mxn' ? 'es' : 'en';
+
+  // Save correction token (la corrección gratuita incluida)
   try {
     await env.SERVICE_MENU_KV.put(`hmu_correction:${correctionToken}`, JSON.stringify({
       correction_token: correctionToken,
       order_id: orderId,
       slug,
+      lang: deliveryLang,
+      paid: false,
       created_at: new Date().toISOString(),
       used_at: null
     }), { expirationTtl: 2592000 }); // 30 days
@@ -531,8 +596,7 @@ async function handleNotify(request, env) {
     return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
   }
 
-  // Idioma del cuerpo = idioma del comprador (moneda MXN → español), igual que el asunto.
-  const deliveryLang = (order.currency || '').toLowerCase() === 'mxn' ? 'es' : 'en';
+  const correctionUrl = correctionFormUrl(env, correctionToken, deliveryLang);
   try {
     await sendEmail({
       env,
@@ -543,9 +607,10 @@ async function handleNotify(request, env) {
       html: buildDeliveryEmail({
         pageUrl,
         slug,
-        lang: deliveryLang
+        lang: deliveryLang,
+        correctionUrl
       }),
-      text: buildDeliveryText({ pageUrl, lang: deliveryLang })
+      text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl })
     });
   } catch (err) {
     console.error('delivery email failed:', safeError(err));
@@ -570,60 +635,407 @@ async function handleNotify(request, env) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CORRECTIONS HANDLER
+// CORRECTIONS — status, request, purchase, notify
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function handleCorrectionsSubmission(normalized, env) {
-  const correctionToken = cleanValue(getAnswer(normalized.answers, 'correction_token')) || '';
-  const orderId = cleanValue(getAnswer(normalized.answers, 'order_id')) || '';
+function correctionFormUrl(env, token, lang) {
+  const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
+  return `${baseUrl}/correct/?t=${encodeURIComponent(token)}&l=${lang === 'es' ? 'es' : 'en'}`;
+}
 
-  if (!correctionToken || !orderId) {
-    return jsonResponse({ ok: false, error: 'Missing correction_token or order_id' }, 400);
+// La compra de corrección adicional pasa por el worker (crea el Checkout
+// Session al vuelo); la página /correct/ y los correos enlazan esta URL.
+function buyCorrectionUrl(env, slug) {
+  const workerBase = (env.WORKER_PUBLIC_URL || '').trim().replace(/\/+$/, '');
+  if (!workerBase) return '';
+  return `${workerBase}/buy-correction?slug=${encodeURIComponent(slug)}`;
+}
+
+// GET /correction-status?t=<token> — estado del token para la página /correct/.
+// Un token es un secreto de 32 chars aleatorios: responder estado + slug a
+// quien lo tenga no filtra nada que el dueño no sepa ya.
+async function handleCorrectionStatus(url, env) {
+  const token = (url.searchParams.get('t') || '').trim();
+  if (!token || token.length > 64) {
+    return jsonResponse({ ok: true, state: 'invalid' });
   }
-
-  const correctionRecord = await env.SERVICE_MENU_KV.get(`hmu_correction:${correctionToken}`, { type: 'json' }).catch(() => null);
-  if (!correctionRecord) {
-    return jsonResponse({ ok: false, error: 'Invalid correction token' }, 403);
+  const record = await env.SERVICE_MENU_KV.get(`hmu_correction:${token}`, { type: 'json' }).catch(() => null);
+  if (!record) {
+    return jsonResponse({ ok: true, state: 'invalid' });
   }
-
-  if (correctionRecord.used_at) {
-    return jsonResponse({ ok: false, error: 'Correction token already used' }, 403);
+  const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
+  if (record.used_at) {
+    return jsonResponse({
+      ok: true,
+      state: 'used',
+      buy_url: buyCorrectionUrl(env, record.slug)
+    });
   }
+  return jsonResponse({
+    ok: true,
+    state: 'valid',
+    slug: record.slug,
+    page_url: `${baseUrl}/links/${record.slug}/`
+  });
+}
 
-  if (correctionRecord.order_id !== orderId) {
-    return jsonResponse({ ok: false, error: 'Order mismatch for correction' }, 403);
-  }
-
-  const slug = correctionRecord.slug;
-
-  // Mark token as used
+// POST /correct — body JSON {token, changes}. El token de un solo uso
+// autentica (nace en el correo de entrega o en una compra de corrección).
+async function handleCorrectionRequest(request, env) {
+  let body;
   try {
-    correctionRecord.used_at = new Date().toISOString();
-    await env.SERVICE_MENU_KV.put(`hmu_correction:${correctionToken}`, JSON.stringify(correctionRecord));
-  } catch (err) {
-    console.error('correction token update failed:', safeError(err));
+    body = await request.json();
+  } catch {
+    return jsonResponse({ ok: false, error: 'Invalid JSON' }, 400);
   }
 
-  // Dispatch GitHub Actions to regenerate page with corrections.
-  // OJO: NO incluir order_id en client_payload — GitHub imprime el env de
-  // cada step en logs públicos (misma regla que el flujo principal); el
-  // order_id se resuelve desde KV vía correction_token cuando haga falta.
+  const token = cleanValue(body?.token);
+  // El texto viaja en client_payload (logs públicos de Actions) y la página
+  // /correct/ lo advierte: solo cambios para la página pública, nada privado.
+  const changes = String(body?.changes || '')
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
+    .trim();
+
+  if (!token || token.length > 64) {
+    return jsonResponse({ ok: false, state: 'invalid' }, 403);
+  }
+  if (changes.length < CORRECTION_TEXT_MIN) {
+    return jsonResponse({ ok: false, error: 'changes_too_short' }, 400);
+  }
+  if (changes.length > CORRECTION_TEXT_MAX) {
+    return jsonResponse({ ok: false, error: 'changes_too_long' }, 400);
+  }
+
+  const record = await env.SERVICE_MENU_KV.get(`hmu_correction:${token}`, { type: 'json' }).catch(() => null);
+  if (!record) {
+    return jsonResponse({ ok: false, state: 'invalid' }, 403);
+  }
+  if (record.used_at) {
+    return jsonResponse({ ok: false, state: 'used', buy_url: buyCorrectionUrl(env, record.slug) }, 403);
+  }
+
+  const slug = record.slug;
+  const now = new Date().toISOString();
+  const correctionId = `c${generateSecureToken().slice(0, 20)}`;
+
+  // El registro guarda el texto completo (KV, privado); a Actions solo viaja
+  // el texto saneado + slug + correction_id — nunca order_id ni el token.
+  try {
+    await env.SERVICE_MENU_KV.put(`hmu_correction_request:${correctionId}`, JSON.stringify({
+      correction_id: correctionId,
+      correction_token: token,
+      order_id: record.order_id,
+      slug,
+      lang: record.lang === 'es' ? 'es' : 'en',
+      paid: !!record.paid,
+      changes,
+      status: 'dispatched',
+      created_at: now
+    }), { expirationTtl: 7776000 }); // 90 days
+  } catch (err) {
+    console.error('correction request save failed:', safeError(err));
+    return jsonResponse({ ok: false, error: 'Failed to save correction' }, 500);
+  }
+
   try {
     await dispatchGitHubAction(env, {
-      submission_id: normalized.submission_id,
       is_correction: true,
-      correction_token: correctionToken
+      correction_id: correctionId,
+      slug,
+      correction_text: changes
     });
   } catch (err) {
+    // El token NO se quema si el dispatch falla: el cliente puede reintentar.
     console.error('github dispatch for correction failed:', safeError(err));
     return jsonResponse({ ok: false, error: 'Failed to dispatch correction' }, 500);
   }
 
-  return jsonResponse({
-    ok: true,
-    message: 'Correction received. Your page will be updated shortly.',
-    slug
-  });
+  // Quemar el token después del dispatch exitoso. (Ventana de carrera entre
+  // dos POST simultáneos con el mismo token: aceptada — el rate limit la acota
+  // y el peor caso es una regeneración doble de la misma página.)
+  try {
+    record.used_at = now;
+    record.correction_id = correctionId;
+    await env.SERVICE_MENU_KV.put(`hmu_correction:${token}`, JSON.stringify(record), { expirationTtl: 7776000 });
+  } catch (err) {
+    console.error('correction token update failed:', safeError(err));
+  }
+
+  // Copia de auditoría para Verónica — nunca bloquea la respuesta al cliente.
+  await notifyAdmin(env, `HMU corrección solicitada — ${slug}`, [
+    `Corrección ${record.paid ? 'ADICIONAL (pagada)' : 'gratuita'} solicitada.`,
+    `Página: https://www.hmulink.com/links/${slug}/`,
+    `correction_id: ${correctionId}`,
+    '',
+    'Cambios pedidos por el cliente:',
+    changes
+  ]);
+
+  return jsonResponse({ ok: true, correction_id: correctionId, slug });
+}
+
+// GET /buy-correction?slug=<slug> — crea un Stripe Checkout Session para una
+// corrección adicional y redirige. Sin STRIPE_SECRET_KEY (o sin registro de
+// entrega) redirige a /correct/?buy=unavailable, que ofrece WhatsApp/correo.
+// Seguridad: cualquiera puede pagar por cualquier slug, pero el token acuñado
+// se envía SOLO al email del pedido original — pagar por la página de un
+// tercero únicamente le regala una corrección al dueño.
+async function handleBuyCorrection(url, env) {
+  const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
+  const unavailableUrl = `${baseUrl}/correct/?buy=unavailable`;
+
+  const slug = (url.searchParams.get('slug') || '').trim().toLowerCase();
+  if (!SLUG_RE.test(slug)) {
+    return Response.redirect(unavailableUrl, 302);
+  }
+
+  const delivery = await env.SERVICE_MENU_KV.get(`hmu_delivery:${slug}`, { type: 'json' }).catch(() => null);
+  if (!delivery || !env.STRIPE_SECRET_KEY) {
+    return Response.redirect(unavailableUrl, 302);
+  }
+
+  const order = delivery.order_id
+    ? await env.SERVICE_MENU_KV.get(`hmu_order:${delivery.order_id}`, { type: 'json' }).catch(() => null)
+    : null;
+  const currency = (order?.currency || '').toLowerCase() === 'mxn' ? 'mxn' : 'usd';
+  const lang = currency === 'mxn' ? 'es' : 'en';
+  const price = CORRECTION_PRICE[currency];
+
+  const params = new URLSearchParams();
+  params.set('mode', 'payment');
+  params.set('line_items[0][quantity]', '1');
+  params.set('line_items[0][price_data][currency]', currency);
+  params.set('line_items[0][price_data][unit_amount]', String(price.unit_amount));
+  params.set(
+    'line_items[0][price_data][product_data][name]',
+    lang === 'es' ? 'HMU Link — Corrección adicional' : 'HMU Link — Extra correction'
+  );
+  params.set('metadata[hmu_correction]', '1');
+  params.set('metadata[slug]', slug);
+  params.set('success_url', `${baseUrl}/correct/thanks/?l=${lang}`);
+  params.set('cancel_url', `${baseUrl}/links/${slug}/`);
+  if (delivery.customer_email) {
+    params.set('customer_email', delivery.customer_email);
+  }
+
+  let session;
+  try {
+    const resp = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
+    });
+    if (!resp.ok) {
+      console.error('checkout session create failed:', resp.status);
+      return Response.redirect(unavailableUrl, 302);
+    }
+    session = await resp.json();
+  } catch (err) {
+    console.error('checkout session create error:', safeError(err));
+    return Response.redirect(unavailableUrl, 302);
+  }
+
+  if (!session?.url) {
+    return Response.redirect(unavailableUrl, 302);
+  }
+  return Response.redirect(session.url, 302);
+}
+
+// Webhook: pago de corrección adicional → acuñar token nuevo y mandarlo al
+// email del pedido original.
+async function handleCorrectionPurchase(session, env) {
+  const paymentIntentId = session.payment_intent || session.id || '';
+  if (!paymentIntentId) {
+    return jsonResponse({ ok: false, error: 'Missing payment_intent id' }, 400);
+  }
+
+  const processedKey = `hmu_processed:${paymentIntentId}`;
+  const alreadyProcessed = await env.SERVICE_MENU_KV.get(processedKey).catch(() => null);
+  if (alreadyProcessed) {
+    return jsonResponse({ ok: true, idempotent: true, paymentIntentId });
+  }
+
+  const slug = cleanValue(session.metadata?.slug || '').toLowerCase();
+  const buyerEmail = session.customer_email || session.customer_details?.email || '';
+  const delivery = SLUG_RE.test(slug)
+    ? await env.SERVICE_MENU_KV.get(`hmu_delivery:${slug}`, { type: 'json' }).catch(() => null)
+    : null;
+  const order = delivery?.order_id
+    ? await env.SERVICE_MENU_KV.get(`hmu_order:${delivery.order_id}`, { type: 'json' }).catch(() => null)
+    : null;
+  // SOLO el email del pedido/entrega original recibe el token (nunca el
+  // comprador de la sesión si no hay registro — eso sería regalar acceso).
+  const ownerEmail = order?.customer_email || delivery?.customer_email || '';
+  const currency = (session.currency || order?.currency || 'usd').toLowerCase();
+  const lang = currency === 'mxn' ? 'es' : 'en';
+
+  await env.SERVICE_MENU_KV.put(processedKey, '1', { expirationTtl: 604800 }).catch(() => {});
+
+  if (!delivery || !ownerEmail) {
+    // Sin registro de entrega no se puede acuñar con seguridad: atender a mano.
+    await notifyAdmin(env, `HMU corrección pagada SIN registro — atender manual`, [
+      'Se pagó una corrección adicional pero no hay registro de entrega en KV.',
+      `slug (metadata): ${slug || '(vacío)'}`,
+      `email del comprador (Stripe): ${buyerEmail || '(sin email)'}`,
+      `payment_intent: ${paymentIntentId}`,
+      '',
+      'Acción: aplicar la corrección manualmente o reembolsar.'
+    ]);
+    return jsonResponse({ ok: true, manual: true, paymentIntentId });
+  }
+
+  const token = generateSecureToken();
+  try {
+    await env.SERVICE_MENU_KV.put(`hmu_correction:${token}`, JSON.stringify({
+      correction_token: token,
+      order_id: delivery.order_id || '',
+      slug,
+      lang,
+      paid: true,
+      created_at: new Date().toISOString(),
+      used_at: null
+    }), { expirationTtl: 2592000 }); // 30 days
+  } catch (err) {
+    console.error('paid correction token save failed:', safeError(err));
+    await env.SERVICE_MENU_KV.delete(processedKey).catch(() => {});
+    return jsonResponse({ ok: false, error: 'Failed to save correction token' }, 500);
+  }
+
+  const formUrl = correctionFormUrl(env, token, lang);
+  const pageUrl = `${(env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim()}/links/${slug}/`;
+  try {
+    await sendEmail({
+      env,
+      to: ownerEmail,
+      subject: lang === 'es'
+        ? 'Tu corrección adicional de HMU Link — pídela aquí'
+        : 'Your extra HMU Link correction — request it here',
+      html: buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang }),
+      text: buildCorrectionPurchaseText({ formUrl, pageUrl, lang })
+    });
+  } catch (err) {
+    console.error('correction purchase email failed:', safeError(err));
+    await env.SERVICE_MENU_KV.delete(processedKey).catch(() => {});
+    return jsonResponse({ ok: false, error: 'Failed to send correction email' }, 500);
+  }
+
+  await notifyAdmin(env, `HMU corrección adicional comprada — ${slug}`, [
+    `Corrección adicional pagada (${CORRECTION_PRICE[currency === 'mxn' ? 'mxn' : 'usd'].label}).`,
+    `Página: ${pageUrl}`,
+    `Token enviado a: ${ownerEmail}`,
+    `payment_intent: ${paymentIntentId}`
+  ]);
+
+  return jsonResponse({ ok: true, paymentIntentId, slug });
+}
+
+// /notify con correction_id — Actions terminó de procesar la corrección.
+// correction_status: 'applied' (página regenerada) | 'manual' (el LLM no pudo
+// aplicarla con seguridad; se atiende a mano).
+async function handleCorrectionNotify(body, env) {
+  const correctionId = cleanValue(body?.correction_id);
+  const status = body?.correction_status === 'applied' ? 'applied' : 'manual';
+
+  const record = await env.SERVICE_MENU_KV.get(`hmu_correction_request:${correctionId}`, { type: 'json' }).catch(() => null);
+  if (!record) {
+    return jsonResponse({ ok: false, error: 'Correction request not found' }, 404);
+  }
+  if (record.notified_at) {
+    return jsonResponse({ ok: true, idempotent: true, correction_id: correctionId });
+  }
+
+  const order = record.order_id
+    ? await env.SERVICE_MENU_KV.get(`hmu_order:${record.order_id}`, { type: 'json' }).catch(() => null)
+    : null;
+  const customerEmail = order?.customer_email || '';
+  const lang = record.lang === 'es' ? 'es' : 'en';
+  const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
+  const pageUrl = `${baseUrl}/links/${record.slug}/`;
+  const buyUrl = buyCorrectionUrl(env, record.slug);
+
+  if (customerEmail) {
+    try {
+      if (status === 'applied') {
+        await sendEmail({
+          env,
+          to: customerEmail,
+          subject: lang === 'es'
+            ? '✅ Tu página HMU Link fue actualizada'
+            : '✅ Your HMU Link page was updated',
+          html: buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl }),
+          text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl })
+        });
+      } else {
+        await sendEmail({
+          env,
+          to: customerEmail,
+          subject: lang === 'es'
+            ? 'Recibimos tu corrección — la aplicamos en 1 día hábil'
+            : 'We received your correction — applying it within 1 business day',
+          html: buildCorrectionManualEmail({ pageUrl, lang }),
+          text: buildCorrectionManualText({ pageUrl, lang })
+        });
+      }
+    } catch (err) {
+      console.error('correction notify email failed:', safeError(err));
+      return jsonResponse({ ok: false, error: 'Failed to send correction email' }, 500);
+    }
+  }
+
+  if (status === 'manual') {
+    await notifyAdmin(env, `⚠️ HMU corrección MANUAL pendiente — ${record.slug}`, [
+      'La corrección automática no se pudo aplicar; hay que hacerla a mano.',
+      `Página: ${pageUrl}`,
+      `correction_id: ${correctionId}`,
+      '',
+      'Cambios pedidos por el cliente:',
+      record.changes || '(sin texto)',
+      '',
+      'Cómo aplicarla: editar data/clients/' + record.slug + '.client.json,',
+      'regenerar con generator/generate_service_menu.py --client y pushear.'
+    ]);
+  }
+
+  try {
+    record.status = status;
+    record.notified_at = new Date().toISOString();
+    await env.SERVICE_MENU_KV.put(`hmu_correction_request:${correctionId}`, JSON.stringify(record), { expirationTtl: 7776000 });
+  } catch (err) {
+    console.error('correction request update failed:', safeError(err));
+  }
+
+  return jsonResponse({ ok: true, correction_id: correctionId, status });
+}
+
+// Aviso interno a Verónica (REPLY_TO_EMAIL). Nunca lanza: un fallo de correo
+// interno no debe romper el flujo del cliente.
+async function notifyAdmin(env, subject, lines) {
+  const to = (env.REPLY_TO_EMAIL || '').trim();
+  if (!to) return;
+  const text = lines.join('\n');
+  try {
+    await sendEmail({
+      env,
+      to,
+      subject,
+      html: `<pre style="font-family: monospace; white-space: pre-wrap;">${escapeHtml(text)}</pre>`,
+      text
+    });
+  } catch (err) {
+    console.error('admin notify failed:', safeError(err));
+  }
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1367,10 +1779,9 @@ function buildPostPaymentText({ formUrlEN, formUrlES, lang }) {
   ].join('\n');
 }
 
-// La corrección gratuita se pide respondiendo al correo (reply_to va al buzón
-// real). El flujo automatizado con correction_token queda para v2 — el token
-// se sigue generando y guardando en KV para cuando exista.
-function buildDeliveryEmail({ pageUrl, slug, lang }) {
+// La corrección gratuita se pide con el botón (flujo automatizado /correct/)
+// o respondiendo al correo (reply_to va al buzón real) — ambas vías valen.
+function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl }) {
   const es = lang !== 'en';
   const t = es
     ? {
@@ -1386,7 +1797,9 @@ function buildDeliveryEmail({ pageUrl, slug, lang }) {
           'Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.'
         ],
         correctionTitle: '✏️ Incluido: Una corrección gratuita',
-        correctionBody: 'Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tienes derecho a una corrección gratuita: <strong>simplemente responde a este correo</strong> con los cambios que quieras y los aplicamos por ti.'
+        correctionBody: 'Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tienes derecho a una corrección gratuita. Pídela con este botón y la aplicamos automáticamente:',
+        correctionBtn: 'Solicitar mi corrección',
+        correctionAlt: 'También puedes simplemente responder a este correo con los cambios que quieras. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.'
       }
     : {
         heading: 'Your service page is ready! 🎉',
@@ -1401,7 +1814,9 @@ function buildDeliveryEmail({ pageUrl, slug, lang }) {
           'Share the link in your Instagram bio, WhatsApp, business cards, etc.'
         ],
         correctionTitle: '✏️ Included: One free correction',
-        correctionBody: 'If you need to change your info (hours, services, prices, etc.), you get one free correction: <strong>simply reply to this email</strong> with the changes you want and we\'ll apply them for you.'
+        correctionBody: 'If you need to change your info (hours, services, prices, etc.), you get one free correction. Request it with this button and we\'ll apply it automatically:',
+        correctionBtn: 'Request my correction',
+        correctionAlt: 'You can also simply reply to this email with the changes you want. To change photos or your logo, reply to this email with the files attached.'
       };
   return `
 <!DOCTYPE html>
@@ -1432,7 +1847,9 @@ function buildDeliveryEmail({ pageUrl, slug, lang }) {
 
     <div style="margin: 30px 0; padding: 20px; background: #fff9e6; border-left: 4px solid #ffa934; border-radius: 4px;">
       <p style="margin: 0 0 15px 0; color: #333; font-weight: 500;">${t.correctionTitle}</p>
-      <p style="margin: 0; color: #666; font-size: 14px;">${t.correctionBody}</p>
+      <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${t.correctionBody}</p>
+      <a href="${correctionUrl}" style="display: inline-block; background: #ffa934; color: #4a2c00; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">${t.correctionBtn}</a>
+      <p style="margin: 15px 0 0 0; color: #888; font-size: 12px;">${t.correctionAlt}</p>
     </div>
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
@@ -1444,7 +1861,7 @@ function buildDeliveryEmail({ pageUrl, slug, lang }) {
 }
 
 // Versión text/plain del correo de entrega.
-function buildDeliveryText({ pageUrl, lang }) {
+function buildDeliveryText({ pageUrl, lang, correctionUrl }) {
   const es = lang !== 'en';
   if (es) {
     return [
@@ -1459,7 +1876,9 @@ function buildDeliveryText({ pageUrl, lang }) {
       '- Descarga el código QR desde tu página para compartir fácilmente',
       '- Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.',
       '',
-      'Incluido: una corrección gratuita. Si necesitas cambios (horarios, servicios, precios, etc.), responde a este correo con los cambios que quieras y los aplicamos por ti.',
+      'Incluido: una corrección gratuita. Si necesitas cambios (horarios, servicios, precios, etc.), pídela aquí y la aplicamos automáticamente:',
+      correctionUrl,
+      'También puedes responder a este correo con los cambios (fotos o logo: adjúntalos en tu respuesta).',
       '',
       'HMU Link — hmulink.com'
     ].join('\n');
@@ -1476,8 +1895,201 @@ function buildDeliveryText({ pageUrl, lang }) {
     '- Download the QR code from your page to share it easily',
     '- Share the link in your Instagram bio, WhatsApp, business cards, etc.',
     '',
-    'Included: one free correction. If you need changes (hours, services, prices, etc.), reply to this email with the changes you want and we\'ll apply them for you.',
+    'Included: one free correction. If you need changes (hours, services, prices, etc.), request it here and we\'ll apply it automatically:',
+    correctionUrl,
+    'You can also reply to this email with the changes (photos or logo: attach the files in your reply).',
     '',
     'HMU Link — hmulink.com'
   ].join('\n');
+}
+
+// ─── Correos del flujo de correcciones ───────────────────────────────────────
+
+// Cascarón compartido de los correos de corrección (mismo look del resto).
+function correctionEmailShell(innerHtml) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; margin: 0; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    ${innerHtml}
+    <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+    <p style="color: #999; font-size: 12px; margin: 0;">HMU Link — Service Menus for Small Businesses</p>
+  </div>
+</body>
+</html>
+  `;
+}
+
+// Corrección aplicada: confirma y ofrece la corrección adicional de pago
+// (precio de la sección 3 de los Términos).
+function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl }) {
+  const es = lang !== 'en';
+  const priceLabel = es ? CORRECTION_PRICE.mxn.label : CORRECTION_PRICE.usd.label;
+  const t = es
+    ? {
+        heading: '✅ Tu página fue actualizada',
+        intro: 'Aplicamos los cambios que pediste. Revisa tu página (puede tardar unos minutos en reflejarse):',
+        buyTitle: '¿Necesitas otro cambio?',
+        buyBody: `Puedes comprar una corrección adicional por ${priceLabel}:`,
+        buyBtn: 'Comprar corrección adicional',
+        alt: 'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.'
+      }
+    : {
+        heading: '✅ Your page was updated',
+        intro: 'We applied the changes you requested. Check your page (it may take a few minutes to refresh):',
+        buyTitle: 'Need another change?',
+        buyBody: `You can buy an extra correction for ${priceLabel}:`,
+        buyBtn: 'Buy an extra correction',
+        alt: 'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.'
+      };
+  const buyBlock = buyUrl
+    ? `
+    <div style="margin: 30px 0; padding: 20px; background: #f0f8ff; border-left: 4px solid #00a0b5; border-radius: 4px;">
+      <p style="margin: 0 0 10px 0; color: #333; font-weight: 500;">${t.buyTitle}</p>
+      <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${t.buyBody}</p>
+      <a href="${buyUrl}" style="display: inline-block; background: #00a0b5; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">${t.buyBtn}</a>
+    </div>`
+    : '';
+  return correctionEmailShell(`
+    <h2 style="margin-top: 0; color: #1a1a1a;">${t.heading}</h2>
+    <p>${t.intro}</p>
+    <p><a href="${pageUrl}" style="color: #00a0b5; font-size: 18px; font-weight: 500; word-break: break-all;">${pageUrl}</a></p>
+    ${buyBlock}
+    <p style="color: #666; font-size: 14px;">${t.alt}</p>
+  `);
+}
+
+function buildCorrectionAppliedText({ pageUrl, lang, buyUrl }) {
+  const es = lang !== 'en';
+  const priceLabel = es ? CORRECTION_PRICE.mxn.label : CORRECTION_PRICE.usd.label;
+  const lines = es
+    ? [
+        'Tu página fue actualizada.',
+        '',
+        `Revisa tu página (puede tardar unos minutos en reflejarse): ${pageUrl}`,
+        '',
+        ...(buyUrl ? [`¿Necesitas otro cambio? Compra una corrección adicional por ${priceLabel}: ${buyUrl}`, ''] : []),
+        'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.',
+        '',
+        'HMU Link — hmulink.com'
+      ]
+    : [
+        'Your page was updated.',
+        '',
+        `Check your page (it may take a few minutes to refresh): ${pageUrl}`,
+        '',
+        ...(buyUrl ? [`Need another change? Buy an extra correction for ${priceLabel}: ${buyUrl}`, ''] : []),
+        'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.',
+        '',
+        'HMU Link — hmulink.com'
+      ];
+  return lines.join('\n');
+}
+
+// La corrección no se pudo aplicar automáticamente: promesa honesta de 1 día
+// hábil, sin pedirle nada más al cliente (Verónica ya recibió el detalle).
+function buildCorrectionManualEmail({ pageUrl, lang }) {
+  const es = lang !== 'en';
+  const t = es
+    ? {
+        heading: 'Recibimos tu corrección ✏️',
+        body: 'Estamos aplicando tus cambios personalmente para que queden perfectos. Tu página quedará actualizada dentro de 1 día hábil — no necesitas hacer nada más.',
+        label: 'Tu página:'
+      }
+    : {
+        heading: 'We received your correction ✏️',
+        body: 'We\'re applying your changes personally to make sure they come out right. Your page will be updated within 1 business day — nothing else is needed from you.',
+        label: 'Your page:'
+      };
+  return correctionEmailShell(`
+    <h2 style="margin-top: 0; color: #1a1a1a;">${t.heading}</h2>
+    <p>${t.body}</p>
+    <p style="color: #666; font-size: 12px; margin-bottom: 4px;">${t.label}</p>
+    <p style="margin-top: 0;"><a href="${pageUrl}" style="color: #00a0b5; word-break: break-all;">${pageUrl}</a></p>
+  `);
+}
+
+function buildCorrectionManualText({ pageUrl, lang }) {
+  const es = lang !== 'en';
+  return (es
+    ? [
+        'Recibimos tu corrección.',
+        '',
+        'Estamos aplicando tus cambios personalmente. Tu página quedará actualizada dentro de 1 día hábil — no necesitas hacer nada más.',
+        '',
+        `Tu página: ${pageUrl}`,
+        '',
+        'HMU Link — hmulink.com'
+      ]
+    : [
+        'We received your correction.',
+        '',
+        'We\'re applying your changes personally. Your page will be updated within 1 business day — nothing else is needed from you.',
+        '',
+        `Your page: ${pageUrl}`,
+        '',
+        'HMU Link — hmulink.com'
+      ]).join('\n');
+}
+
+// Compra de corrección adicional: entrega el enlace con el token nuevo.
+function buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang }) {
+  const es = lang !== 'en';
+  const t = es
+    ? {
+        heading: '¡Gracias por tu compra! ✏️',
+        intro: 'Ya puedes pedir tu corrección adicional. Usa este botón y descríbenos los cambios que quieres en tu página:',
+        btn: 'Pedir mi corrección',
+        note: 'El enlace es de un solo uso y vence en 30 días. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.',
+        label: 'Tu página:'
+      }
+    : {
+        heading: 'Thanks for your purchase! ✏️',
+        intro: 'You can now request your extra correction. Use this button and describe the changes you want on your page:',
+        btn: 'Request my correction',
+        note: 'The link is single-use and expires in 30 days. To change photos or your logo, reply to this email with the files attached.',
+        label: 'Your page:'
+      };
+  return correctionEmailShell(`
+    <h2 style="margin-top: 0; color: #1a1a1a;">${t.heading}</h2>
+    <p>${t.intro}</p>
+    <p style="margin: 25px 0;"><a href="${formUrl}" style="display: inline-block; background: #ffa934; color: #4a2c00; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">${t.btn}</a></p>
+    <p style="color: #888; font-size: 13px;">${t.note}</p>
+    <p style="color: #666; font-size: 12px; margin-bottom: 4px;">${t.label}</p>
+    <p style="margin-top: 0;"><a href="${pageUrl}" style="color: #00a0b5; word-break: break-all;">${pageUrl}</a></p>
+  `);
+}
+
+function buildCorrectionPurchaseText({ formUrl, pageUrl, lang }) {
+  const es = lang !== 'en';
+  return (es
+    ? [
+        '¡Gracias por tu compra!',
+        '',
+        'Ya puedes pedir tu corrección adicional. Abre este enlace y descríbenos los cambios que quieres:',
+        formUrl,
+        '',
+        'El enlace es de un solo uso y vence en 30 días. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.',
+        '',
+        `Tu página: ${pageUrl}`,
+        '',
+        'HMU Link — hmulink.com'
+      ]
+    : [
+        'Thanks for your purchase!',
+        '',
+        'You can now request your extra correction. Open this link and describe the changes you want:',
+        formUrl,
+        '',
+        'The link is single-use and expires in 30 days. To change photos or your logo, reply to this email with the files attached.',
+        '',
+        `Your page: ${pageUrl}`,
+        '',
+        'HMU Link — hmulink.com'
+      ]).join('\n');
 }

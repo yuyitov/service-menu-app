@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>¡Pago recibido! — HMU Link</title>
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/brand/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bubblegum-deep: #d9548f;
+    --ocean-deep: #007a8a;
+    --paper: #fffdf6;
+    --card: #ffffff;
+    --ink: #1f2d27;
+    --muted: #5c6a64;
+    --line: #eee5d3;
+    --font-display: "Baloo 2", "Outfit", system-ui, -apple-system, sans-serif;
+    --font-body: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 64px;
+    background: var(--paper); color: var(--ink);
+    font-family: var(--font-body); line-height: 1.6;
+    display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+  }
+  a { color: var(--ocean-deep); }
+  a:focus-visible { outline: 3px solid var(--ocean-deep); outline-offset: 2px; }
+  .logo {
+    font-family: var(--font-display); font-weight: 800; font-size: 1.4rem;
+    color: var(--ink); text-decoration: none; margin: 8px 0 24px; display: inline-block;
+  }
+  .logo span { color: var(--bubblegum-deep); }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+    max-width: 560px; width: 100%; padding: 36px 28px; text-align: center;
+    box-shadow: 0 10px 30px rgba(31, 45, 39, 0.07);
+  }
+  h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin: 8px 0; }
+  .icon { font-size: 2.6rem; }
+  .muted { color: var(--muted); font-size: 0.92rem; }
+</style>
+</head>
+<body>
+<a class="logo" href="/">HMU<span>Link</span></a>
+<div class="card">
+  <div class="icon">✅</div>
+  <h1 id="title">¡Pago recibido!</h1>
+  <p id="body">Te enviamos un correo con tu enlace personal para pedir la corrección. Revisa tu bandeja (y la pestaña Promociones) — llega en unos minutos.</p>
+  <p class="muted" id="alt">¿No llega el correo? Escríbenos por <a href="https://wa.me/523221553952">WhatsApp</a>.</p>
+</div>
+<script>
+(function () {
+  var lang = new URLSearchParams(window.location.search).get('l') === 'en' ? 'en' : 'es';
+  if (lang === 'en') {
+    document.documentElement.lang = 'en';
+    document.title = 'Payment received! — HMU Link';
+    document.getElementById('title').textContent = 'Payment received!';
+    document.getElementById('body').textContent =
+      'We sent you an email with your personal link to request the correction. Check your inbox (and the Promotions tab) — it arrives within a few minutes.';
+    document.getElementById('alt').innerHTML =
+      'Email not arriving? Message us on <a href="https://wa.me/523221553952">WhatsApp</a>.';
+  }
+})();
+</script>
+</body>
+</html>

@@ -3,6 +3,11 @@ name: Generate HMU Service Menu Page
 # Triggered by service-menu-worker via repository_dispatch after it validates
 # a paid order + Tally intake. The full sanitized public payload arrives in
 # client_payload (the workflow never reads KV, Tally or Stripe).
+#
+# The same event also carries corrections (client_payload.is_correction=true,
+# dispatched by the worker's POST /correct): apply_correction.py edits the
+# existing data/clients/<slug>.client.json via gpt-4o-mini and regenerates the
+# page; on any problem it reports correction_status=manual and touches nothing.
 
 on:
   repository_dispatch:
@@ -39,12 +44,24 @@ jobs:
 
       - name: Build client page from intake
         id: build
+        if: ${{ github.event.client_payload.is_correction != true }}
         env:
           INTAKE_PAYLOAD: ${{ toJson(github.event.client_payload) }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python generator/build_client_from_intake.py
 
+      - name: Apply correction to existing page
+        id: correct
+        if: ${{ github.event.client_payload.is_correction == true }}
+        env:
+          CORRECTION_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python generator/apply_correction.py
+
       - name: Commit and push generated page
+        env:
+          SLUG: ${{ steps.build.outputs.slug || steps.correct.outputs.slug }}
+          IS_CORRECTION: ${{ github.event.client_payload.is_correction == true }}
         run: |
           git config user.name "hmu-link-bot"
           git config user.email "actions@users.noreply.github.com"
@@ -53,7 +70,11 @@ jobs:
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "feat: publish HMU Link page ${{ steps.build.outputs.slug }}"
+          if [ "$IS_CORRECTION" = "true" ]; then
+            git commit -m "fix: apply correction to HMU Link page $SLUG"
+          else
+            git commit -m "feat: publish HMU Link page $SLUG"
+          fi
           git pull --rebase origin main
           git push origin HEAD:main
 
@@ -66,16 +87,23 @@ jobs:
         env:
           WORKER_URL: ${{ secrets.SERVICE_MENU_WORKER_URL }}
           NOTIFY_SECRET: ${{ secrets.NOTIFY_SECRET }}
-          SLUG: ${{ steps.build.outputs.slug }}
+          SLUG: ${{ steps.build.outputs.slug || steps.correct.outputs.slug }}
           SUBMISSION_ID: ${{ github.event.client_payload.submission_id }}
+          CORRECTION_ID: ${{ github.event.client_payload.correction_id }}
+          CORRECTION_STATUS: ${{ steps.correct.outputs.correction_status }}
         run: |
           if [ -z "$WORKER_URL" ] || [ -z "$NOTIFY_SECRET" ]; then
             echo "WORKER_URL or NOTIFY_SECRET not configured — skipping notify"
             exit 0
           fi
-          # Build the JSON with jq so submission_id (a Tally-supplied value) is
-          # escaped, not string-interpolated into the body.
-          payload=$(jq -nc --arg slug "$SLUG" --arg sid "$SUBMISSION_ID" '{slug:$slug,submission_id:$sid}')
+          # Build the JSON with jq so worker/Tally-supplied values are escaped,
+          # not string-interpolated into the body.
+          if [ -n "$CORRECTION_ID" ]; then
+            payload=$(jq -nc --arg slug "$SLUG" --arg cid "$CORRECTION_ID" --arg st "${CORRECTION_STATUS:-manual}" \
+              '{slug:$slug,correction_id:$cid,correction_status:$st}')
+          else
+            payload=$(jq -nc --arg slug "$SLUG" --arg sid "$SUBMISSION_ID" '{slug:$slug,submission_id:$sid}')
+          fi
           curl -sS -X POST "$WORKER_URL/notify" \
             -H "Authorization: Bearer $NOTIFY_SECRET" \
             -H "Content-Type: application/json" \

@@ -52,6 +52,10 @@ CLIENT_BASE_URL = "https://www.hmulink.com/links"
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$")
 BULLET_RE = re.compile(r"^[\s\-\*•·–—>]+")
 TRAIL_SEP_RE = re.compile(r"[\s\-–—·:|,]+$")
+# Splits a "Category — Name — Description" service line at an en/em-dash that is
+# surrounded by whitespace (the shape intakes use). Requiring the spaces keeps
+# ranges like "10–12" or hyphenated names from being split apart.
+DASH_SPLIT_RE = re.compile(r"\s+[–—]\s+")
 
 IMAGE_EXT_BY_CONTENT_TYPE = {
     "image/jpeg": ".jpg",
@@ -249,8 +253,35 @@ def parse_service_categories(value: str, lang: str) -> list[str]:
     return out or ["Servicios" if lang == "es" else "Services"]
 
 
+def split_category_name_description(text: str, known: dict[str, str]) -> tuple[str | None, str, str]:
+    """Split a service line into (category, name, description).
+
+    A leading "Category — " prefix is recognized only when it matches a known
+    category (compared via plain_latin); that category is returned and stripped
+    from the line. The remaining "Name — Description" is split at the first
+    dash into a name and an optional description. A line with no dash keeps the
+    whole line as the name and no description (legacy behavior for plain lines).
+    """
+    segments = [seg.strip() for seg in DASH_SPLIT_RE.split(text) if seg.strip()]
+    if not segments:
+        return None, text.strip(), ""
+    category = None
+    if len(segments) > 1 and plain_latin(segments[0]) in known:
+        category = known[plain_latin(segments[0])]
+        segments = segments[1:]
+    name = segments[0]
+    description = " — ".join(segments[1:])
+    return category, name, description
+
+
 def parse_services(services_text: str, categories: list[str], price_policy: str) -> list[dict]:
-    """Each non-empty line is one service; headings ending in ':' become categories."""
+    """Each non-empty line is one service; headings ending in ':' become categories.
+
+    A service line may also begin with a "Category — " prefix naming a known
+    category: that prefix sets the service's category (and the running category
+    for the plain lines that follow) and is stripped from the visible name, and
+    any remaining "Name — Description" is split into a name and a description.
+    """
     services = []
     current_category = categories[0] if categories else "Services"
     known = {plain_latin(cat): cat for cat in categories}
@@ -268,7 +299,12 @@ def parse_services(services_text: str, categories: list[str], price_policy: str)
             continue
 
         name, price_label = split_price_label(line)
-        svc = {"category": current_category, "name": name[:120]}
+        category, name, description = split_category_name_description(name, known)
+        if category:
+            current_category = category
+        svc = {"category": category or current_category, "name": name[:120]}
+        if description:
+            svc["description"] = description[:300]
         if price_label and price_policy != "hide":
             svc["price_label"] = price_label
         services.append(svc)
@@ -339,7 +375,14 @@ def parse_featured(featured_text: str) -> dict | None:
         candidate = TRAIL_SEP_RE.sub("", first[:idx]).strip()
         if candidate:
             name, price_label = candidate, first[idx:].strip()
-    featured = {"name": name[:120], "description": " ".join(lines[1:])[:300]}
+    # A "Name — Description" first line splits at the first dash into a short
+    # name and an inline description; any following lines extend it.
+    inline_description = ""
+    parts = DASH_SPLIT_RE.split(name, maxsplit=1)
+    if len(parts) == 2 and parts[0].strip():
+        name, inline_description = parts[0].strip(), parts[1].strip()
+    description = " ".join(part for part in [inline_description, *lines[1:]] if part)
+    featured = {"name": name[:120], "description": description[:300]}
     if price_label:
         featured["price_label"] = price_label
     return featured
@@ -723,6 +766,7 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         "pet_notes_text": src.get("pet_notes_text", ""),
         "service_categories": src.get("service_categories", []),
         "service_names": [s["name"] for s in src["services"]],
+        "service_descriptions": [s.get("description", "") for s in src["services"]],
         "policies": src["policies"],
         "faq_questions": [item["question"] for item in src.get("faq", [])],
         "faq_answers": [item["answer"] for item in src.get("faq", [])],
@@ -758,6 +802,12 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
         for svc, name in zip(tgt["services"], names):
             if isinstance(name, str) and name.strip():
                 svc["name"] = name[:120]
+
+    descriptions = translated.get("service_descriptions")
+    if isinstance(descriptions, list) and len(descriptions) == len(tgt["services"]):
+        for svc, description in zip(tgt["services"], descriptions):
+            if isinstance(description, str) and description.strip():
+                svc["description"] = description[:300]
 
     cats = translated.get("service_categories")
     if isinstance(cats, list) and len(cats) == len(src.get("service_categories", [])):

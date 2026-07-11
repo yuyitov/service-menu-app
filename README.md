@@ -39,7 +39,10 @@ Stripe Payment Link
 
 El cliente paga, llena un formulario de intake, y de forma automatizada recibe su página
 publicada más un email de entrega con el link y el QR. Tiene derecho a una corrección
-incluida vía un link de un solo uso.
+incluida vía un link de un solo uso (página `/correct/` → worker → Actions aplica los
+cambios con gpt-4o-mini y regenera; si no puede con seguridad, cae a manual). Las
+correcciones adicionales ($3 USD / $40 MXN) se compran vía `/buy-correction` (Stripe
+Checkout creado por el worker; requiere el secret `STRIPE_SECRET_KEY`).
 
 ## Estado actual
 

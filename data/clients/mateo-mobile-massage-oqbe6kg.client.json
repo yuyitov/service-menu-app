@@ -1,0 +1,174 @@
+{
+  "public_slug": "mateo-mobile-massage-oqbe6kg",
+  "default_language": "es",
+  "brand_style": "charcoal-clean",
+  "business_type": null,
+  "business_name": "Mateo Mobile Massage",
+  "logo_url": "https://www.hmulink.com/links/mateo-mobile-massage-oqbe6kg/assets/logo.png",
+  "primary_image_url": "https://www.hmulink.com/links/mateo-mobile-massage-oqbe6kg/assets/gallery-1.png",
+  "gallery_images": [
+    {
+      "url": "https://www.hmulink.com/links/mateo-mobile-massage-oqbe6kg/assets/gallery-1.png"
+    },
+    {
+      "url": "https://www.hmulink.com/links/mateo-mobile-massage-oqbe6kg/assets/gallery-2.png"
+    }
+  ],
+  "whatsapp": "+523221553952",
+  "phone": "+523221553952",
+  "public_email": "mateo.massagetest@gmail.com",
+  "instagram": "https://instagram.com/instagram",
+  "facebook": "https://www.facebook.com",
+  "tiktok": "https://www.tiktok.com/@tiktok",
+  "website": "https://www.google.com",
+  "booking_url": "https://www.calendly.com",
+  "primary_cta": "phone",
+  "google_maps_url": null,
+  "google_reviews_url": null,
+  "other_public_link": {
+    "label": "",
+    "url": "https://www.youtube.com"
+  },
+  "delivery_pickup_links": [],
+  "portfolio_link": null,
+  "content": {
+    "es": {
+      "short_description": "Personalized mobile massage services delivered to your home, hotel, or vacation rental throughout Miami.\n\nBilingual service in English and Spanish.5t",
+      "address": "",
+      "opening_hours_text": "Monday - Saturday: 10:00 AM - 9:00 PM\nSunday: 11:00 AM - 6:00 PM",
+      "service_area_text": "Mobile massages services at homes, hotels, and vacation rentals throughout Miami-Dade County, including Miami, Miami Beach, Brickell, downtown Miami, Coral Gables and Aventura.",
+      "client_care_text": "",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "price_display": "mixed",
+      "service_categories": [
+        "Relaxation & Wellness",
+        "Therapeutic & Recovery",
+        "Enchancements"
+      ],
+      "services": [
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Relaxation & Wellness — Signature Relaxation Massage — Gentle-to-medium pressure for full-body relaxation, 60 minutes",
+          "price_label": "$120 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Relaxation & Wellness — Signature Relaxation Massage — Extended full-body relaxation session, 90 minutes",
+          "price_label": "$165 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Therapeutic & Recovery — Deep Tissue Massage — Focused pressure to relieve muscle tension and stiffness, 60 minutes",
+          "price_label": "$145 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Therapeutic & Recovery — Deep Tissue Massage — Extended targeted treatment for chronic tension, 90 minutes",
+          "price_label": "$190 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Therapeutic & Recovery — Sports Recovery Massage — Targeted massage for active clients, muscle recovery, and mobility, 6",
+          "price_label": "$150 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Enhancements — Aromatherapy — Essential oils added to your massage session",
+          "price_label": "$15 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Enhancements — Hot Towels and Scalp Massage — Warm towels followed by a relaxing scalp massage",
+          "price_label": "$20 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Travel outside the standard Miami service area may require an additional fee based on location."
+        }
+      ],
+      "policies": [
+        "Appointments are available by advance booking only. A 30% deposit is required to reserve your appointment, and the remaining balance is due at the time of service.",
+        "Please provide at least 24 hours’ notice to cancel or reschedule. Deposits are non-refundable for cancellations made less than 24 hours before the appointment.",
+        "Please disclose any injuries, allergies, pregnancy, recent surgeries, or relevant medical conditions before your session."
+      ],
+      "faq": [],
+      "featured_package": {
+        "name": "Miami Reset Package — A 90-minute Signature Relaxation Massage with aromatherapy, hot towels, and a relaxing scalp massa",
+        "description": "",
+        "price_label": "$185 USD"
+      }
+    },
+    "en": {
+      "short_description": "Personalized mobile massage services delivered to your home, hotel, or vacation rental throughout Miami.\n\nBilingual service in English and Spanish.5t",
+      "address": "",
+      "opening_hours_text": "Monday - Saturday: 10:00 AM - 9:00 PM\nSunday: 11:00 AM - 6:00 PM",
+      "service_area_text": "Mobile massages services at homes, hotels, and vacation rentals throughout Miami-Dade County, including Miami, Miami Beach, Brickell, downtown Miami, Coral Gables and Aventura.",
+      "client_care_text": "",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "price_display": "mixed",
+      "service_categories": [
+        "Relaxation & Wellness",
+        "Therapeutic & Recovery",
+        "Enhancements"
+      ],
+      "services": [
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Relaxation & Wellness — Signature Relaxation Massage — Gentle-to-medium pressure for full-body relaxation, 60 minutes",
+          "price_label": "$120 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Relaxation & Wellness — Signature Relaxation Massage — Extended full-body relaxation session, 90 minutes",
+          "price_label": "$165 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Therapeutic & Recovery — Deep Tissue Massage — Focused pressure to relieve muscle tension and stiffness, 60 minutes",
+          "price_label": "$145 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Therapeutic & Recovery — Deep Tissue Massage — Extended targeted treatment for chronic tension, 90 minutes",
+          "price_label": "$190 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Therapeutic & Recovery — Sports Recovery Massage — Targeted massage for active clients, muscle recovery, and mobility, 6",
+          "price_label": "$150 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Enhancements — Aromatherapy — Essential oils added to your massage session",
+          "price_label": "$15 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Enhancements — Hot Towels and Scalp Massage — Warm towels followed by a relaxing scalp massage",
+          "price_label": "$20 USD"
+        },
+        {
+          "category": "Relaxation & Wellness",
+          "name": "Travel outside the standard Miami service area may require an additional fee based on location."
+        }
+      ],
+      "policies": [
+        "Appointments are available by advance booking only. A 30% deposit is required to reserve your appointment, and the remaining balance is due at the time of service.",
+        "Please provide at least 24 hours’ notice to cancel or reschedule. Deposits are non-refundable for cancellations made less than 24 hours before the appointment.",
+        "Please disclose any injuries, allergies, pregnancy, recent surgeries, or relevant medical conditions before your session."
+      ],
+      "faq": [],
+      "featured_package": {
+        "name": "Miami Reset Package — A 90-minute Signature Relaxation Massage with aromatherapy, hot towels, and a relaxing scalp massa",
+        "description": "",
+        "price_label": "$185 USD"
+      }
+    }
+  }
+}

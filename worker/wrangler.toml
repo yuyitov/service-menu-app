@@ -55,4 +55,11 @@ PUBLIC_BOOK_BASE_URL = "https://www.hmulink.com"
 # URL pública de este worker — la usan los links de "comprar corrección
 # adicional" (/buy-correction) que van en correos y en la página /correct/.
 WORKER_PUBLIC_URL    = "https://service-menu-worker.veronica-perezarroyo.workers.dev"
+# Prefill de prospecto (Cory → worker, Fase 2.4 de la Link Factory): base
+# pública donde Cory publica el prefill.json de cada prospecto. El worker lee
+# `<base>/<slug>/prefill.json` cuando la compra llegó por un link rastreado
+# (client_reference_id=<slug>) y prellena el formulario de Tally del correo
+# post-pago con los datos del prospecto. Quitar/vaciar la var apaga el prefill
+# sin ningún otro cambio (fail-open).
+PROSPECT_PREFILL_BASE_URL = "https://hmu-prospector.pages.dev/p"
 

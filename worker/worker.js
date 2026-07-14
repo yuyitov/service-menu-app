@@ -266,9 +266,23 @@ async function handleStripeWebhook(request, env) {
     return jsonResponse({ ok: false, error: 'TALLY_FORM_URL not configured' }, 500);
   }
 
-  // Construct form URLs with order_id
-  const formUrlEN = `${baseFormEN}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
-  const formUrlES = `${baseFormES}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
+  // Construct form URLs with order_id + customer_email (the two hidden fields
+  // this worker relies on for every order).
+  let formUrlEN = `${baseFormEN}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
+  let formUrlES = `${baseFormES}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
+
+  // Prefill de prospecto (Cory → worker, Fase 2.4 de la Link Factory): si esta
+  // compra llegó por un link rastreado de un prospecto (el tracker de Cory puso
+  // client_reference_id=<slug> en el checkout) y hay una base de prefill
+  // configurada, prellena los campos del formulario con los datos que Cory ya
+  // recolectó, en cada idioma. El cliente los ve cargados y puede dejarlos,
+  // editarlos o borrarlos. Fail-open en cada paso: sin slug / sin base / si el
+  // fetch falla, las URLs quedan como arriba y el post-pago sigue idéntico.
+  const prefill = await fetchProspectPrefill(env, prospectSlug(session));
+  if (prefill) {
+    formUrlEN += buildPrefillQuery(prefill.en);
+    formUrlES += buildPrefillQuery(prefill.es);
+  }
 
   // Reserve the idempotency marker BEFORE sending so a concurrent duplicate
   // (Stripe retry / race) can't double-send the email. If the send fails we
@@ -296,6 +310,74 @@ async function handleStripeWebhook(request, env) {
   }
 
   return jsonResponse({ ok: true, paymentIntentId, hasEmail: true });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PREFILL DE PROSPECTO (Cory → worker → Tally), Fase 2.4 de la Link Factory
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Base pública desde donde este worker lee el prefill del prospecto, por slug:
+// `${base}/${slug}/prefill.json`. Sin la var → el prefill se apaga (el flujo de
+// post-pago no cambia). Sin barra final.
+function prospectPrefillBase(env) {
+  return (env.PROSPECT_PREFILL_BASE_URL || '').trim().replace(/\/+$/, '');
+}
+
+// Misma forma exacta de slug que valida el tracker de Cory (stripe.js SLUG_RE):
+// solo se confía en un client_reference_id con esta forma. Validarlo ANTES de
+// construir la URL de fetch evita path-traversal / SSRF por un valor arbitrario.
+const PROSPECT_SLUG_RE = /^[a-z0-9-]{3,80}-[0-9a-f]{6}$/;
+
+function prospectSlug(session) {
+  const raw = String(session?.client_reference_id || '').trim();
+  return PROSPECT_SLUG_RE.test(raw) ? raw : null;
+}
+
+// Construye el fragmento de query `&name=value&...` para prellenar campos de
+// Tally desde un objeto {name: value}:
+// - salta valores vacíos / no-string (un campo que Cory no tiene no se prellena);
+// - URL-encodea nombre y valor;
+// - respeta `maxLen` (largo total del fragmento): agrega pares mientras quepan y
+//   descarta el resto — una URL demasiado larga la truncan navegadores/proxies y
+//   rompería el link. El orden de inserción del objeto define la prioridad.
+// Nunca lanza: ante cualquier entrada rara devuelve "".
+function buildPrefillQuery(prefill, maxLen = 1500) {
+  if (!prefill || typeof prefill !== 'object') return '';
+  let out = '';
+  for (const [name, value] of Object.entries(prefill)) {
+    if (typeof value !== 'string' || value === '') continue;
+    if (typeof name !== 'string' || name === '') continue;
+    const pair = `&${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+    if (out.length + pair.length > maxLen) continue;
+    out += pair;
+  }
+  return out;
+}
+
+// Lee el prefill.json público del prospecto por slug (Cory lo publica en su
+// pages.dev; el dato ya es público — está en la demo del prospecto). Fail-open
+// total: sin base configurada, sin slug válido, error de red, timeout, no-200,
+// o JSON inválido → devuelve null y el flujo de post-pago sigue idéntico al de
+// hoy. Nunca lanza. Devuelve { es: {...}, en: {...} } (objetos por idioma,
+// vacíos si faltan) o null.
+async function fetchProspectPrefill(env, slug) {
+  const base = prospectPrefillBase(env);
+  if (!base || !slug) return null;
+  try {
+    // Un prospecto lento no debe bloquear el correo de post-pago.
+    const resp = await fetch(`${base}/${slug}/prefill.json`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (!data || typeof data !== 'object') return null;
+    return {
+      es: (data.es && typeof data.es === 'object') ? data.es : {},
+      en: (data.en && typeof data.en === 'object') ? data.en : {},
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

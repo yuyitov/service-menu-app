@@ -61,5 +61,5 @@ WORKER_PUBLIC_URL    = "https://service-menu-worker.veronica-perezarroyo.workers
 # (client_reference_id=<slug>) y prellena el formulario de Tally del correo
 # post-pago con los datos del prospecto. Quitar/vaciar la var apaga el prefill
 # sin ningún otro cambio (fail-open).
-PROSPECT_PREFILL_BASE_URL = "https://hmu-prospector.pages.dev/p"
+PROSPECT_PREFILL_BASE_URL = "https://preview.hmulink.com/p"
 

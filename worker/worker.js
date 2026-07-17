@@ -54,10 +54,10 @@ const VALID_BRAND_STYLES = [
 ];
 
 // Precio de la corrección adicional — DEBE coincidir con la sección 3 de los
-// Términos publicados (public/terms/ y public/es/terminos/): ~$3 USD / ~$40 MXN.
+// Términos publicados (public/terms/ y public/es/terminos/): $6 USD / $59 MXN.
 const CORRECTION_PRICE = {
-  usd: { unit_amount: 300, label: '$3 USD' },
-  mxn: { unit_amount: 4000, label: '$40 MXN' }
+  usd: { unit_amount: 600, label: '$6 USD' },
+  mxn: { unit_amount: 5900, label: '$59 MXN' }
 };
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/;

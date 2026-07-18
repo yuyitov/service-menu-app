@@ -479,7 +479,7 @@ async function handleTallyWebhook(request, env) {
   // Build the sanitized public payload (only approved public fields).
   // Internal answers (contact person, private phone, "keep off page" notes)
   // stay in the KV submission record and are never dispatched.
-  const publicPayload = buildHmuPublicPayload(normalized, incomingOrderId);
+  const publicPayload = buildHmuPublicPayload(normalized, incomingOrderId, env);
 
   if (!publicPayload.business_name) {
     await env.SERVICE_MENU_KV.put(
@@ -1527,11 +1527,41 @@ function normalizePrimaryCta(value) {
   return aliases[normalized] || '';
 }
 
+// Idioma del formulario de Tally al que corresponde un form_id, derivado de
+// las env vars TALLY_FORM_URL_ES/EN (formato `https://tally.so/r/<FORM_ID>?order_id=`).
+// Antes el fallback de idioma comparaba form_id contra el literal 'MeyDpk';
+// en HMU coincidía con su propio form ES (funcionaba), pero el mismo código
+// copiado a las verticales clonadas mandaba TODO a inglés — parametrizado
+// aquí también por consistencia con el motor de la fábrica (Fase 2.6).
+// Devuelve 'es'/'en' o null si el form_id no se reconoce. Nunca lanza.
+function tallyFormLang(env, formId) {
+  const id = String(formId || '').trim();
+  if (!id) return null;
+  const idFromUrl = (url) => {
+    const m = String(url || '').match(/tally\.so\/r\/([A-Za-z0-9]+)/);
+    return m ? m[1] : null;
+  };
+  if (idFromUrl(env && env.TALLY_FORM_URL_ES) === id) return 'es';
+  if (idFromUrl(env && env.TALLY_FORM_URL_EN) === id) return 'en';
+  return null;
+}
+
+// Regla completa del idioma por defecto de la página del cliente:
+// (1) respuesta explícita a la pregunta de idioma → esa manda;
+// (2) sin respuesta, el idioma del formulario que llenó (tallyFormLang);
+// (3) último recurso → 'en'.
+function resolveDefaultLanguage(langRaw, env, formId) {
+  const raw = String(langRaw || '').toLowerCase();
+  if (raw.includes('espa') || raw.includes('span')) return 'es';
+  if (raw.includes('engl') || raw.includes('ingl')) return 'en';
+  return tallyFormLang(env, formId) || 'en';
+}
+
 // Mapea las respuestas del intake (formularios EN yPkN5X y ES MeyDpk) al
 // payload público que consume el generador. SOLO campos públicos aprobados:
 // los datos internos (nombre de contacto, teléfono privado, notas "keep off")
 // se quedan en KV y nunca se despachan a GitHub Actions.
-function buildHmuPublicPayload(normalized, orderId) {
+function buildHmuPublicPayload(normalized, orderId, env) {
   const a = normalized.answers;
 
   const styleRaw = answerAny(a, ['pick_your_style', 'elige_tu_estilo']);
@@ -1546,11 +1576,8 @@ function buildHmuPublicPayload(normalized, orderId) {
   const langRaw = answerAny(a, [
     'which_language_should_your_hmu_link_show_first',
     'en_que_idioma_debe_aparecer_primero_tu_hmu_link'
-  ]).toLowerCase();
-  let defaultLanguage;
-  if (langRaw.includes('espa') || langRaw.includes('span')) defaultLanguage = 'es';
-  else if (langRaw.includes('engl') || langRaw.includes('ingl')) defaultLanguage = 'en';
-  else defaultLanguage = normalized.form_id === 'MeyDpk' ? 'es' : 'en';
+  ]);
+  const defaultLanguage = resolveDefaultLanguage(langRaw, env, normalized.form_id);
 
   const businessName = answerAny(a, ['business_name', 'nombre_del_negocio']);
   const suffix = String(normalized.submission_id || orderId || '')

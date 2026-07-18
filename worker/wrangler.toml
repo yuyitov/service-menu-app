@@ -43,7 +43,7 @@ id      = "0743b2af26cd47fb88d4fef62e90a118"
 # HMU se procesen, ignorando ventas de otros productos de la cuenta (ej. MyGuest).
 # Vacío = filtro apagado (el worker loguea el plink observado para capturarlo).
 # Al crear el link MXN, agrega su plink id aquí:  "plink_USD,plink_MXN"
-STRIPE_PAYMENT_LINK_ID = "plink_1TpW1pG4Nw60erBPpTk296oO,plink_1Tr7lEG4Nw60erBPZ51f4cOC"
+STRIPE_PAYMENT_LINK_ID = "plink_1TpW1pG4Nw60erBPpTk296oO,plink_1Tr7lEG4Nw60erBPZ51f4cOC,plink_1TuOQXG4Nw60erBPUus5heVm"
 GITHUB_REPO          = "yuyitov/service-menu-app"
 GITHUB_ACTIONS_EVENT = "new-hmu-service-menu"
 TALLY_FORM_URL_EN    = "https://tally.so/r/yPkN5X?order_id="

@@ -11,9 +11,13 @@
  * 5. GitHub Actions calls /notify → send delivery email (includes a one-time
  *    correction link to https://www.hmulink.com/correct/?t=<token>)
  *
- * Flujo de correcciones (gratuita incluida + adicionales de pago):
+ * Flujo de correcciones (las incluidas + adicionales de pago):
  * a. /notify genera un correction_token de un solo uso (KV hmu_correction:*)
- *    y el correo de entrega enlaza la página /correct/ con ese token.
+ *    y el correo de entrega enlaza la página /correct/ con ese token. La
+ *    compra incluye FREE_CHANGES modificaciones (2 desde el 2026-07-20): al
+ *    consumir una, si quedan, el worker acuña el siguiente token y lo manda en
+ *    el correo de "tu página fue actualizada" — no ofrece el de pago hasta
+ *    agotarlas (ver consumeFreeChange).
  * b. La página estática /correct/ llama GET /correction-status y luego
  *    POST /correct — el token autentica; no hay formulario de Tally.
  * c. /correct despacha GitHub Actions (is_correction) → apply_correction.py
@@ -59,6 +63,20 @@ const CORRECTION_PRICE = {
   usd: { unit_amount: 600, label: '$6 USD' },
   mxn: { unit_amount: 5900, label: '$59 MXN' }
 };
+
+// Modificaciones gratis incluidas en la compra (estándar de la casa desde el
+// 2026-07-20: 2). Se configura con FREE_CHANGES en wrangler.toml y es la MISMA
+// fuente que imprimen los Términos y los correos — si divergen, el producto
+// promete algo que no entrega. Portado de link-factory engine/worker/ (Ola 1c);
+// HMU migra completo a la fábrica en el gate del 2026-08-01 y este worker se
+// reemplaza por el del motor: aquí solo va el mínimo, con el mismo patrón.
+const DEFAULT_FREE_CHANGES = 2;
+
+function freeChanges(env) {
+  const raw = Number.parseInt(String((env && env.FREE_CHANGES) ?? '').trim(), 10);
+  if (!Number.isInteger(raw) || raw < 0) return DEFAULT_FREE_CHANGES;
+  return Math.min(raw, 10);
+}
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/;
 // Límites del texto libre de corrección: viaja en client_payload (visible en
@@ -666,6 +684,11 @@ async function handleNotify(request, env) {
       customer_email: customerEmail,
       page_url: pageUrl,
       correction_token: correctionToken,
+      // Contador de modificaciones incluidas (FREE_CHANGES). Se congela AQUÍ el
+      // total que le tocaba al cliente al comprar: si mañana el número cambia,
+      // quien ya compró conserva lo que se le prometió.
+      free_total: freeChanges(env),
+      free_used: 0,
       status: 'delivered',
       delivered_at: new Date().toISOString()
     }), { expirationTtl: 7776000 }); // 90 days
@@ -690,9 +713,10 @@ async function handleNotify(request, env) {
         pageUrl,
         slug,
         lang: deliveryLang,
-        correctionUrl
+        correctionUrl,
+        freeTotal: freeChanges(env)
       }),
-      text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl })
+      text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl, freeTotal: freeChanges(env) })
     });
   } catch (err) {
     console.error('delivery email failed:', safeError(err));
@@ -723,6 +747,45 @@ async function handleNotify(request, env) {
 function correctionFormUrl(env, token, lang) {
   const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
   return `${baseUrl}/correct/?t=${encodeURIComponent(token)}&l=${lang === 'es' ? 'es' : 'en'}`;
+}
+
+// Marca una modificación gratis como consumida en el registro de entrega y, si
+// al cliente le quedan incluidas, acuña y devuelve el token del SIGUIENTE
+// enlace. Devuelve '' cuando ya no quedan (a partir de ahí se compra).
+// Nunca lanza: un fallo de contador no puede tumbar una corrección ya
+// despachada — en el peor caso el cliente pide la siguiente por correo.
+async function consumeFreeChange(env, slug, tokenRecord) {
+  try {
+    const deliveryKey = `hmu_delivery:${slug}`;
+    const delivery = await env.SERVICE_MENU_KV.get(deliveryKey, { type: 'json' });
+    if (!delivery) return '';
+    // Entregas anteriores a esta versión no tienen contador: se asume que la
+    // que se acaba de usar era la primera.
+    const total = Number.isInteger(delivery.free_total) ? delivery.free_total : freeChanges(env);
+    const used = (Number.isInteger(delivery.free_used) ? delivery.free_used : 0) + 1;
+    delivery.free_total = total;
+    delivery.free_used = used;
+
+    let nextToken = '';
+    if (used < total) {
+      nextToken = generateSecureToken();
+      await env.SERVICE_MENU_KV.put(`hmu_correction:${nextToken}`, JSON.stringify({
+        correction_token: nextToken,
+        order_id: tokenRecord.order_id || '',
+        slug,
+        lang: tokenRecord.lang === 'es' ? 'es' : 'en',
+        paid: false,
+        created_at: new Date().toISOString(),
+        used_at: null
+      }), { expirationTtl: 7776000 }); // 90 days
+      delivery.correction_token = nextToken;
+    }
+    await env.SERVICE_MENU_KV.put(deliveryKey, JSON.stringify(delivery), { expirationTtl: 7776000 });
+    return nextToken;
+  } catch (err) {
+    console.error('free change counter failed:', safeError(err));
+    return '';
+  }
 }
 
 // La compra de corrección adicional pasa por el worker (crea el Checkout
@@ -841,6 +904,26 @@ async function handleCorrectionRequest(request, env) {
     await env.SERVICE_MENU_KV.put(`hmu_correction:${token}`, JSON.stringify(record), { expirationTtl: 7776000 });
   } catch (err) {
     console.error('correction token update failed:', safeError(err));
+  }
+
+  // Contador de modificaciones GRATIS: antes cada token valía por una y se
+  // acababa ahí; ahora, si al cliente le quedan incluidas, se acuña el siguiente
+  // enlace aquí y viaja en el correo de "tu página fue actualizada". Solo
+  // consumen cupo las gratis: una corrección comprada no descuenta.
+  if (record.paid !== true) {
+    const nextToken = await consumeFreeChange(env, slug, record);
+    if (nextToken) {
+      try {
+        const key = `hmu_correction_request:${correctionId}`;
+        const requestRecord = await env.SERVICE_MENU_KV.get(key, { type: 'json' });
+        if (requestRecord) {
+          requestRecord.next_correction_token = nextToken;
+          await env.SERVICE_MENU_KV.put(key, JSON.stringify(requestRecord), { expirationTtl: 7776000 });
+        }
+      } catch (err) {
+        console.error('next correction token save failed:', safeError(err));
+      }
+    }
   }
 
   // Copia de auditoría para Verónica — nunca bloquea la respuesta al cliente.
@@ -1033,6 +1116,18 @@ async function handleCorrectionNotify(body, env) {
   const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
   const pageUrl = `${baseUrl}/links/${record.slug}/`;
   const buyUrl = buyCorrectionUrl(env, record.slug);
+  // Si al cliente le quedaban modificaciones incluidas, /correct ya acuñó el
+  // siguiente enlace: va en este mismo correo para que no tenga que pedirlo (y
+  // para no ofrecerle el de pago teniendo una gratis disponible).
+  let nextCorrectionUrl = '';
+  if (record.next_correction_token) {
+    const nextRecord = await env.SERVICE_MENU_KV
+      .get(`hmu_correction:${record.next_correction_token}`, { type: 'json' })
+      .catch(() => null);
+    if (nextRecord && !nextRecord.used_at) {
+      nextCorrectionUrl = correctionFormUrl(env, record.next_correction_token, lang);
+    }
+  }
 
   if (customerEmail) {
     try {
@@ -1043,8 +1138,8 @@ async function handleCorrectionNotify(body, env) {
           subject: lang === 'es'
             ? '✅ Tu página HMU Link fue actualizada'
             : '✅ Your HMU Link page was updated',
-          html: buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl }),
-          text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl })
+          html: buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl }),
+          text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl })
         });
       } else {
         await sendEmail({
@@ -1900,8 +1995,11 @@ function buildPostPaymentText({ formUrlEN, formUrlES, lang }) {
 
 // La corrección gratuita se pide con el botón (flujo automatizado /correct/)
 // o respondiendo al correo (reply_to va al buzón real) — ambas vías valen.
-function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl }) {
+function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, freeTotal }) {
   const es = lang !== 'en';
+  // El correo dice el MISMO número que los Términos y que el contador del
+  // worker (FREE_CHANGES).
+  const free = Number.isInteger(freeTotal) ? freeTotal : DEFAULT_FREE_CHANGES;
   const t = es
     ? {
         heading: '¡Tu página de servicios está lista! 🎉',
@@ -1915,8 +2013,10 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl }) {
           'Descarga el código QR desde tu página para compartir fácilmente',
           'Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.'
         ],
-        correctionTitle: '✏️ Incluido: Una corrección gratuita',
-        correctionBody: 'Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tienes derecho a una corrección gratuita. Pídela con este botón y la aplicamos automáticamente:',
+        correctionTitle: free === 1
+          ? '✏️ Incluido: Una corrección gratuita'
+          : `✏️ Incluido: ${free} modificaciones gratis`,
+        correctionBody: `Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tu compra incluye ${free === 1 ? 'una corrección gratuita' : `${free} modificaciones sin costo`}. Pídelas con este botón y las aplicamos automáticamente:`,
         correctionBtn: 'Solicitar mi corrección',
         correctionAlt: 'También puedes simplemente responder a este correo con los cambios que quieras. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.'
       }
@@ -1932,8 +2032,10 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl }) {
           'Download the QR code from your page to share it easily',
           'Share the link in your Instagram bio, WhatsApp, business cards, etc.'
         ],
-        correctionTitle: '✏️ Included: One free correction',
-        correctionBody: 'If you need to change your info (hours, services, prices, etc.), you get one free correction. Request it with this button and we\'ll apply it automatically:',
+        correctionTitle: free === 1
+          ? '✏️ Included: One free correction'
+          : `✏️ Included: ${free} free modifications`,
+        correctionBody: `If you need to change your info (hours, services, prices, etc.), your purchase includes ${free === 1 ? 'one free correction' : `${free} free modifications`}. Request them with this button and we'll apply them automatically:`,
         correctionBtn: 'Request my correction',
         correctionAlt: 'You can also simply reply to this email with the changes you want. To change photos or your logo, reply to this email with the files attached.'
       };
@@ -1980,8 +2082,9 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl }) {
 }
 
 // Versión text/plain del correo de entrega.
-function buildDeliveryText({ pageUrl, lang, correctionUrl }) {
+function buildDeliveryText({ pageUrl, lang, correctionUrl, freeTotal }) {
   const es = lang !== 'en';
+  const free = Number.isInteger(freeTotal) ? freeTotal : DEFAULT_FREE_CHANGES;
   if (es) {
     return [
       '¡Tu página de servicios está lista!',
@@ -1995,7 +2098,7 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl }) {
       '- Descarga el código QR desde tu página para compartir fácilmente',
       '- Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.',
       '',
-      'Incluido: una corrección gratuita. Si necesitas cambios (horarios, servicios, precios, etc.), pídela aquí y la aplicamos automáticamente:',
+      `Incluido: ${free === 1 ? 'una corrección gratuita' : `${free} modificaciones gratis`}. Si necesitas cambios (horarios, servicios, precios, etc.), pídelos aquí y los aplicamos automáticamente:`,
       correctionUrl,
       'También puedes responder a este correo con los cambios (fotos o logo: adjúntalos en tu respuesta).',
       '',
@@ -2014,7 +2117,7 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl }) {
     '- Download the QR code from your page to share it easily',
     '- Share the link in your Instagram bio, WhatsApp, business cards, etc.',
     '',
-    'Included: one free correction. If you need changes (hours, services, prices, etc.), request it here and we\'ll apply it automatically:',
+    `Included: ${free === 1 ? 'one free correction' : `${free} free modifications`}. If you need changes (hours, services, prices, etc.), request them here and we'll apply them automatically:`,
     correctionUrl,
     'You can also reply to this email with the changes (photos or logo: attach the files in your reply).',
     '',
@@ -2046,7 +2149,7 @@ function correctionEmailShell(innerHtml) {
 
 // Corrección aplicada: confirma y ofrece la corrección adicional de pago
 // (precio de la sección 3 de los Términos).
-function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl }) {
+function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl }) {
   const es = lang !== 'en';
   const priceLabel = es ? CORRECTION_PRICE.mxn.label : CORRECTION_PRICE.usd.label;
   const t = es
@@ -2056,7 +2159,10 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl }) {
         buyTitle: '¿Necesitas otro cambio?',
         buyBody: `Puedes comprar una corrección adicional por ${priceLabel}:`,
         buyBtn: 'Comprar corrección adicional',
-        alt: 'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.'
+        alt: 'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.',
+        nextTitle: '✏️ Todavía te queda una modificación incluida',
+        nextBody: 'Cuando la necesites, ábrela con este enlace y pídela sin costo.',
+        nextBtn: 'Usar mi modificación incluida'
       }
     : {
         heading: '✅ Your page was updated',
@@ -2064,9 +2170,22 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl }) {
         buyTitle: 'Need another change?',
         buyBody: `You can buy an extra correction for ${priceLabel}:`,
         buyBtn: 'Buy an extra correction',
-        alt: 'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.'
+        alt: 'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.',
+        nextTitle: '✏️ You still have one included modification',
+        nextBody: 'Whenever you need it, open this link and request it at no cost.',
+        nextBtn: 'Use my included modification'
       };
-  const buyBlock = buyUrl
+  // Si al cliente le quedan modificaciones incluidas se le ofrece ESA, no la de
+  // pago: cobrarle teniendo una gratis disponible sería, como mínimo, mala fe.
+  const nextBlock = nextCorrectionUrl
+    ? `
+    <div style="margin: 30px 0; padding: 20px; background: #fff9e6; border-left: 4px solid #ffa934; border-radius: 4px;">
+      <p style="margin: 0 0 10px 0; color: #333; font-weight: 500;">${t.nextTitle}</p>
+      <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${t.nextBody}</p>
+      <a href="${nextCorrectionUrl}" style="display: inline-block; background: #ffa934; color: #4a2c00; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">${t.nextBtn}</a>
+    </div>`
+    : '';
+  const buyBlock = (!nextCorrectionUrl && buyUrl)
     ? `
     <div style="margin: 30px 0; padding: 20px; background: #f0f8ff; border-left: 4px solid #00a0b5; border-radius: 4px;">
       <p style="margin: 0 0 10px 0; color: #333; font-weight: 500;">${t.buyTitle}</p>
@@ -2078,12 +2197,12 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl }) {
     <h2 style="margin-top: 0; color: #1a1a1a;">${t.heading}</h2>
     <p>${t.intro}</p>
     <p><a href="${pageUrl}" style="color: #00a0b5; font-size: 18px; font-weight: 500; word-break: break-all;">${pageUrl}</a></p>
-    ${buyBlock}
+    ${nextBlock}${buyBlock}
     <p style="color: #666; font-size: 14px;">${t.alt}</p>
   `);
 }
 
-function buildCorrectionAppliedText({ pageUrl, lang, buyUrl }) {
+function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl }) {
   const es = lang !== 'en';
   const priceLabel = es ? CORRECTION_PRICE.mxn.label : CORRECTION_PRICE.usd.label;
   const lines = es
@@ -2092,7 +2211,9 @@ function buildCorrectionAppliedText({ pageUrl, lang, buyUrl }) {
         '',
         `Revisa tu página (puede tardar unos minutos en reflejarse): ${pageUrl}`,
         '',
-        ...(buyUrl ? [`¿Necesitas otro cambio? Compra una corrección adicional por ${priceLabel}: ${buyUrl}`, ''] : []),
+        ...(nextCorrectionUrl
+          ? [`Todavía te queda una modificación incluida. Pídela aquí sin costo: ${nextCorrectionUrl}`, '']
+          : buyUrl ? [`¿Necesitas otro cambio? Compra una corrección adicional por ${priceLabel}: ${buyUrl}`, ''] : []),
         'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.',
         '',
         'HMU Link — hmulink.com'
@@ -2102,7 +2223,9 @@ function buildCorrectionAppliedText({ pageUrl, lang, buyUrl }) {
         '',
         `Check your page (it may take a few minutes to refresh): ${pageUrl}`,
         '',
-        ...(buyUrl ? [`Need another change? Buy an extra correction for ${priceLabel}: ${buyUrl}`, ''] : []),
+        ...(nextCorrectionUrl
+          ? [`You still have one included modification. Request it here at no cost: ${nextCorrectionUrl}`, '']
+          : buyUrl ? [`Need another change? Buy an extra correction for ${priceLabel}: ${buyUrl}`, ''] : []),
         'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.',
         '',
         'HMU Link — hmulink.com'

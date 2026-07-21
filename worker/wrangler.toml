@@ -52,6 +52,12 @@ FROM_EMAIL           = "HMU Link <hello@hmulink.com>"
 # hello@ no es buzón real; las respuestas (p.ej. corrección gratuita) van aquí.
 REPLY_TO_EMAIL       = "veronica.perezarroyo@gmail.com"
 PUBLIC_BOOK_BASE_URL = "https://www.hmulink.com"
+# Modificaciones gratis incluidas en la compra. Estandar de la casa desde el
+# 2026-07-20 (decision de Vero): 2. Es la MISMA fuente que imprimen los
+# Terminos publicados, la landing y los correos del worker — si este numero y
+# el texto legal divergen, HMU promete algo que no entrega. Regla de oro:
+# primero se despliega el worker con el numero nuevo, DESPUES el legal.
+FREE_CHANGES         = "2"
 # URL pública de este worker — la usan los links de "comprar corrección
 # adicional" (/buy-correction) que van en correos y en la página /correct/.
 WORKER_PUBLIC_URL    = "https://service-menu-worker.veronica-perezarroyo.workers.dev"

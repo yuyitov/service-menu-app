@@ -1293,6 +1293,38 @@ def client_head_meta(canonical: str, es_url: str, en_url: str, default_url: str)
     )
 
 
+# Brand mark used as the og:image fallback when a business has no real photo,
+# so a link never unfurls with a broken/missing image. Same file the
+# marketing homepage (public/index.html) already uses for its own og:image.
+DEFAULT_OG_IMAGE = "https://www.hmulink.com/assets/brand/hmu-link-logo.png"
+
+
+def build_og_meta(view: dict, canonical_url: str, lang: str) -> str:
+    """Open Graph + Twitter Card tags so a shared link unfurls with photo +
+    title in WhatsApp/SMS. Reuses the page's own hero photo and canonical URL
+    (demos and clients alike) so the preview always matches what's on the
+    page; falls back to the brand mark when there's no real photo."""
+    images = _gallery_images(view)
+    image = images[0] if images else DEFAULT_OG_IMAGE
+    title = esc(view.get("business_name"))
+    desc = str(view.get("short_description") or "").strip()
+    if len(desc) > 150:
+        desc = desc[:149].rstrip() + "…"
+    locale = "es_MX" if lang == "es" else "en_US"
+    tags = [
+        '<meta property="og:type" content="website">',
+        f'<meta property="og:title" content="{title}">',
+    ]
+    if desc:
+        tags.append(f'<meta property="og:description" content="{esc(desc)}">')
+    tags.append(f'<meta property="og:url" content="{esc(canonical_url)}">')
+    tags.append(f'<meta property="og:locale" content="{locale}">')
+    tags.append(f'<meta property="og:image" content="{image}">')
+    tags.append('<meta name="twitter:card" content="summary_large_image">')
+    tags.append(f'<meta name="twitter:image" content="{image}">')
+    return "\n".join(tags)
+
+
 def build_client(json_path: Path) -> Path:
     """Generate both language pages + one QR for a real client payload."""
     payload = json.loads(json_path.read_text(encoding="utf-8"))
@@ -1311,10 +1343,13 @@ def build_client(json_path: Path) -> Path:
     alt_dir = root_dir / alt_lang
     alt_dir.mkdir(parents=True, exist_ok=True)
 
+    views = {lang: client_lang_view(payload, lang) for lang in CLIENT_LANGS}
     head = {
         lang: client_head_meta(
             lang_urls[lang], lang_urls.get("es"), lang_urls.get("en"), root_url
         )
+        + "\n"
+        + build_og_meta(views[lang], lang_urls[lang], lang)
         for lang in CLIENT_LANGS
     }
     # Language switch: default page links into the subfolder; the alternate
@@ -1332,7 +1367,7 @@ def build_client(json_path: Path) -> Path:
     }
 
     default_html = render_view(
-        client_lang_view(payload, default_lang),
+        views[default_lang],
         default_lang,
         head_meta=head[default_lang],
         lang_switch_html=switch[default_lang],
@@ -1341,7 +1376,7 @@ def build_client(json_path: Path) -> Path:
         qr_src=QR_ASSET_NAME,
     )
     alt_html = render_view(
-        client_lang_view(payload, alt_lang),
+        views[alt_lang],
         alt_lang,
         head_meta=head[alt_lang],
         lang_switch_html=switch[alt_lang],
@@ -1376,6 +1411,8 @@ def build_demo(json_path: Path) -> Path:
     alt_lang = "en" if default_lang == "es" else "es"
 
     root_url = f"{DEMO_BASE_URL}/{slug}/"
+    alt_url = f"{root_url}{alt_lang}/"
+    lang_urls = {default_lang: root_url, alt_lang: alt_url}
 
     root_dir = OUTPUT_DIR / slug
     root_dir.mkdir(parents=True, exist_ok=True)
@@ -1395,19 +1432,25 @@ def build_demo(json_path: Path) -> Path:
         ),
     }
 
+    views = {default_lang: client_lang_view(payload, default_lang), alt_lang: client_lang_view(payload, alt_lang)}
+    head = {
+        lang: DEMO_HEAD_META + "\n" + build_og_meta(views[lang], lang_urls[lang], lang)
+        for lang in (default_lang, alt_lang)
+    }
+
     default_html = render_view(
-        client_lang_view(payload, default_lang),
+        views[default_lang],
         default_lang,
-        head_meta=DEMO_HEAD_META,
+        head_meta=head[default_lang],
         lang_switch_html=switch[default_lang],
         footer_text=STRINGS[default_lang]["footer_demo_credit"],
         share_url=root_url,
         qr_src=QR_ASSET_NAME,
     )
     alt_html = render_view(
-        client_lang_view(payload, alt_lang),
+        views[alt_lang],
         alt_lang,
-        head_meta=DEMO_HEAD_META,
+        head_meta=head[alt_lang],
         lang_switch_html=switch[alt_lang],
         footer_text=STRINGS[alt_lang]["footer_demo_credit"],
         share_url=root_url,

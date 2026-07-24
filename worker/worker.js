@@ -125,6 +125,19 @@ export default {
         return await handleNotify(request, env);
       }
 
+      // Alerta de "pagó pero la generación falló": la llama el step if:failure()
+      // del workflow de generación (generate-hmu-page.yml). Autenticado con el
+      // mismo NOTIFY_SECRET que /notify.
+      if (request.method === 'POST' && pathname === '/email-events') {
+        return await handleEmailEvents(request, env);
+      }
+
+      if (request.method === 'POST' && pathname === '/alert-generation-failed') {
+        const allowed = await checkRateLimit(env, `hmu_rl:genfail:${ip}:${minuteSlot}`, 20, 120);
+        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
+        return await handleGenerationFailedAlert(request, env);
+      }
+
       // Correcciones: consumidos por la página estática /correct/ del sitio.
       if (request.method === 'GET' && pathname === '/correction-status') {
         const allowed = await checkRateLimit(env, `hmu_rl:corrstatus:${ip}:${minuteSlot}`, 30, 120);
@@ -215,6 +228,22 @@ async function handleStripeWebhook(request, env) {
     if (type === 'checkout.session.completed') {
       console.log('stripe payment_link observed (filter not configured):', session.payment_link || '(none)');
     }
+    // FALLO SILENCIOSO #1 (el más probable y más caro): el allowlist está
+    // vacío → se IGNORAN todos los pagos. Alerta GLOBAL (una por hora), no por
+    // pi: durante el apagón la cuenta compartida fanea eventos de todos los
+    // productos y un dedup por-pago sería una tormenta.
+    await alertOnce(env, 'filter_not_configured', 3600,
+      '🔴 HMU está IGNORANDO todos los pagos (filtro sin configurar)', [
+        'STRIPE_PAYMENT_LINK_ID está vacío/sin configurar en el worker de HMU.',
+        'El worker responde 200 {ignored} a TODOS los pagos entrantes: el',
+        'cliente paga y NUNCA recibe el formulario de intake.',
+        '',
+        `payment_link observado en este evento: ${session.payment_link || '(ninguno)'}`,
+        `tipo de evento: ${type}`,
+        '',
+        'Acción: configurar STRIPE_PAYMENT_LINK_ID (vars del worker) con el/los',
+        'plink de HMU y redesplegar.'
+      ]);
     return jsonResponse({ ok: true, ignored: true, reason: 'filter_not_configured' });
   }
   if (type !== 'checkout.session.completed') {
@@ -223,6 +252,29 @@ async function handleStripeWebhook(request, env) {
   if (!expectedPaymentLinks.includes(session.payment_link || '')) {
     // Diagnostic: surface filter mismatches (plink ids are not secrets).
     console.log('ignored other_product — observed plink:', session.payment_link || '(none)', '| expected:', expectedPaymentLinks.join(','));
+    // FALLO SILENCIOSO #2: un link de HMU desfasado (reprecio) cae aquí y el
+    // pago se ignora. PERO la cuenta Stripe es COMPARTIDA: cada venta de un
+    // producto hermano (MyGuest, Dr Link, ...) también llega como other_product.
+    // Para no inundar el correo, solo se alerta de links DESCONOCIDOS — ni de
+    // HMU ni en la allowlist KNOWN_OTHER_PAYMENT_LINKS — que es justo el síntoma
+    // de un link de HMU nuevo/no registrado. Dedup por link, uno al día.
+    const plink = session.payment_link || '';
+    if (plink && !knownOtherPaymentLinks(env).includes(plink)) {
+      await alertOnce(env, `other_product:${plink}`, 86400,
+        '⚠️ HMU: pago con payment_link NO reconocido (¿link desfasado?)', [
+          'Llegó un pago cuyo payment_link NO coincide con el de HMU y fue IGNORADO.',
+          '',
+          `payment_link observado: ${plink}`,
+          `email del comprador: ${sessionEmail(session) || '(sin email)'}`,
+          `monto: ${session.amount_total ?? session.amount ?? '?'} ${(session.currency || '').toUpperCase()}`,
+          '',
+          'Si este link es NUEVO de HMU (reprecio/nuevo checkout): tu',
+          'STRIPE_PAYMENT_LINK_ID está desfasado y estás perdiendo ventas EN',
+          'SILENCIO — agrégalo a STRIPE_PAYMENT_LINK_ID y redespliega.',
+          'Si es de OTRO producto de la cuenta compartida: agrégalo a',
+          'KNOWN_OTHER_PAYMENT_LINKS para silenciar este aviso.'
+        ]);
+    }
     return jsonResponse({ ok: true, ignored: true, reason: 'other_product' });
   }
 
@@ -505,6 +557,19 @@ async function handleTallyWebhook(request, env) {
       JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, missing: 'business_name', attempted_at: now }),
       { expirationTtl: 2592000 }
     ).catch(() => {});
+    // FALLO SILENCIOSO #4: intake sin campo obligatorio → página no se genera.
+    await alertOnce(env, `incomplete_intake:${normalized.submission_id}`, 604800,
+      '⚠️ HMU: intake incompleto — falta el nombre del negocio', [
+        'Llegó un formulario de intake sin business_name (campo obligatorio).',
+        'La página NO se generó y el cliente no recibió nada.',
+        '',
+        `order_id: ${incomingOrderId}`,
+        `submission_id: ${normalized.submission_id}`,
+        'falta: business_name',
+        '',
+        'Acción: contactar al cliente para completar el dato, o revisar el mapeo',
+        'del formulario de Tally si el campo sí venía.'
+      ]);
     return jsonResponse({ ok: false, status: 'incomplete_intake', missing: 'business_name' }, 422);
   }
 
@@ -515,6 +580,19 @@ async function handleTallyWebhook(request, env) {
       JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, missing: 'public_contact', attempted_at: now }),
       { expirationTtl: 2592000 }
     ).catch(() => {});
+    // FALLO SILENCIOSO #4 (bis): intake sin ningún contacto público.
+    await alertOnce(env, `incomplete_intake:${normalized.submission_id}`, 604800,
+      '⚠️ HMU: intake incompleto — sin contacto público', [
+        'Llegó un formulario de intake sin ningún medio de contacto público',
+        '(WhatsApp / teléfono / email / reservas / web). La página NO se generó.',
+        '',
+        `order_id: ${incomingOrderId}`,
+        `submission_id: ${normalized.submission_id}`,
+        'falta: public_contact',
+        '',
+        'Acción: contactar al cliente para completar el dato, o revisar el mapeo',
+        'del formulario de Tally si el campo sí venía.'
+      ]);
     return jsonResponse({ ok: false, status: 'incomplete_intake', missing: 'public_contact' }, 422);
   }
 
@@ -568,6 +646,21 @@ async function handleTallyWebhook(request, env) {
       status: 'failed_dispatch',
       updated_at: now
     }));
+    // FALLO SILENCIOSO #3: pagó + llenó el formulario, pero el dispatch a
+    // GitHub Actions falló → su página no se genera y no hay reintento.
+    await alertOnce(env, `failed_dispatch:${incomingOrderId}`, 86400,
+      `⚠️ HMU: falló el dispatch de generación — ${slug}`, [
+        'El cliente pagó y llenó el formulario, pero el dispatch a GitHub Actions',
+        'falló: su página NO se está generando.',
+        '',
+        `order_id: ${incomingOrderId}`,
+        `submission_id: ${normalized.submission_id}`,
+        `slug: ${slug}`,
+        `error: ${safeError(err)}`,
+        '',
+        'La orden quedó en failed_dispatch (sin reintento automático).',
+        'Acción: re-disparar la generación o revisar el GITHUB_TOKEN del worker.'
+      ]);
     return jsonResponse({ ok: false, error: 'Failed to dispatch generation' }, 500);
   }
 
@@ -1202,6 +1295,107 @@ async function notifyAdmin(env, subject, lines) {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ALERTAS DE EMBUDO MUERTO (Bloque A.3 de la auditoría 2026-07-21)
+// ─────────────────────────────────────────────────────────────────────────────
+// El embudo fallaba en silencio: un payment link desfasado → 200 {ignored} y un
+// console.log; "el cliente era el monitor". alertOnce conecta notifyAdmin a los
+// puntos de fallo silencioso con dedup en KV para que un reintento de Stripe no
+// dispare una tormenta de correos.
+
+// Destino de las alertas: ALERT_EMAIL si está configurado; si no, el buzón de
+// Vero (REPLY_TO_EMAIL) — así funcionan desde el primer deploy sin config nueva.
+function alertEmail(env) {
+  return (env.ALERT_EMAIL || env.REPLY_TO_EMAIL || '').trim();
+}
+
+// Payment links de OTROS productos de la cuenta Stripe compartida que ya sabemos
+// que no son de HMU: NO alertamos por ellos (evita el ruido de cada venta de un
+// producto hermano). Mismo formato que STRIPE_PAYMENT_LINK_ID (coma-separado).
+function knownOtherPaymentLinks(env) {
+  return (env.KNOWN_OTHER_PAYMENT_LINKS || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
+function sessionEmail(session) {
+  return session?.customer_email || session?.customer_details?.email || session?.receipt_email || '';
+}
+
+// Manda UN correo de alerta, deduplicado por `dedupKey` durante `ttlSeconds`.
+// Reserva la llave hmu_alerted:<dedupKey> ANTES de enviar: si dos reintentos de
+// Stripe entran a la vez, solo el primero pasa el chequeo y manda el correo.
+// Nunca lanza: una alerta que falla no puede tumbar el flujo del cliente ni el
+// 200 que Stripe espera.
+async function alertOnce(env, dedupKey, ttlSeconds, subject, lines) {
+  try {
+    const to = alertEmail(env);
+    if (!to) return;
+    const key = `hmu_alerted:${dedupKey}`;
+    const already = await env.SERVICE_MENU_KV.get(key).catch(() => null);
+    if (already) return;
+    // Reservar antes de enviar (idempotencia / rate-limit).
+    await env.SERVICE_MENU_KV.put(key, '1', { expirationTtl: ttlSeconds }).catch(() => {});
+    const text = lines.join('\n');
+    await sendEmail({
+      env,
+      to,
+      subject,
+      html: `<pre style="font-family: monospace; white-space: pre-wrap;">${escapeHtml(text)}</pre>`,
+      text
+    });
+  } catch (err) {
+    console.error('alertOnce failed:', safeError(err));
+  }
+}
+
+// POST /alert-generation-failed — lo llama el step `if: failure()` del workflow
+// de generación cuando la generación falla DESPUÉS de que el cliente pagó y
+// llenó el formulario (sin esto, un fallo de Actions dejaba la orden colgada y
+// nadie se enteraba). Autenticado con NOTIFY_SECRET, el mismo de /notify.
+async function handleGenerationFailedAlert(request, env) {
+  const notifySecret = (env.NOTIFY_SECRET || '').trim();
+  if (!notifySecret) {
+    return jsonResponse({ ok: false, error: 'NOTIFY_SECRET not configured' }, 500);
+  }
+  const authHeader = request.headers.get('authorization') || '';
+  const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!timingSafeEqual(provided, notifySecret)) {
+    return jsonResponse({ ok: false, error: 'Unauthorized' }, 401);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    body = {};
+  }
+  const slug = cleanValue(body?.slug);
+  const submissionId = cleanValue(body?.submission_id);
+  const correctionId = cleanValue(body?.correction_id);
+  const runUrl = cleanValue(body?.run_url);
+  const reason = cleanValue(body?.reason) || 'La generación de la página falló en GitHub Actions.';
+
+  // Dedup por el identificador más específico disponible.
+  const dedup = `genfail:${correctionId || submissionId || slug || runUrl || 'unknown'}`;
+  await alertOnce(env, dedup, 86400,
+    `⚠️ HMU: la generación FALLÓ — ${slug || submissionId || 'sin id'}`, [
+      'La generación de la página falló DESPUÉS del pago + formulario.',
+      'El cliente pagó y llenó el intake, pero su página no se generó.',
+      '',
+      `slug: ${slug || '(desconocido)'}`,
+      submissionId ? `submission_id: ${submissionId}` : '',
+      correctionId ? `correction_id: ${correctionId}` : '',
+      `motivo: ${reason}`,
+      runUrl ? `run de Actions: ${runUrl}` : '',
+      '',
+      'Acción: revisar el run de Actions y re-disparar la generación.'
+    ].filter(Boolean));
+
+  return jsonResponse({ ok: true });
+}
+
 function escapeHtml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -1214,6 +1408,94 @@ function escapeHtml(value) {
 // ─────────────────────────────────────────────────────────────────────────────
 // UTILITY FUNCTIONS
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Event Webhook del proveedor de correo (SendGrid): avisa cuando un correo de
+ * ENTREGA rebota o se descarta.
+ *
+ * Es el ultimo fallo silencioso del embudo que quedaba sin cubrir, y el peor de
+ * todos: el cliente PAGO, el sistema genero su pagina y mando el correo... que
+ * nunca llego (buzon lleno, direccion mal escrita, filtro de spam). Sin esto,
+ * Vero se entera cuando el cliente reclama -- o nunca.
+ *
+ * Seguridad: endpoint PUBLICO, asi que exige la firma ECDSA de SendGrid
+ * (`X-Twilio-Email-Event-Webhook-Signature` + `-Timestamp`, clave publica en
+ * `SENDGRID_WEBHOOK_PUBLIC_KEY`). Sin clave configurada NO se procesa nada: se
+ * responde 503 en vez de aceptar eventos sin verificar, que seria una puerta
+ * abierta a que cualquiera dispare correos de alerta.
+ */
+const EMAIL_FAILURE_EVENTS = new Set(['bounce', 'dropped', 'blocked', 'spamreport']);
+
+async function verifySendGridSignature(rawBody, signature, timestamp, publicKeyB64) {
+  if (!signature || !timestamp || !publicKeyB64) return false;
+  try {
+    // Ventana anti-replay de 300s, igual que el webhook de Stripe.
+    const ts = Number(timestamp);
+    if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > 300) return false;
+    const keyDer = Uint8Array.from(atob(publicKeyB64), (c) => c.charCodeAt(0));
+    const key = await crypto.subtle.importKey(
+      'spki', keyDer, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']
+    );
+    const sigDer = Uint8Array.from(atob(signature), (c) => c.charCodeAt(0));
+    const payload = new TextEncoder().encode(timestamp + rawBody);
+    return await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, sigDer, payload);
+  } catch (err) {
+    console.error('verifySendGridSignature failed:', safeError(err));
+    return false;
+  }
+}
+
+async function handleEmailEvents(request, env) {
+  const publicKey = env.SENDGRID_WEBHOOK_PUBLIC_KEY;
+  if (!publicKey) {
+    // Fail-closed a proposito: mejor no recibir eventos que aceptarlos sin firma.
+    return new Response('email events webhook not configured', { status: 503 });
+  }
+  const rawBody = await request.text();
+  const ok = await verifySendGridSignature(
+    rawBody,
+    request.headers.get('X-Twilio-Email-Event-Webhook-Signature'),
+    request.headers.get('X-Twilio-Email-Event-Webhook-Timestamp'),
+    publicKey
+  );
+  if (!ok) return new Response('invalid signature', { status: 401 });
+
+  let events;
+  try {
+    events = JSON.parse(rawBody);
+  } catch {
+    return new Response('invalid json', { status: 400 });
+  }
+  if (!Array.isArray(events)) return new Response('expected array', { status: 400 });
+
+  let alertados = 0;
+  for (const ev of events) {
+    const tipo = String(ev?.event || '').toLowerCase();
+    if (!EMAIL_FAILURE_EVENTS.has(tipo)) continue;
+    const email = String(ev?.email || 'desconocido');
+    const motivo = String(ev?.reason || ev?.response || 'sin motivo reportado');
+    // Dedup por destinatario+tipo, 24h: SendGrid reintenta el webhook y un
+    // mismo rebote puede llegar varias veces.
+    await alertOnce(
+      env,
+      `email_fail:${tipo}:${email}`,
+      86400,
+      `Un correo de entrega no llego (${tipo})`,
+      [
+        `Destinatario: ${email}`,
+        `Evento: ${tipo}`,
+        `Motivo: ${motivo}`,
+        '',
+        'El cliente pago y su correo NO llego. Revisa la direccion y reenvia a mano.',
+      ]
+    );
+    alertados++;
+  }
+  return new Response(JSON.stringify({ ok: true, received: events.length, alerted: alertados }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
 
 async function validateStripeSignature(rawBody, signatureHeader, secret) {
   if (!secret || !signatureHeader) return false;

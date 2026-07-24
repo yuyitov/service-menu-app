@@ -51,6 +51,19 @@ TALLY_FORM_URL_ES    = "https://tally.so/r/MeyDpk?order_id="
 FROM_EMAIL           = "HMU Link <hello@hmulink.com>"
 # hello@ no es buzón real; las respuestas (p.ej. corrección gratuita) van aquí.
 REPLY_TO_EMAIL       = "veronica.perezarroyo@gmail.com"
+# Destino de las ALERTAS de embudo muerto (Bloque A.3): filter_not_configured,
+# other_product, failed_dispatch, incomplete_intake y "generación falló". Si se
+# deja vacío, las alertas caen a REPLY_TO_EMAIL (mismo buzón) — así funcionan
+# desde el primer deploy sin config nueva. Ponerlo aparte permite mandar las
+# alertas a un buzón/etiqueta distinto del reply-to del cliente.
+ALERT_EMAIL          = "veronica.perezarroyo@gmail.com"
+# Cuenta Stripe COMPARTIDA: cada venta de un producto hermano (MyGuest, Dr Link,
+# ModaLink, PawContact) también llega a este worker como `other_product`. Para NO
+# recibir una alerta por cada una, lista aquí (coma-separado) los plink de esos
+# productos que ya conoces. Solo se alerta de un `other_product` cuyo plink NO
+# esté ni en STRIPE_PAYMENT_LINK_ID ni aquí — que es justo el síntoma de un link
+# de HMU desfasado. Empieza vacío y ve agregando los hermanos que salgan.
+KNOWN_OTHER_PAYMENT_LINKS = ""
 PUBLIC_BOOK_BASE_URL = "https://www.hmulink.com"
 # Modificaciones gratis incluidas en la compra. Estandar de la casa desde el
 # 2026-07-20 (decision de Vero): 2. Es la MISMA fuente que imprimen los

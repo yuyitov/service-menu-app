@@ -19,3 +19,6 @@ worker/.wrangler/
 # OS / editor cruft
 .DS_Store
 Thumbs.db
+
+# Paquetes de iconos generados (3+ MB de PNG): se regeneran, no van al repo.
+output/

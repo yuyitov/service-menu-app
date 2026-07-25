@@ -1426,6 +1426,46 @@ function escapeHtml(value) {
  */
 const EMAIL_FAILURE_EVENTS = new Set(['bounce', 'dropped', 'blocked', 'spamreport']);
 
+/**
+ * Convierte una firma ECDSA de DER (ASN.1) a IEEE P1363 (r||s, 64 bytes).
+ *
+ * SendGrid firma con OpenSSL y manda la firma en DER. WebCrypto NO acepta DER
+ * para ECDSA: `crypto.subtle.verify` exige r||s crudo, y ante DER simplemente
+ * devuelve false -- sin excepcion, sin log, sin pista. La version anterior
+ * pasaba el DER directo (la variable hasta se llamaba `sigDer`), asi que
+ * RECHAZABA CON 401 todos los eventos legitimos de SendGrid. Se detecto
+ * firmando un payload con una llave P-256 real y viendo que no lo aceptaba.
+ *
+ * Nota del formato: DER guarda r y s como enteros con signo, asi que a veces
+ * les antepone un 0x00 (si el primer bit es 1) y a veces son mas cortos de 32
+ * bytes. Por eso hay que quitar el relleno y volver a alinear a la DERECHA en
+ * 32 bytes: truncar o copiar en crudo falla ~1 de cada 2 firmas.
+ */
+function ecdsaDerToP1363(der) {
+  if (der[0] !== 0x30) return null;
+  let i = 2;
+  if (der[1] & 0x80) i = 2 + (der[1] & 0x7f);   // longitud larga
+  const leerEntero = () => {
+    if (der[i++] !== 0x02) return null;
+    const len = der[i++];
+    let v = der.slice(i, i + len);
+    i += len;
+    while (v.length > 32 && v[0] === 0x00) v = v.slice(1);
+    if (v.length > 32 || v.length === 0) return null;
+    const out = new Uint8Array(32);
+    out.set(v, 32 - v.length);
+    return out;
+  };
+  const r = leerEntero();
+  if (!r) return null;
+  const s = leerEntero();
+  if (!s) return null;
+  const sig = new Uint8Array(64);
+  sig.set(r, 0);
+  sig.set(s, 32);
+  return sig;
+}
+
 async function verifySendGridSignature(rawBody, signature, timestamp, publicKeyB64) {
   if (!signature || !timestamp || !publicKeyB64) return false;
   try {
@@ -1436,9 +1476,10 @@ async function verifySendGridSignature(rawBody, signature, timestamp, publicKeyB
     const key = await crypto.subtle.importKey(
       'spki', keyDer, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']
     );
-    const sigDer = Uint8Array.from(atob(signature), (c) => c.charCodeAt(0));
+    const sig = ecdsaDerToP1363(Uint8Array.from(atob(signature), (c) => c.charCodeAt(0)));
+    if (!sig) return false;
     const payload = new TextEncoder().encode(timestamp + rawBody);
-    return await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, sigDer, payload);
+    return await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, sig, payload);
   } catch (err) {
     console.error('verifySendGridSignature failed:', safeError(err));
     return false;

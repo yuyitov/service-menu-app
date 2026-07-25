@@ -108,3 +108,33 @@ jobs:
             -H "Authorization: Bearer $NOTIFY_SECRET" \
             -H "Content-Type: application/json" \
             -d "$payload"
+
+      # Alerta de embudo muerto (Bloque A.3): si CUALQUIER paso anterior falló,
+      # el cliente ya pagó y llenó el formulario pero su página no se generó.
+      # Sin esto, "pagó pero falló la generación" quedaba invisible. Avisa al
+      # worker (mismo NOTIFY_SECRET) para que mande el correo a ALERT_EMAIL.
+      - name: Alert on generation failure
+        if: failure()
+        env:
+          WORKER_URL: ${{ secrets.SERVICE_MENU_WORKER_URL }}
+          NOTIFY_SECRET: ${{ secrets.NOTIFY_SECRET }}
+          SLUG: ${{ steps.build.outputs.slug || steps.correct.outputs.slug }}
+          SUBMISSION_ID: ${{ github.event.client_payload.submission_id }}
+          CORRECTION_ID: ${{ github.event.client_payload.correction_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WORKER_URL" ] || [ -z "$NOTIFY_SECRET" ]; then
+            echo "WORKER_URL or NOTIFY_SECRET not configured — cannot alert"
+            exit 0
+          fi
+          payload=$(jq -nc \
+            --arg slug "$SLUG" \
+            --arg sid "$SUBMISSION_ID" \
+            --arg cid "$CORRECTION_ID" \
+            --arg run "$RUN_URL" \
+            --arg reason "Un paso del workflow de generación falló (ver el run)." \
+            '{slug:$slug, submission_id:$sid, correction_id:$cid, run_url:$run, reason:$reason}')
+          curl -sS -X POST "$WORKER_URL/alert-generation-failed" \
+            -H "Authorization: Bearer $NOTIFY_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "$payload" || true

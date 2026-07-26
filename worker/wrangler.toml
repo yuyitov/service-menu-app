@@ -63,7 +63,13 @@ ALERT_EMAIL          = "veronica.perezarroyo@gmail.com"
 # productos que ya conoces. Solo se alerta de un `other_product` cuyo plink NO
 # esté ni en STRIPE_PAYMENT_LINK_ID ni aquí — que es justo el síntoma de un link
 # de HMU desfasado. Empieza vacío y ve agregando los hermanos que salgan.
-KNOWN_OTHER_PAYMENT_LINKS = ""
+# The Catalog Link (creados a mano el 2026-07-25, pendiente linkFactory/5):
+#   plink_1TxIjs... $99 USD  venta        plink_1TxIly... $1,699 MXN venta
+#   plink_1TxInc... $6 USD   cambio extra plink_1TxIpV... $59 MXN    cambio extra
+#   plink_1TxJ1u... $1 USD   PRUEBA (desactivado en Stripe; el id sigue siendo suyo)
+# Sin esta linea, cada venta del catalogo dispara "pago con payment_link NO
+# reconocido" en los 5 workers hermanos.
+KNOWN_OTHER_PAYMENT_LINKS = "plink_1TxIjsG4Nw60erBPnXsLGjyr,plink_1TxIlyG4Nw60erBPYUjCe3IN,plink_1TxIncG4Nw60erBPIoDszOL8,plink_1TxIpVG4Nw60erBPzXgvTGxX,plink_1TxJ1uG4Nw60erBPYPesVk9F"
 PUBLIC_BOOK_BASE_URL = "https://www.hmulink.com"
 # Modificaciones gratis incluidas en la compra. Estandar de la casa desde el
 # 2026-07-20 (decision de Vero): 2. Es la MISMA fuente que imprimen los

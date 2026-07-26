@@ -44,6 +44,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+from merge_intake import answered_keys, load_previous_client, merge_client, sanitize_intake
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CLIENTS_DIR = REPO_ROOT / "data" / "clients"
 LINKS_DIR = REPO_ROOT / "public" / "links"
@@ -848,6 +850,24 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
             tgt["featured_package"]["description"] = translated["featured_description"][:300]
 
 
+def previous_client(slug: str) -> dict:
+    """El `client.json` ya publicado de este slug, o `{}` si es un alta nueva."""
+    return load_previous_client(CLIENTS_DIR / f"{slug}.client.json")
+
+
+def merge_with_existing(client: dict, previous: dict, payload: dict, cleared: set[str]) -> dict:
+    """Fusiona lo recién construido sobre la página que ya estaba publicada.
+
+    El porqué de la fusión y el mecanismo de borrado explícito están en
+    `merge_intake.py`.
+    """
+    if not previous:
+        return client
+    print(f"merge: regeneración sobre una página ya publicada "
+          f"(campos contestados: {len(answered_keys(payload, cleared))})")
+    return merge_client(previous, client, payload, cleared)
+
+
 def main() -> int:
     raw = os.environ.get("INTAKE_PAYLOAD", "")
     if not raw:
@@ -863,8 +883,15 @@ def main() -> int:
 
     if not slug or not SLUG_RE.match(slug):
         fail(f"invalid or missing slug")
+    # Los tokens de borrado explícito salen del payload ANTES de cualquier
+    # validación o construcción: así "BORRAR" nunca acaba impreso en la página,
+    # y un borrado sobre un campo obligatorio (business_name) cae en la guarda
+    # de abajo en vez de publicar una página sin nombre.
+    payload, cleared = sanitize_intake(payload)
     if not isinstance(payload, dict) or not payload.get("business_name"):
         fail("public_payload missing business_name")
+
+    previous = previous_client(slug)
 
     default_language = payload.get("default_language")
     if default_language not in ("es", "en"):
@@ -875,7 +902,12 @@ def main() -> int:
     categories_en = parse_service_categories(payload.get("service_categories_text", ""), "en")
     services_es = parse_services(payload.get("services_text", ""), categories_es, price_policy)
     services_en = parse_services(payload.get("services_text", ""), categories_en, price_policy)
-    if not services_es:
+    # Sin servicios NO se publica una página nueva. Pero al REGENERAR una que ya
+    # existe, un `services_text` vacío es justo el caso que la fusión atiende
+    # ("no cambies mis servicios"), así que la guarda se la deja a la fusión: si
+    # de verdad no hubiera servicios anteriores, el generador vuelve a rechazar
+    # el cliente más abajo.
+    if not services_es and not previous:
         fail("intake has no parseable services — manual review required")
 
     policies = parse_policies(payload.get("policies_text", ""))
@@ -984,6 +1016,14 @@ def main() -> int:
 
     other_lang = "en" if source_lang == "es" else "es"
     apply_translation(client["content"], source_lang, other_lang)
+
+    # La fusión va DESPUÉS de traducir y ANTES de las guardas. Después de
+    # traducir, porque un campo que se conserva ya venía traducido en los dos
+    # idiomas y volver a traducirlo sería gastar tokens para llegar al mismo
+    # lugar. Antes de las guardas, porque son las guardas de la página FINAL:
+    # si el formulario no preguntó por el WhatsApp, la página sigue teniendo el
+    # suyo y no hay por qué mandarla a revisión manual.
+    client = merge_with_existing(client, previous, payload, cleared)
 
     if default_language == "en" and spanish_signal_score(content_text(client["content"]["en"])) >= 5:
         fail(

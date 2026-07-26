@@ -1,0 +1,56 @@
+# Brand/domain config for the "hmu" vertical (HMU Link).
+# Fase 1.2 adds `styles.catalog` (which of the engine's closed brand styles
+# this vertical may use) and `strings_overrides` (per-language UI string
+# overrides layered on top of the engine's base STRINGS). Fase 1.3 adds
+# `blocks` (conditional-block overrides). HMU uses the full catalog, no
+# string overrides and the engine's default blocks, so output stays
+# byte-identical to golden.
+# Fase 1.4 extends this file further with full schema validation.
+id: hmu
+brand_name: "HMU Link"
+domain: "https://www.hmulink.com"
+
+styles:
+  catalog:
+    - black-gold
+    - soft-blush
+    - charcoal-clean
+    - warm-sand
+    - aqua-clean
+    - sage-calm
+    - electric-slate
+    - terracotta-warm
+    - sunny-paws
+    - midnight-ink
+    - clarity-editorial
+    - horizon-teal
+
+# Per-language UI string overrides layered on the engine's base STRINGS
+# (engine/generator/strings_base.py). Empty for HMU: it uses the base
+# strings as-is. A future vertical can override individual keys here, e.g.:
+#   strings_overrides:
+#     es:
+#       btn_booking: "Agendar cita"
+strings_overrides:
+  es: {}
+  en: {}
+
+# Conditional-block overrides layered on the engine registry
+# (engine/generator/blocks.py, ENGINE_BLOCKS). Each block gates on the
+# payload's `business_type` via `enabled_for`:
+#   - list of business types -> renders for those types (payloads without
+#     business_type, or "general", always keep the block)
+#   - "all"  -> renders for every business type
+#   - "none" -> the vertical never renders the block
+# HMU uses the engine defaults as-is:
+#   delivery_pickup: food, retail
+#   portfolio: creative, beauty, wellness, professional, fitness
+#   lookbook: all (Fase 3.2, ported from ModaLink — data-driven via
+#     lookbook_urls, so it renders nothing unless a payload sets it)
+# A future vertical can tune them, e.g.:
+#   blocks:
+#     delivery_pickup:
+#       enabled_for: none
+#     portfolio:
+#       enabled_for: all
+blocks: {}

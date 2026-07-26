@@ -1,0 +1,346 @@
+# Tally intake form definition for the "hmu" vertical (Fase 3.1).
+# Consumed by scripts/create_tally_forms.py — see that file's module
+# docstring for the full schema. Style options below are the vertical's
+# 12-style catalog (verticals/hmu/vertical.yaml styles.catalog); the ES/EN
+# hint text is taken verbatim from each style's CSS header comment in
+# engine/generator/styles/*.css so the labels don't drift from the actual
+# palettes.
+#
+# The questions below are still a draft (no live Tally form was created from
+# this script — matching every question title against DATA_CONTRACT.md is
+# Fase 5.1/6 work). The hidden_fields block, however, mirrors the REAL live
+# HMU forms (ES/EN): the two forms in production carry these 6 prefill hidden
+# fields, added by hand via the Tally Chrome extension in Fase 2.4. The worker
+# builds the post-payment form URL with them from the prospect's slug (Cory →
+# HMU prefill), so the prospect's known data is captured silently.
+
+form_title:
+  es: "HMU Link — Cuestionario de tu negocio"
+  en: "HMU Link — Your business questionnaire"
+
+# URL-prefilled Tally hidden fields. order_id + customer_email are injected
+# automatically by create_tally_forms.py (worker.js relies on them for every
+# vertical); the 6 below are HMU's prospect-prefill fields — their names match
+# exactly what worker.js appends to formUrlEN/ES and what Cory's prospect data
+# provides (see docs/DATA_CONTRACT.md, contrato A / prefill).
+hidden_fields:
+  - business_name   # razón social del prospecto
+  - phone           # teléfono público
+  - address         # dirección pública (ubicación 1)
+  - hours           # horarios de atención
+  - maps_url        # enlace de Google Maps
+  - reviews_url     # enlace de Google Reviews
+
+# Cada pregunta declara `name:`: el field name ESTABLE con el que Tally guarda
+# esa respuesta. Es deliberadamente el MISMO en el formulario ES y en el EN, y
+# coincide con el campo del public_payload del worker (ver
+# engine/worker/tally-field-aliases.json) cuando la pregunta mapea a uno. Eso es
+# lo que permite prellenar el formulario cuando el cliente pide una MODIFICACION
+# (Ola 1c): se arma la URL con estos nombres. Antes el field name se derivaba del
+# titulo (nk(titulo)), asi que divergia entre idiomas y se movia con cualquier
+# cambio de wording — prellenar era imposible.
+questions:
+  # --- Identidad del negocio ---
+  - id: brand_name
+    type: text
+    name: brand_name
+    required: true
+    title: {es: "Nombre de tu negocio", en: "Your business name"}
+
+  - id: tagline
+    type: text
+    name: tagline
+    required: true
+    title:
+      es: "Tagline corto de tu negocio (1 frase)"
+      en: "Short tagline for your business (1 sentence)"
+
+  - id: specialty
+    type: dropdown
+    name: specialty
+    required: true
+    title: {es: "Especialidad", en: "Specialty"}
+    options:
+      - {es: "Spa y bienestar", en: "Spa & wellness"}
+      - {es: "Barbería", en: "Barbershop"}
+      - {es: "Salón de belleza / uñas", en: "Beauty salon / nails"}
+      - {es: "Estudio de tatuajes", en: "Tattoo studio"}
+      - {es: "Fitness y entrenamiento", en: "Fitness & training"}
+      - {es: "Coaching y consultoría", en: "Coaching & consulting"}
+      - {es: "Tours y experiencias", en: "Tours & experiences"}
+      - {es: "Cuidado de mascotas", en: "Pet care"}
+      - {es: "Café o restaurante", en: "Café or restaurant"}
+      - {es: "Otra", en: "Other"}
+
+  - id: specialty_other
+    type: text
+    name: specialty_other
+    title: {es: "Especialidad, otra (opcional)", en: "Specialty, other (optional)"}
+    show_when: {question: specialty, option: 9}
+
+  - id: years_experience
+    type: number
+    name: years_experience
+    title: {es: "Años de experiencia (opcional)", en: "Years of experience (optional)"}
+
+  - id: background
+    type: text
+    name: background
+    title:
+      es: "Formación o trayectoria (opcional, 1-2 líneas)"
+      en: "Training or background (optional, 1-2 lines)"
+
+  - id: logo
+    type: file
+    name: logo_url
+    title: {es: "Sube tu logo (opcional)", en: "Upload your logo (optional)"}
+
+  - id: main_photo
+    type: file
+    name: image_url
+    title: {es: "Sube una foto principal (opcional)", en: "Upload a main photo (optional)"}
+
+  - id: gallery_photos
+    type: file
+    name: gallery_image_urls
+    multiple: true
+    max_files: 4
+    title:
+      es: "Sube fotos de tu trabajo (opcional, 2 a 4 fotos)"
+      en: "Upload photos of your work (optional, 2 to 4 photos)"
+
+  # --- Servicios ---
+  - id: services_list
+    type: textarea
+    name: services_text
+    required: true
+    title:
+      es: "Lista tus servicios con precios (uno por línea)"
+      en: "List your services with prices (one per line)"
+    placeholder:
+      es: "Corte y barba — Desde $350 MXN"
+      en: "Haircut & beard — From $25 USD"
+
+  - id: featured
+    type: textarea
+    name: featured_text
+    title:
+      es: "Servicio, paquete o promoción destacada (opcional)"
+      en: "Featured service, package or promo (optional)"
+
+  - id: typical_duration
+    type: text
+    name: typical_duration
+    title: {es: "Duración típica de tus citas (opcional)", en: "Typical appointment length (optional)"}
+    placeholder:
+      es: "Una sesión completa toma 45-60 minutos"
+      en: "A full session takes 45-60 minutes"
+
+  # --- Práctica comercial ---
+  - id: attention
+    type: multiple_choice
+    name: attention_mode
+    required: true
+    title: {es: "Atención", en: "How clients are seen"}
+    options:
+      - {es: "Solo con cita", en: "Appointment only"}
+      - {es: "Walk-in bienvenido", en: "Walk-ins welcome"}
+      - {es: "Cita o walk-in", en: "Appointment or walk-in"}
+
+  - id: home_service
+    type: multiple_choice
+    name: home_service
+    required: true
+    title: {es: "Atención a domicilio", en: "House-call service"}
+    options:
+      - {es: "Sí", en: "Yes"}
+      - {es: "No", en: "No"}
+
+  - id: payment_methods
+    type: checkboxes
+    name: payment_methods
+    title: {es: "Formas de pago", en: "Payment methods"}
+    options:
+      - {es: "Efectivo", en: "Cash"}
+      - {es: "Tarjeta", en: "Card"}
+      - {es: "Transferencia", en: "Bank transfer"}
+
+  - id: invoicing
+    type: multiple_choice
+    name: invoicing
+    title: {es: "Facturas", en: "Invoicing available"}
+    options:
+      - {es: "Sí", en: "Yes"}
+      - {es: "No", en: "No"}
+
+  - id: deposit_policy
+    type: text
+    name: deposit_policy
+    title: {es: "Política de anticipo (opcional)", en: "Deposit policy (optional)"}
+    placeholder:
+      es: "Se requiere 50% de anticipo"
+      en: "A 50% deposit is required"
+
+  - id: other_policies
+    type: textarea
+    name: policies_text
+    title:
+      es: "Otras políticas que tus clientes deben ver (opcional, una por línea)"
+      en: "Other policies your clients should see (optional, one per line)"
+
+  # --- Ubicación 1 ---
+  - id: loc1_name
+    type: text
+    name: location_1_name
+    title: {es: "Nombre del lugar (ubicación 1)", en: "Location 1 name"}
+
+  - id: loc1_address
+    type: text
+    name: location_1_address
+    required: true
+    title: {es: "Dirección pública (ubicación 1)", en: "Location 1 public address"}
+
+  - id: loc1_maps
+    type: link
+    name: google_maps_url
+    title: {es: "Enlace de Google Maps (ubicación 1)", en: "Location 1 Google Maps link"}
+
+  - id: loc1_hours
+    type: text
+    name: opening_hours_text
+    required: true
+    title: {es: "Horarios (ubicación 1)", en: "Location 1 hours"}
+
+  - id: loc1_notes
+    type: text
+    name: location_1_notes
+    title: {es: "Notas de ubicación 1 (opcional)", en: "Location 1 notes (optional)"}
+
+  - id: second_location
+    type: multiple_choice
+    name: has_second_location
+    required: true
+    title:
+      es: "¿Tienes una segunda ubicación?"
+      en: "Do you have a second location?"
+    options:
+      - {es: "Sí", en: "Yes"}
+      - {es: "No", en: "No"}
+
+  - id: loc2_name
+    type: text
+    name: location_2_name
+    title: {es: "Nombre del lugar (ubicación 2)", en: "Location 2 name"}
+    show_when: {question: second_location, option: 0}
+
+  - id: loc2_address
+    type: text
+    name: location_2_address
+    title: {es: "Dirección pública (ubicación 2)", en: "Location 2 public address"}
+    show_when: {question: second_location, option: 0}
+
+  - id: loc2_maps
+    type: link
+    name: location_2_maps_url
+    title:
+      es: "Enlace de Google Maps (ubicación 2, opcional)"
+      en: "Location 2 Google Maps link (optional)"
+    show_when: {question: second_location, option: 0}
+
+  - id: loc2_hours
+    type: text
+    name: location_2_hours
+    title: {es: "Horarios (ubicación 2)", en: "Location 2 hours"}
+    show_when: {question: second_location, option: 0}
+
+  - id: loc2_notes
+    type: text
+    name: location_2_notes
+    title: {es: "Notas de ubicación 2 (opcional)", en: "Location 2 notes (optional)"}
+    show_when: {question: second_location, option: 0}
+
+  # --- Contacto ---
+  - id: whatsapp
+    type: phone
+    name: whatsapp
+    title: {es: "WhatsApp público para tus clientes (opcional)", en: "Public WhatsApp for clients (optional)"}
+
+  - id: phone
+    type: phone
+    name: public_phone
+    title: {es: "Teléfono público (opcional)", en: "Public phone number (optional)"}
+
+  - id: email
+    type: email
+    name: public_email
+    title: {es: "Correo público (opcional)", en: "Public email (optional)"}
+
+  - id: instagram
+    type: text
+    name: instagram
+    title: {es: "Instagram (opcional)", en: "Instagram (optional)"}
+    placeholder: {es: "@tunegocio", en: "@yourbusiness"}
+
+  - id: facebook
+    type: text
+    name: facebook
+    title: {es: "Facebook (opcional)", en: "Facebook (optional)"}
+
+  - id: tiktok
+    type: text
+    name: tiktok
+    title: {es: "TikTok (opcional)", en: "TikTok (optional)"}
+
+  - id: website
+    type: link
+    name: website
+    title: {es: "Sitio web (opcional)", en: "Website (optional)"}
+
+  - id: booking_link
+    type: link
+    name: booking_url
+    title:
+      es: "Enlace externo para agendar citas (opcional)"
+      en: "External booking link (optional)"
+
+  # --- Estilo + declaración de derechos de imagen ---
+  - id: style
+    type: dropdown
+    name: pick_your_style
+    required: true
+    title: {es: "Elige tu estilo", en: "Pick your style"}
+    options:
+      - es: "Black & Gold — premium, elegante, lujo (spa premium / med spa)"
+        en: "Black & Gold — premium, elegant, luxurious (premium spa / med spa)"
+      - es: "Soft Blush — femenino, estético, delicado (estética / lashes / nails)"
+        en: "Soft Blush — feminine, esthetic, delicate (esthetics / lashes / nails)"
+      - es: "Charcoal Clean — sobrio, moderno, masculino (barberías / grooming)"
+        en: "Charcoal Clean — sober, modern, masculine (barbershops / grooming)"
+      - es: "Warm Sand — cálido, cercano, boutique (nails / salones)"
+        en: "Warm Sand — warm, welcoming, boutique (nails / salons)"
+      - es: "Aqua Clean — limpio, fresco, moderno (wellness)"
+        en: "Aqua Clean — clean, fresh, modern (wellness)"
+      - es: "Sage Calm — natural, relajante, orgánico (yoga / masajes / terapias)"
+        en: "Sage Calm — natural, calming, organic (yoga / massage / holistic therapies)"
+      - es: "Electric Slate — enérgico, audaz, alto rendimiento (fitness / gimnasios)"
+        en: "Electric Slate — energetic, bold, high-performance (fitness / gyms)"
+      - es: "Terracotta Warm — acogedor, artesanal, sabroso (restaurantes / cafés)"
+        en: "Terracotta Warm — cozy, artisanal, flavorful (restaurants / cafés)"
+      - es: "Sunny Paws — alegre, juguetón, amigable (pet grooming)"
+        en: "Sunny Paws — cheerful, playful, friendly (pet grooming)"
+      - es: "Midnight Ink — audaz, artístico, underground (tatuajes / grooming alternativo)"
+        en: "Midnight Ink — bold, artistic, underground (tattoo studios / alt grooming)"
+      - es: "Clarity Editorial — profesional, minimal, confiable (coaches / consultores)"
+        en: "Clarity Editorial — professional, minimal, trustworthy (coaches / consultants)"
+      - es: "Horizon Teal — aventurero, fresco, expansivo (tours / experiencias)"
+        en: "Horizon Teal — adventurous, fresh, expansive (tours / outdoor experiences)"
+
+  - id: photo_rights
+    type: checkboxes
+    name: photo_rights_confirmed
+    required: true
+    title:
+      es: "Confirmo que las fotos que subo son mías o tengo derecho de usarlas"
+      en: "I confirm the photos I upload are mine or I have the right to use them"
+    options:
+      - {es: "Sí", en: "Yes"}

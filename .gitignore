@@ -22,3 +22,6 @@ Thumbs.db
 
 # Paquetes de iconos generados (3+ MB de PNG): se regeneran, no van al repo.
 output/
+
+# Respaldos que deja export_vertical.py --engine-only (regenerables)
+.engine-only-backup/

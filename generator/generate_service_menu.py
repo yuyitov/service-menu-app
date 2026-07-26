@@ -53,7 +53,14 @@ try:
 except ImportError:  # pragma: no cover - clear guidance if dependency missing
     segno = None
 
-# Repo layout (this file lives in <repo>/generator/).
+from blocks import block_enabled, fill_tokens
+from vertical_config import (
+    BLOCKS, BRAND_NAME, DOMAIN, LEGAL, STRINGS, STYLES_CATALOG,
+)
+
+# Repo layout (this file lives in <repo>/generator/) — standalone export,
+# produced by link-factory/scripts/export_vertical.py. To change this
+# vertical, edit it in link-factory and re-export; do not hand-edit here.
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 STYLES_DIR = Path(__file__).resolve().parent / "styles"
@@ -62,140 +69,26 @@ OUTPUT_DIR = REPO_ROOT / "public" / "demos"
 CLIENTS_DIR = REPO_ROOT / "data" / "clients"
 CLIENT_OUTPUT_DIR = REPO_ROOT / "public" / "links"
 
-# The twelve approved closed visual styles. Colors are NOT free-form; a payload
-# must pick exactly one of these. Each has a matching styles/<name>.css palette.
-BRAND_STYLES = (
-    "black-gold",
-    "soft-blush",
-    "charcoal-clean",
-    "warm-sand",
-    "aqua-clean",
-    "sage-calm",
-    "electric-slate",
-    "terracotta-warm",
-    "sunny-paws",
-    "midnight-ink",
-    "clarity-editorial",
-    "horizon-teal",
-)
+# Visual styles this vertical may use, from `verticals/<id>/vertical.yaml`
+# (`styles.catalog`). Colors are NOT free-form; a payload must pick exactly
+# one of these. Each has a matching styles/<name>.css palette.
+BRAND_STYLES = STYLES_CATALOG
 
 # Fallback base URL used only if a demo payload omits `public_url`.
 # Phase 4E: demos are published on the custom domain (still no secrets and no private links).
-DEMO_BASE_URL = "https://www.hmulink.com/demos"
+DEMO_BASE_URL = f"{DOMAIN}/demos"
 # Phase 5: real client pages live under /links/, separate from /demos/.
-CLIENT_BASE_URL = "https://www.hmulink.com/links"
+CLIENT_BASE_URL = f"{DOMAIN}/links"
 
 CLIENT_LANGS = ("es", "en")
+
+# Mini-lookbook (Fase 3.2, ported from ModaLink): at most this many extra
+# photos, beyond primary_image_url/gallery_images.
+MAX_LOOKBOOK_PHOTOS = 4
 
 # URL schemes we are willing to emit into href attributes.
 _ALLOWED_SCHEMES = ("http://", "https://")
 PRIMARY_CTA_CHOICES = ("whatsapp", "phone", "booking", "website", "tiktok", "email", "other", "maps")
-DELIVERY_PICKUP_TYPES = {"food", "retail"}
-PORTFOLIO_TYPES = {"creative", "beauty", "wellness", "professional", "fitness"}
-
-# UI strings per language (WOW editorial template). Values marked *_html may
-# contain trusted inline markup (<em>) and are injected without re-escaping.
-STRINGS = {
-    "es": {
-        "title_suffix": "Servicios",
-        "btn_whatsapp": "Reservar por WhatsApp",
-        "btn_phone": "Llamar",
-        "btn_email": "Enviar correo",
-        "btn_website": "Sitio web",
-        "btn_booking": "Reservar en linea",
-        "btn_maps": "Google Maps",
-        "btn_other": "Abrir enlace",
-        "gallery_prev": "Foto anterior",
-        "gallery_next": "Foto siguiente",
-        "gallery_photo": "Foto",
-        "delivery_pickup_label": "Entrega / recoger",
-        "portfolio_label": "Portafolio",
-        "view_menu": "Ver servicios",
-        "scroll_hint": "Desliza",
-        "skip_to_content": "Saltar al contenido",
-        "services_eyebrow": "Servicios",
-        "menu_title_html": "Nuestros <em>servicios</em>",
-        "services_fallback": "Servicios",
-        "price_ask": "Consultar",
-        "featured_badge": "Destacado",
-        "visit_eyebrow": "Detalles",
-        "visit_title_html": "Planea tu <em>visita</em>",
-        "hours_title": "Horarios",
-        "client_care_title": "Atencion",
-        "reservations_title": "Reservaciones",
-        "address_title": "Dónde estamos",
-        "address_map": "Ver en Google Maps",
-        "location_label": "Ubicacion",
-        "service_area_title": "Area de servicio",
-        "class_schedule_title": "Horario de clases",
-        "tour_details_title": "Sobre la experiencia",
-        "pet_notes_title": "Antes de tu visita",
-        "policies_title": "Políticas",
-        "links_title": "Enlaces",
-        "faq_eyebrow": "FAQ",
-        "faq_title_html": "Preguntas <em>frecuentes</em>",
-        "share_eyebrow": "Comparte",
-        "share_title_html": "Llévanos <em>contigo</em>",
-        "share_lead": "Escanea el código o comparte el link directo.",
-        "share_button": "Compartir link",
-        "share_copied": "Link copiado",
-        "footer_credit": "Hecho con HMU Link",
-        "footer_privacy": "Privacidad",
-        "footer_demo_credit": "Demo hecho con HMU Link",
-        "qr_alt": "Codigo QR de",
-        "lang_switch": "View this page in English",
-    },
-    "en": {
-        "title_suffix": "Services",
-        "btn_whatsapp": "Book on WhatsApp",
-        "btn_phone": "Call",
-        "btn_email": "Send an email",
-        "btn_website": "Website",
-        "btn_booking": "Book online",
-        "btn_maps": "Google Maps",
-        "btn_other": "Open link",
-        "gallery_prev": "Previous photo",
-        "gallery_next": "Next photo",
-        "gallery_photo": "Photo",
-        "delivery_pickup_label": "Delivery / pickup",
-        "portfolio_label": "Portfolio",
-        "view_menu": "See services",
-        "scroll_hint": "Scroll",
-        "skip_to_content": "Skip to content",
-        "services_eyebrow": "Services",
-        "menu_title_html": "Our <em>services</em>",
-        "services_fallback": "Services",
-        "price_ask": "Ask us",
-        "featured_badge": "Featured",
-        "visit_eyebrow": "Details",
-        "visit_title_html": "Plan your <em>visit</em>",
-        "hours_title": "Hours",
-        "client_care_title": "How we work",
-        "reservations_title": "Reservations",
-        "address_title": "Where we are",
-        "address_map": "View on Google Maps",
-        "location_label": "Location",
-        "service_area_title": "Service area",
-        "class_schedule_title": "Class schedule",
-        "tour_details_title": "About the experience",
-        "pet_notes_title": "Before your visit",
-        "policies_title": "Policies",
-        "links_title": "Links",
-        "faq_eyebrow": "FAQ",
-        "faq_title_html": "Common <em>questions</em>",
-        "share_eyebrow": "Share",
-        "share_title_html": "Take us <em>with you</em>",
-        "share_lead": "Scan the code or share the direct link.",
-        "share_button": "Share link",
-        "share_copied": "Link copied",
-        "footer_credit": "Made with HMU Link",
-        "footer_demo_credit": "Demo made with HMU Link",
-        "footer_privacy": "Privacy",
-        "qr_alt": "QR code for",
-        "lang_switch": "Ver esta página en español",
-    },
-}
-
 
 class ValidationError(ValueError):
     """Raised when a payload is missing or has invalid required fields."""
@@ -411,6 +304,14 @@ def validate_language_quality(payload: dict) -> None:
         )
 
 
+def _validate_lookbook(payload: dict) -> None:
+    """lookbook_urls (Fase 3.2, ported from ModaLink) must be a list if present;
+    the block itself renders nothing without it, so an absent key is fine."""
+    urls = payload.get("lookbook_urls")
+    if urls is not None and not isinstance(urls, list):
+        raise ValidationError("Cliente: lookbook_urls debe ser una lista.")
+
+
 # Slug shape guard so the rendering stage is self-defending: the output path
 # is built from public_slug, so it must never contain path separators, dots, or
 # anything outside a safe slug alphabet — even though the intake builder also
@@ -467,6 +368,7 @@ def validate_client(payload: dict) -> None:
                 raise ValidationError(
                     f"Cliente: content.{lang}.services[{i}] requiere al menos 'name'."
                 )
+    _validate_lookbook(payload)
     validate_language_quality(payload)
 
 
@@ -665,16 +567,18 @@ def _location_map_links(payload: dict, s: dict) -> list:
     return [(href, f"Google Maps - {esc(label)}") for href, label in candidates]
 
 
-def _type_allows(payload: dict, allowed: set[str]) -> bool:
-    business_type = str(payload.get("business_type", "") or "").strip().lower()
-    if not business_type or business_type == "general":
-        return True
-    return business_type in allowed
+def _block_enabled(payload: dict, block_id: str) -> bool:
+    """Gate a conditional block by the payload's business_type.
+
+    The registry (engine defaults + vertical.yaml `blocks:` overrides) lives
+    in blocks.py / vertical_config.BLOCKS.
+    """
+    return block_enabled(BLOCKS, block_id, payload.get("business_type"))
 
 
 def _special_public_links(payload: dict, s: dict) -> list:
     links = []
-    if _type_allows(payload, DELIVERY_PICKUP_TYPES):
+    if _block_enabled(payload, "delivery_pickup"):
         for item in payload.get("delivery_pickup_links") or []:
             if not isinstance(item, dict):
                 continue
@@ -684,7 +588,7 @@ def _special_public_links(payload: dict, s: dict) -> list:
                 links.append((href, esc(label)))
 
     portfolio = payload.get("portfolio_link")
-    if isinstance(portfolio, dict) and _type_allows(payload, PORTFOLIO_TYPES):
+    if isinstance(portfolio, dict) and _block_enabled(payload, "portfolio"):
         href = safe_href(portfolio.get("url"))
         label = str(portfolio.get("label", "") or "").strip() or s["portfolio_label"]
         if href:
@@ -834,6 +738,47 @@ def build_marquee(payload: dict) -> str:
     return (
         '<div class="marquee" aria-hidden="true">'
         f'<div class="marquee__track">{track}</div></div>'
+    )
+
+
+# CSS del mini-lookbook. Vive aqui y no en base.html porque se emite SOLO si la
+# pagina de verdad lleva lookbook (gate HMU 2026-07-25): estas 4 lineas eran CSS
+# muerto en toda pagina de HMU/PawContact —ninguna vertical usa `lookbook_urls`—
+# y eran la unica divergencia entre el motor y el repo standalone de HMU. El
+# token va PEGADO al final de la linea anterior en la plantilla (no en una linea
+# propia) para que, cuando esta vacio, no deje ni un salto de linea de sobra:
+# esa es la diferencia entre un diff de 6 lineas y un diff de cero.
+LOOKBOOK_CSS = (
+    "\n\n/* ---------- mini-lookbook (bloque opcional, Fase 3.2) ---------- */"
+    "\n.lookbook{padding-top:0}"
+    "\n.lookbook__grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:22px}"
+    "\n.lookbook__img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:18px;"
+    "border:1px solid var(--hair)}"
+)
+
+
+def build_lookbook(payload: dict, s: dict) -> str:
+    """Optional mini-lookbook: 1-4 extra photos, gated by the `lookbook`
+    conditional block (Fase 3.2, ported from ModaLink). Purely data-driven —
+    an absent/empty `lookbook_urls` renders nothing, same philosophy as
+    build_hero_image (an image problem must never block generation)."""
+    if not _block_enabled(payload, "lookbook"):
+        return ""
+    urls = payload.get("lookbook_urls") or []
+    images = [safe_href(u) for u in urls[:MAX_LOOKBOOK_PHOTOS]]
+    images = [u for u in images if u]
+    if not images:
+        return ""
+    alt = esc(payload.get("business_name"))
+    imgs = "".join(
+        f'<img class="lookbook__img" src="{u}" alt="{alt}" loading="lazy">' for u in images
+    )
+    return (
+        '<section class="section lookbook" data-theme="base"><div class="shell">'
+        f'<p class="eyebrow" data-reveal>{s["lookbook_eyebrow"]}</p>'
+        f'<h2 data-reveal>{s["lookbook_title_html"]}</h2>'
+        f'<div class="lookbook__grid" data-reveal>{imgs}</div>'
+        "</div></section>"
     )
 
 
@@ -1120,6 +1065,28 @@ def make_qr_svg(public_url: str) -> str:
     return buff.getvalue().decode("utf-8")
 
 
+QR_PNG_ASSET_NAME = "qr.png"
+
+
+def make_qr_png(public_url: str) -> bytes:
+    """Return the same QR as a PNG, for the delivery email (Ola 1c).
+
+    PNG and not SVG on purpose: email clients do not render SVG attachments, so
+    the QR that goes inline in the delivery email has to be a raster image. The
+    page keeps using `qr.svg` (crisper at any size). Portado de ModaLink, que
+    era el único producto que ya mandaba el QR por correo.
+    """
+    if segno is None:
+        raise ValidationError(
+            "Falta la dependencia 'segno' para generar el QR. "
+            "Instala con: pip install -r requirements.txt"
+        )
+    qr = segno.make(public_url, error="m")
+    buff = io.BytesIO()
+    qr.save(buff, kind="png", scale=8, border=2, dark="#111111")
+    return buff.getvalue()
+
+
 def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
     """"Share" section: QR image + visible link, centered, base theme.
 
@@ -1155,18 +1122,29 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
     )
 
 
+# Per-vertical legal disclaimers (vertical.yaml -> `legal.disclaimers`) are
+# rendered with INLINE styles on purpose: the template's stylesheet is inlined
+# into every page, so adding a `.footer__disclaimer` rule there would change the
+# bytes of all 12 golden demos even for verticals that declare no disclaimers.
+# Inline styles keep a vertical with `disclaimers: []` byte-identical to before.
+DISCLAIMER_WRAP_STYLE = "margin-top:12px;font-size:.76rem;line-height:1.55;opacity:.85"
+DISCLAIMER_ITEM_STYLE = "margin:0 0 4px"
+
+
 def build_footer(
     payload: dict,
-    text: str = "HMU Link - Demo",
+    text: str = f"{BRAND_NAME} - Demo",
     privacy_url: str = "",
     privacy_label: str = "",
+    disclaimers: tuple = (),
 ) -> str:
     name = esc(payload.get("business_name"))
-    # Attribution credit links back to HMU Link; a minimal privacy link points
-    # to HMU Link's own policy (the page hosting these public pages). Links are
-    # underlined so they don't rely on color alone (WCAG 1.4.1).
+    # Attribution credit links back to this vertical's own site (derived from
+    # `domain` in vertical.yaml — HMU hardcoded hmulink.com here); a minimal
+    # privacy link points to the same site's policy. Links are underlined so
+    # they don't rely on color alone (WCAG 1.4.1).
     credit = (
-        f'<a class="footer__link" href="https://www.hmulink.com/" '
+        f'<a class="footer__link" href="{DOMAIN}/" '
         f'target="_blank" rel="noopener">{esc(text)}</a>'
     )
     legal = ""
@@ -1176,10 +1154,18 @@ def build_footer(
             f'<a class="footer__link" href="{esc(privacy_url)}" '
             f'target="_blank" rel="noopener">{esc(privacy_label)}</a>'
         )
+    notes = ""
+    texts = [str(item).strip() for item in disclaimers if str(item).strip()]
+    if texts:
+        items = "".join(
+            f'<p class="footer__disclaimer" style="{DISCLAIMER_ITEM_STYLE}">{esc(item)}</p>'
+            for item in texts
+        )
+        notes = f'<div class="footer__disclaimers" style="{DISCLAIMER_WRAP_STYLE}">{items}</div>'
     return (
         '<footer class="footer">'
         f'<span class="serif">{name}</span>'
-        f'{credit}{legal}'
+        f'{credit}{legal}{notes}'
         "</footer>"
     )
 
@@ -1211,6 +1197,8 @@ def render_view(
         raise ValidationError(f"No existe el estilo para brand_style={brand!r}: {style_path}")
     template = template_path.read_text(encoding="utf-8")
     style_css = style_path.read_text(encoding="utf-8")
+    # Se calcula una sola vez: decide el bloque Y su CSS (ver LOOKBOOK_CSS).
+    lookbook_html = build_lookbook(view, s)
 
     tokens = {
         "{{LANG}}": lang,
@@ -1226,6 +1214,9 @@ def render_view(
         "{{HERO_TITLE_BLOCK}}": build_hero_title(view),
         "{{CTA_ROW_BLOCK}}": build_cta_row(view, s),
         "{{HERO_IMAGE_BLOCK}}": build_hero_image(view, s),
+        # Ver LOOKBOOK_CSS: bloque y CSS se emiten juntos o no se emite ninguno.
+        "{{LOOKBOOK_BLOCK}}": f"\n  {lookbook_html}" if lookbook_html else "",
+        "{{LOOKBOOK_CSS}}": LOOKBOOK_CSS if lookbook_html else "",
         "{{MARQUEE_BLOCK}}": build_marquee(view),
         "{{SERVICES_BLOCK}}": build_services(view, s),
         "{{FEATURED_BLOCK}}": build_featured(view, s),
@@ -1235,18 +1226,21 @@ def render_view(
         "{{FOOTER_BLOCK}}": build_footer(
             view,
             footer_text,
-            "https://www.hmulink.com/privacy/" if lang == "en" else "https://www.hmulink.com/es/privacidad/",
+            f"{DOMAIN}/privacy/" if lang == "en" else f"{DOMAIN}/es/privacidad/",
             s["footer_privacy"],
+            # `legal.disclaimers` in vertical.yaml, in this page's language. The
+            # generator inserts them so they are not removable by hand-editing a
+            # published page (house rule). Empty for verticals that declare none.
+            tuple(item.get(lang, "") for item in LEGAL.get("disclaimers") or ()),
         ),
         "{{DOCK_BLOCK}}": build_dock(view, s),
         "{{SCROLL_HINT}}": s["scroll_hint"],
         "{{SKIP_LINK_BLOCK}}": f'<a class="skip" href="#content">{esc(s["skip_to_content"])}</a>',
     }
 
-    out = template
-    for token, value in tokens.items():
-        out = out.replace(token, value)
-    return out
+    # Una sola pasada (hallazgo #17): un dato del negocio que contenga
+    # literalmente otro token ya no se re-expande.
+    return fill_tokens(template, tokens)
 
 
 # --------------------------------------------------------------------------- #
@@ -1263,6 +1257,7 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "logo_url",
             "primary_image_url",
             "gallery_images",
+            "lookbook_urls",
             "whatsapp",
             "phone",
             "public_email",
@@ -1293,19 +1288,13 @@ def client_head_meta(canonical: str, es_url: str, en_url: str, default_url: str)
     )
 
 
-# Brand mark used as the og:image fallback when a business has no real photo,
-# so a link never unfurls with a broken/missing image. Same file the
-# marketing homepage (public/index.html) already uses for its own og:image.
-DEFAULT_OG_IMAGE = "https://www.hmulink.com/assets/brand/hmu-link-logo.png"
-
-
 def build_og_meta(view: dict, canonical_url: str, lang: str) -> str:
     """Open Graph + Twitter Card tags so a shared link unfurls with photo +
     title in WhatsApp/SMS. Reuses the page's own hero photo and canonical URL
-    (demos and clients alike) so the preview always matches what's on the
-    page; falls back to the brand mark when there's no real photo."""
+    (demos and clients alike); omits the image tags rather than link a photo
+    that doesn't exist when the business has no real photo — no default
+    brand image is guaranteed to exist for every vertical."""
     images = _gallery_images(view)
-    image = images[0] if images else DEFAULT_OG_IMAGE
     title = esc(view.get("business_name"))
     desc = str(view.get("short_description") or "").strip()
     if len(desc) > 150:
@@ -1319,9 +1308,13 @@ def build_og_meta(view: dict, canonical_url: str, lang: str) -> str:
         tags.append(f'<meta property="og:description" content="{esc(desc)}">')
     tags.append(f'<meta property="og:url" content="{esc(canonical_url)}">')
     tags.append(f'<meta property="og:locale" content="{locale}">')
-    tags.append(f'<meta property="og:image" content="{image}">')
-    tags.append('<meta name="twitter:card" content="summary_large_image">')
-    tags.append(f'<meta name="twitter:image" content="{image}">')
+    if images:
+        image = images[0]
+        tags.append(f'<meta property="og:image" content="{image}">')
+        tags.append('<meta name="twitter:card" content="summary_large_image">')
+        tags.append(f'<meta name="twitter:image" content="{image}">')
+    else:
+        tags.append('<meta name="twitter:card" content="summary">')
     return "\n".join(tags)
 
 
@@ -1387,8 +1380,13 @@ def build_client(json_path: Path) -> Path:
 
     (root_dir / "index.html").write_text(default_html, encoding="utf-8")
     (alt_dir / "index.html").write_text(alt_html, encoding="utf-8")
-    # One QR per client, encoding the default-language URL.
+    # One QR per client, encoding the default-language URL. The SVG is the one
+    # the page shows; the PNG existe solo para que el workflow lo mande en
+    # base64 al worker y el correo de entrega lo adjunte inline (los clientes de
+    # correo no renderizan SVG). Se emite SOLO para clientes: un archivo nuevo
+    # en las demos rompería el golden, que compara el árbol byte a byte.
     (root_dir / QR_ASSET_NAME).write_text(make_qr_svg(root_url), encoding="utf-8")
+    (root_dir / QR_PNG_ASSET_NAME).write_bytes(make_qr_png(root_url))
     return root_dir / "index.html"
 
 

@@ -1,5 +1,7 @@
 /**
- * HMU Link Service Menu Worker
+ * Service Menu Worker — motor de Link Factory, parametrizado por vertical vía
+ * env vars (PRODUCT_ID, BRAND_NAME, …; ver lista más abajo). Los ejemplos y
+ * defaults de esta cabecera son los de HMU Link, la vertical de referencia.
  *
  * Stripe → Worker → KV → GitHub Actions → GitHub Pages
  *
@@ -11,38 +13,43 @@
  * 5. GitHub Actions calls /notify → send delivery email (includes a one-time
  *    correction link to https://www.hmulink.com/correct/?t=<token>)
  *
- * Flujo de correcciones (las incluidas + adicionales de pago):
+ * Flujo de correcciones (gratuita incluida + adicionales de pago):
  * a. /notify genera un correction_token de un solo uso (KV hmu_correction:*)
- *    y el correo de entrega enlaza la página /correct/ con ese token. La
- *    compra incluye FREE_CHANGES modificaciones (2 desde el 2026-07-20): al
- *    consumir una, si quedan, el worker acuña el siguiente token y lo manda en
- *    el correo de "tu página fue actualizada" — no ofrece el de pago hasta
- *    agotarlas (ver consumeFreeChange).
+ *    y el correo de entrega enlaza la página /correct/ con ese token.
  * b. La página estática /correct/ llama GET /correction-status y luego
  *    POST /correct — el token autentica; no hay formulario de Tally.
  * c. /correct despacha GitHub Actions (is_correction) → apply_correction.py
  *    edita data/clients/<slug>.client.json y regenera la página; Actions llama
  *    /notify con correction_id + correction_status (applied|manual) y aquí se
  *    manda el correo de confirmación (y copia a REPLY_TO_EMAIL).
- * d. Correcciones adicionales ($3 USD / $40 MXN, sección 3/6 de los Términos):
+ * d. Correcciones adicionales ($6 USD / $59 MXN, sección 3/6 de los Términos):
  *    GET /buy-correction?slug=… crea un Stripe Checkout Session (requiere el
  *    secret STRIPE_SECRET_KEY; sin él redirige a la página de contacto). El
- *    webhook detecta metadata hmu_correction=1, acuña un token nuevo y se lo
+ *    webhook detecta la metadata de corrección de ESTA vertical
+ *    (correctionMetadataKey: <PRODUCT_ID>_correction=1; para HMU,
+ *    hmu_correction=1), acuña un token nuevo y se lo
  *    manda por correo al email del pedido original (nunca al comprador si no
  *    coincide — pagar por la página de otro solo le regala la corrección).
  *
  * Environment variables (non-secret):
+ * - PRODUCT_ID = hmu (prefixes every KV key — hmu_order, hmu_correction, …
+ *   — so this same worker can run a different vertical against its own KV
+ *   namespace without key collisions; defaults to "hmu" if unset)
+ * - BRAND_NAME = HMU Link (used in email subjects/bodies/footers)
+ * - BRAND_TAGLINE = Service Menus for Small Businesses (email footer line)
  * - GITHUB_REPO = yuyitov/service-menu-app
  * - GITHUB_ACTIONS_EVENT = new-hmu-service-menu
- * - TALLY_FORM_URL_EN = https://tally.so/r/yPkN5X?order_id=
- * - TALLY_FORM_URL_ES = https://tally.so/r/MeyDpk?order_id=
+ * - TALLY_FORM_URL_EN = https://tally.so/r/<FORM_ID_EN>?order_id=
+ * - TALLY_FORM_URL_ES = https://tally.so/r/<FORM_ID_ES>?order_id=
+ *   (además del link de intake, de aquí se deriva el idioma del form que el
+ *   cliente llenó — fallback de default_language; ver tallyFormLang)
  * - FROM_EMAIL = HMU Link <hello@hmulink.com>
  * - PUBLIC_BOOK_BASE_URL = https://www.hmulink.com
  *
  * Secrets (in Cloudflare):
  * - STRIPE_WEBHOOK_SECRET
- * - TALLY_SIGNING_SECRET_EN (form yPkN5X has its own signing secret)
- * - TALLY_SIGNING_SECRET_ES (form MeyDpk has its own signing secret)
+ * - TALLY_SIGNING_SECRET_EN (the EN form has its own signing secret)
+ * - TALLY_SIGNING_SECRET_ES (the ES form has its own signing secret)
  * - GITHUB_TOKEN
  * - SENDGRID_API_KEY
  * - NOTIFY_SECRET
@@ -51,32 +58,22 @@
  *   con permiso de escritura solo en Checkout Sessions)
  */
 
-const VALID_BRAND_STYLES = [
-  'black-gold', 'soft-blush', 'charcoal-clean', 'warm-sand',
-  'aqua-clean', 'sage-calm', 'electric-slate', 'terracotta-warm',
-  'sunny-paws', 'midnight-ink', 'clarity-editorial', 'horizon-teal'
-];
+import { classifyStripeEvent } from './stripe-filter.mjs';
+import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, SALE_BUTTON_KINDS } from './product-config.mjs';
+// Mapa campo-público -> alias de título del intake de Tally, única fuente de
+// verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
+// Es config por vertical: export_vertical.py copia este JSON a cada repo, así
+// una vertical con otras preguntas edita SUS alias sin tocar este worker.
+import FIELD_ALIASES from './tally-field-aliases.json' with { type: 'json' };
 
 // Precio de la corrección adicional — DEBE coincidir con la sección 3 de los
 // Términos publicados (public/terms/ y public/es/terminos/): $6 USD / $59 MXN.
+// (Auditoría 2026-07: el código cobraba $3/$40, valores viejos anteriores a
+// los Términos vigentes — unit_amount va en centavos.)
 const CORRECTION_PRICE = {
   usd: { unit_amount: 600, label: '$6 USD' },
   mxn: { unit_amount: 5900, label: '$59 MXN' }
 };
-
-// Modificaciones gratis incluidas en la compra (estándar de la casa desde el
-// 2026-07-20: 2). Se configura con FREE_CHANGES en wrangler.toml y es la MISMA
-// fuente que imprimen los Términos y los correos — si divergen, el producto
-// promete algo que no entrega. Portado de link-factory engine/worker/ (Ola 1c);
-// HMU migra completo a la fábrica en el gate del 2026-08-01 y este worker se
-// reemplaza por el del motor: aquí solo va el mínimo, con el mismo patrón.
-const DEFAULT_FREE_CHANGES = 2;
-
-function freeChanges(env) {
-  const raw = Number.parseInt(String((env && env.FREE_CHANGES) ?? '').trim(), 10);
-  if (!Number.isInteger(raw) || raw < 0) return DEFAULT_FREE_CHANGES;
-  return Math.min(raw, 10);
-}
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/;
 // Límites del texto libre de corrección: viaja en client_payload (visible en
@@ -84,8 +81,26 @@ const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/;
 const CORRECTION_TEXT_MIN = 5;
 const CORRECTION_TEXT_MAX = 3000;
 
+// Cloudflare entrega el MISMO `env` (bindings del deploy) en cada request de
+// este worker — no varía por request ni por cliente — así que cachearlo a nivel
+// módulo deja que corsHeaders()/jsonResponse() deriven el Origin de la marca
+// (corsOrigin) sin propagar `env` por los ~74 call-sites de jsonResponse. No hay
+// fuga entre requests: todas ven el mismo valor, escribirlo es idempotente.
+let _workerEnv = null;
+
+// Named export (ademas del default que usa Cloudflare) para probar la
+// normalizacion del payload de Tally con node --test — en particular que un
+// hidden field nunca pise la respuesta visible del mismo nombre. La runtime de
+// Workers solo invoca el default export; esto es inerte ahi.
+// buildPublicPayload/missingFromIntake se exportan por la misma razón desde que
+// el worker sirve DOS plantillas (F6 bloque 2): la rama que elige es lo que
+// decide si un cliente que pagó recibe su catálogo o una página de menú de
+// servicios, y eso tiene que poder probarse sin desplegar ni tocar KV.
+export { normalizeTallyPayload, buildPublicPayload, missingFromIntake };
+
 export default {
   async fetch(request, env, ctx) {
+    _workerEnv = env;
     const url = new URL(request.url);
     const pathname = url.pathname;
 
@@ -101,58 +116,53 @@ export default {
       const minuteSlot = Math.floor(Date.now() / 60000);
 
       if (request.method === 'GET' && pathname === '/health') {
-        return jsonResponse({ ok: true, worker: 'service-menu-worker' });
+        return jsonResponse({ ok: true, worker: workerName(env) });
       }
 
       if (request.method === 'POST' && pathname === '/stripe/webhook') {
         // Cap junk floods before spending CPU on HMAC verification. Stripe's
         // real volume for this business is far below 60/min per source IP;
         // a 429 just makes Stripe retry with backoff.
-        const allowed = await checkRateLimit(env, `hmu_rl:stripe:${ip}:${minuteSlot}`, 60, 120);
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'stripe', ip, minuteSlot), 60, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
         return await handleStripeWebhook(request, env);
       }
 
       if (request.method === 'POST' && pathname === '/tally-webhook') {
-        const allowed = await checkRateLimit(env, `hmu_rl:tally:${ip}:${minuteSlot}`, 10, 120);
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'tally', ip, minuteSlot), 10, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
         return await handleTallyWebhook(request, env);
       }
 
-      if (request.method === 'POST' && pathname === '/notify') {
-        const allowed = await checkRateLimit(env, `hmu_rl:notify:${ip}:${minuteSlot}`, 20, 120);
-        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
-        return await handleNotify(request, env);
+      if (request.method === 'POST' && pathname === '/alert-generation-failed') {
+        return await handleGenerationFailedAlert(request, env);
       }
 
-      // Alerta de "pagó pero la generación falló": la llama el step if:failure()
-      // del workflow de generación (generate-hmu-page.yml). Autenticado con el
-      // mismo NOTIFY_SECRET que /notify.
       if (request.method === 'POST' && pathname === '/email-events') {
         return await handleEmailEvents(request, env);
       }
 
-      if (request.method === 'POST' && pathname === '/alert-generation-failed') {
-        const allowed = await checkRateLimit(env, `hmu_rl:genfail:${ip}:${minuteSlot}`, 20, 120);
+      if (request.method === 'POST' && pathname === '/notify') {
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'notify', ip, minuteSlot), 20, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
-        return await handleGenerationFailedAlert(request, env);
+        return await handleNotify(request, env);
       }
 
       // Correcciones: consumidos por la página estática /correct/ del sitio.
       if (request.method === 'GET' && pathname === '/correction-status') {
-        const allowed = await checkRateLimit(env, `hmu_rl:corrstatus:${ip}:${minuteSlot}`, 30, 120);
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'corrstatus', ip, minuteSlot), 30, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
         return await handleCorrectionStatus(url, env);
       }
 
       if (request.method === 'POST' && pathname === '/correct') {
-        const allowed = await checkRateLimit(env, `hmu_rl:correct:${ip}:${minuteSlot}`, 10, 120);
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'correct', ip, minuteSlot), 10, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
         return await handleCorrectionRequest(request, env);
       }
 
       if (request.method === 'GET' && pathname === '/buy-correction') {
-        const allowed = await checkRateLimit(env, `hmu_rl:buycorr:${ip}:${minuteSlot}`, 10, 120);
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'buycorr', ip, minuteSlot), 10, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
         return await handleBuyCorrection(url, env);
       }
@@ -172,15 +182,29 @@ export default {
 // STRIPE WEBHOOK HANDLER
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Lee un secreto del entorno recortando espacios y saltos de linea.
+ *
+ * Copiar un signing secret del panel de Stripe, de Tally o de GitHub arrastra
+ * con facilidad un `\n` final, y `wrangler secret put` lo guarda tal cual. Un
+ * secreto con basura invisible no falla de forma ruidosa: rompe el HMAC y deja
+ * el webhook rechazando TODO en silencio (el checkout cobra y el intake nunca
+ * llega). NOTIFY_SECRET ya lo recortaba; esto lo vuelve la regla para todos.
+ */
+function secret(env, name) {
+  return (env[name] || '').trim();
+}
+
 async function handleStripeWebhook(request, env) {
-  if (!env.STRIPE_WEBHOOK_SECRET) {
+  const webhookSecret = secret(env, 'STRIPE_WEBHOOK_SECRET');
+  if (!webhookSecret) {
     return jsonResponse({ ok: false, error: 'Stripe webhook not configured' }, 500);
   }
 
   const rawBody = await request.text();
   const signatureHeader = request.headers.get('stripe-signature') || '';
 
-  const valid = await validateStripeSignature(rawBody, signatureHeader, env.STRIPE_WEBHOOK_SECRET);
+  const valid = await validateStripeSignature(rawBody, signatureHeader, webhookSecret);
   if (!valid) {
     return jsonResponse({ ok: false, error: 'Invalid Stripe signature' }, 400);
   }
@@ -193,91 +217,77 @@ async function handleStripeWebhook(request, env) {
   }
 
   const type = event?.type;
-  if (type !== 'checkout.session.completed' && type !== 'payment_intent.succeeded') {
-    return jsonResponse({ ok: true, ignored: true, type });
-  }
-
   const session = event?.data?.object || {};
 
-  // Compras de corrección adicional: son Checkout Sessions creadas por este
-  // mismo worker en /buy-correction (no payment links), marcadas con metadata.
-  // Se atienden ANTES del filtro de payment_link — no traen payment_link.
-  if (type === 'checkout.session.completed' && session?.metadata?.hmu_correction === '1') {
+  // Clasificación de producto — fail-closed (ver engine/worker/stripe-filter.mjs).
+  // La cuenta de Stripe se comparte con otros productos (MyGuest, Dr Link, …) y
+  // Stripe abanica cada evento firmado aquí; el filtro decide procesar / enrutar
+  // a corrección / ignorar, sin tocar KV ni red (por eso es testeable con
+  // `node --test`). El manejo de logs e I/O queda en el worker.
+  const verdict = classifyStripeEvent(event, env);
+
+  if (verdict.action === 'correction') {
+    // Compras de corrección adicional: Checkout Sessions creadas por este mismo
+    // worker en /buy-correction, marcadas con metadata (no traen payment_link).
     return await handleCorrectionPurchase(session, env);
   }
 
-  // Product filter: the Stripe account is shared with other products (MyGuest),
-  // so every webhook receives every sale. Only checkout.session.completed
-  // carries payment_link; payment_intent.succeeded can't be attributed to a
-  // product, so it's ignored when the filter is configured.
-  // Accepts one or more payment link ids (comma-separated) so multiple HMU Link
-  // checkouts — e.g. the USD ($39) and MXN ($699) links — all resolve to this
-  // product while still filtering out other products (MyGuest) on the account.
-  const expectedPaymentLinks = (env.STRIPE_PAYMENT_LINK_ID || '')
-    .split(',')
-    .map((id) => id.trim())
-    .filter(Boolean);
-
-  // FAIL CLOSED: the Stripe account is shared with other products (MyGuest,
-  // Dr Link, ...) and Stripe fans every signed event to this endpoint. If the
-  // allowlist is unset/mistyped (e.g. during a deploy or key rotation) we must
-  // NOT process arbitrary payments — that would email the wrong customer the
-  // HMU intake form. We still log the observed payment_link so a new one can be
-  // captured, but we never create an order or send mail without a match.
-  if (expectedPaymentLinks.length === 0) {
-    if (type === 'checkout.session.completed') {
-      console.log('stripe payment_link observed (filter not configured):', session.payment_link || '(none)');
+  if (verdict.action === 'ignore') {
+    switch (verdict.reason) {
+      case 'unsupported_type':
+        return jsonResponse({ ok: true, ignored: true, type });
+      case 'filter_not_configured':
+        if (type === 'checkout.session.completed') {
+          console.log('stripe payment_link observed (filter not configured):', verdict.observedPaymentLink || '(none)');
+        }
+        // FALLO SILENCIOSO #1 (el mas probable y mas caro): el allowlist esta
+        // vacio -> se IGNORAN todos los pagos. Alerta GLOBAL (una por hora), no
+        // por pago: durante el apagon la cuenta compartida fanea eventos de
+        // todos los productos y un dedup por-pago seria una tormenta.
+        await alertOnce(env, 'filter_not_configured', 3600,
+          `${marca(env)} esta IGNORANDO todos los pagos (filtro sin configurar)`, [
+            'STRIPE_PAYMENT_LINK_ID esta vacio/sin configurar en este worker.',
+            'El worker responde 200 {ignored} a TODOS los pagos entrantes: el',
+            'cliente paga y NUNCA recibe el formulario de intake.',
+            '',
+            'Revisa STRIPE_PAYMENT_LINK_ID en wrangler.toml y redespliega.',
+          ]);
+        return jsonResponse({ ok: true, ignored: true, reason: 'filter_not_configured' });
+      case 'unattributable_event_type':
+        return jsonResponse({ ok: true, ignored: true, reason: 'unattributable_event_type' });
+      case 'other_product':
+        // Diagnostic: surface filter mismatches (plink ids are not secrets).
+        console.log('ignored other_product — observed plink:', verdict.observedPaymentLink || '(none)', '| expected:', verdict.expectedPaymentLinks.join(','));
+        // FALLO SILENCIOSO #2: un payment_link propio que quedo desfasado (p. ej.
+        // tras un reprecio) cae aqui y el pago se ignora en silencio. PERO la
+        // cuenta de Stripe es COMPARTIDA entre productos: cada venta de un
+        // hermano tambien llega como other_product. Por eso solo se alerta de
+        // links DESCONOCIDOS -- ni el propio ni en KNOWN_OTHER_PAYMENT_LINKS --
+        // que es justo el sintoma de un link propio sin registrar.
+        {
+          const plink = verdict.observedPaymentLink || '';
+          if (plink && !knownOtherPaymentLinks(env).includes(plink)) {
+            await alertOnce(env, `other_product:${plink}`, 86400,
+              `${marca(env)}: pago con payment_link NO reconocido (link desfasado?)`, [
+                'Llego un pago cuyo payment_link NO coincide con el del producto y fue IGNORADO.',
+                '',
+                `payment_link observado: ${plink}`,
+                `esperados: ${verdict.expectedPaymentLinks.join(', ') || '(ninguno)'}`,
+                '',
+                'Si el link ES del producto, actualiza STRIPE_PAYMENT_LINK_ID.',
+                'Si es de otro producto de la cuenta compartida, agregalo a',
+                'KNOWN_OTHER_PAYMENT_LINKS para dejar de recibir este aviso.',
+              ]);
+          }
+        }
+        return jsonResponse({ ok: true, ignored: true, reason: 'other_product' });
+      default:
+        // Fail-closed también ante un motivo inesperado: no procesar.
+        return jsonResponse({ ok: true, ignored: true, reason: verdict.reason });
     }
-    // FALLO SILENCIOSO #1 (el más probable y más caro): el allowlist está
-    // vacío → se IGNORAN todos los pagos. Alerta GLOBAL (una por hora), no por
-    // pi: durante el apagón la cuenta compartida fanea eventos de todos los
-    // productos y un dedup por-pago sería una tormenta.
-    await alertOnce(env, 'filter_not_configured', 3600,
-      '🔴 HMU está IGNORANDO todos los pagos (filtro sin configurar)', [
-        'STRIPE_PAYMENT_LINK_ID está vacío/sin configurar en el worker de HMU.',
-        'El worker responde 200 {ignored} a TODOS los pagos entrantes: el',
-        'cliente paga y NUNCA recibe el formulario de intake.',
-        '',
-        `payment_link observado en este evento: ${session.payment_link || '(ninguno)'}`,
-        `tipo de evento: ${type}`,
-        '',
-        'Acción: configurar STRIPE_PAYMENT_LINK_ID (vars del worker) con el/los',
-        'plink de HMU y redesplegar.'
-      ]);
-    return jsonResponse({ ok: true, ignored: true, reason: 'filter_not_configured' });
-  }
-  if (type !== 'checkout.session.completed') {
-    return jsonResponse({ ok: true, ignored: true, reason: 'unattributable_event_type' });
-  }
-  if (!expectedPaymentLinks.includes(session.payment_link || '')) {
-    // Diagnostic: surface filter mismatches (plink ids are not secrets).
-    console.log('ignored other_product — observed plink:', session.payment_link || '(none)', '| expected:', expectedPaymentLinks.join(','));
-    // FALLO SILENCIOSO #2: un link de HMU desfasado (reprecio) cae aquí y el
-    // pago se ignora. PERO la cuenta Stripe es COMPARTIDA: cada venta de un
-    // producto hermano (MyGuest, Dr Link, ...) también llega como other_product.
-    // Para no inundar el correo, solo se alerta de links DESCONOCIDOS — ni de
-    // HMU ni en la allowlist KNOWN_OTHER_PAYMENT_LINKS — que es justo el síntoma
-    // de un link de HMU nuevo/no registrado. Dedup por link, uno al día.
-    const plink = session.payment_link || '';
-    if (plink && !knownOtherPaymentLinks(env).includes(plink)) {
-      await alertOnce(env, `other_product:${plink}`, 86400,
-        '⚠️ HMU: pago con payment_link NO reconocido (¿link desfasado?)', [
-          'Llegó un pago cuyo payment_link NO coincide con el de HMU y fue IGNORADO.',
-          '',
-          `payment_link observado: ${plink}`,
-          `email del comprador: ${sessionEmail(session) || '(sin email)'}`,
-          `monto: ${session.amount_total ?? session.amount ?? '?'} ${(session.currency || '').toUpperCase()}`,
-          '',
-          'Si este link es NUEVO de HMU (reprecio/nuevo checkout): tu',
-          'STRIPE_PAYMENT_LINK_ID está desfasado y estás perdiendo ventas EN',
-          'SILENCIO — agrégalo a STRIPE_PAYMENT_LINK_ID y redespliega.',
-          'Si es de OTRO producto de la cuenta compartida: agrégalo a',
-          'KNOWN_OTHER_PAYMENT_LINKS para silenciar este aviso.'
-        ]);
-    }
-    return jsonResponse({ ok: true, ignored: true, reason: 'other_product' });
   }
 
+  // verdict.action === 'process'
   const paymentIntentId =
     type === 'checkout.session.completed'
       ? (session.payment_intent || session.id || '')
@@ -294,7 +304,7 @@ async function handleStripeWebhook(request, env) {
     return jsonResponse({ ok: false, error: 'Missing payment_intent id' }, 400);
   }
 
-  const processedKey = `hmu_processed:${paymentIntentId}`;
+  const processedKey = kvKey(env, 'processed', paymentIntentId);
   const alreadyProcessed = await env.SERVICE_MENU_KV.get(processedKey).catch(() => null);
   if (alreadyProcessed) {
     return jsonResponse({ ok: true, idempotent: true, paymentIntentId });
@@ -305,13 +315,22 @@ async function handleStripeWebhook(request, env) {
 
   // Save order record
   try {
-    await env.SERVICE_MENU_KV.put(`hmu_order:${orderId}`, JSON.stringify({
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify({
       order_id: orderId,
       payment_intent_id: paymentIntentId,
       customer_email: customerEmail,
       amount: amountTotal,
       currency,
       stripe_event_type: type,
+      // Slug del prospecto cuando la compra llegó por un link rastreado de Cory
+      // (client_reference_id, validado contra PROSPECT_SLUG_RE). Es la ÚNICA
+      // fuente de verdad de qué vista previa compró este cliente: viene de
+      // Stripe, no del formulario, así que no lo puede editar quien tenga la
+      // URL. La rama de catálogo de buildPublicPayload lo lee de aquí para que
+      // el workflow baje el payload.json correcto. En service-menu es un campo
+      // más en KV que nadie consulta todavía; se guarda igual porque el dato ya
+      // existía y perderlo obligaría a re-raspar el Instagram del cliente.
+      prospect_slug: prospectSlug(session) || '',
       status: 'paid',
       created_at: now
     }));
@@ -325,7 +344,7 @@ async function handleStripeWebhook(request, env) {
     return jsonResponse({ ok: true, paymentIntentId, hasEmail: false });
   }
 
-  if (!env.SENDGRID_API_KEY) {
+  if (!secret(env, 'SENDGRID_API_KEY')) {
     return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
   }
 
@@ -337,21 +356,25 @@ async function handleStripeWebhook(request, env) {
   }
 
   // Construct form URLs with order_id + customer_email (the two hidden fields
-  // this worker relies on for every order).
+  // worker.js relies on for every vertical).
   let formUrlEN = `${baseFormEN}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
   let formUrlES = `${baseFormES}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(customerEmail)}`;
 
-  // Prefill de prospecto (Cory → worker, Fase 2.4 de la Link Factory): si esta
-  // compra llegó por un link rastreado de un prospecto (el tracker de Cory puso
-  // client_reference_id=<slug> en el checkout) y hay una base de prefill
-  // configurada, prellena los campos del formulario con los datos que Cory ya
-  // recolectó, en cada idioma. El cliente los ve cargados y puede dejarlos,
-  // editarlos o borrarlos. Fail-open en cada paso: sin slug / sin base / si el
-  // fetch falla, las URLs quedan como arriba y el post-pago sigue idéntico.
+  // Prefill de prospecto (Cory → worker, Fase 2.4): si esta compra llegó por un
+  // link rastreado de un prospecto (Cory puso client_reference_id=<slug> en el
+  // checkout) y hay una base de prefill configurada, prellena los campos
+  // VISIBLES del formulario con los datos que Cory ya recolectó, en cada idioma.
+  // El cliente los ve cargados y puede dejarlos, editarlos o borrarlos. Fail-open
+  // en cada paso: sin slug / sin base / si el fetch falla, las URLs quedan como
+  // arriba (order_id + email) y el post-pago sigue idéntico al de hoy.
   const prefill = await fetchProspectPrefill(env, prospectSlug(session));
   if (prefill) {
-    formUrlEN += buildPrefillQuery(prefill.en);
-    formUrlES += buildPrefillQuery(prefill.es);
+    // expandProspectPrefill agrega alias con los nombres del spec (hours ->
+    // opening_hours_text, etc.): los formularios creados con `name:` estable
+    // usan esos nombres en sus hidden fields, y los viejos (HMU) los de Cory.
+    // Mandar ambos sirve a los dos; el tope sube porque van claves duplicadas.
+    formUrlEN += buildPrefillQuery(expandProspectPrefill(prefill.en), 2500);
+    formUrlES += buildPrefillQuery(expandProspectPrefill(prefill.es), 2500);
   }
 
   // Reserve the idempotency marker BEFORE sending so a concurrent duplicate
@@ -362,16 +385,19 @@ async function handleStripeWebhook(request, env) {
   // Send post-payment email. Asunto en el idioma del comprador (moneda MXN →
   // español): un asunto en inglés a un cliente mexicano confunde y dispara
   // filtros de spam por incongruencia de idioma.
-  const isMxnBuyer = currency.toLowerCase() === 'mxn';
+  // MXN -> es, USD -> en, cualquier otra moneda -> null = correo bilingüe
+  // (antes toda moneda != MXN caía a inglés por descarte).
+  const emailLang = emailLangFromCurrency(currency);
+  const subjectES = `Completa tu página ${brandName(env)} — solo falta un formulario`;
+  const subjectEN = `Complete your ${brandName(env)} service menu — one form to go`;
   try {
     await sendEmail({
       env,
       to: customerEmail,
-      subject: isMxnBuyer
-        ? 'Completa tu página HMU Link — solo falta un formulario'
-        : 'Complete your HMU Link service menu — one form to go',
-      html: buildPostPaymentEmail({ formUrlEN, formUrlES, lang: isMxnBuyer ? 'es' : 'en' }),
-      text: buildPostPaymentText({ formUrlEN, formUrlES, lang: isMxnBuyer ? 'es' : 'en' })
+      subject: emailLang === 'es' ? subjectES : emailLang === 'en' ? subjectEN
+        : `${subjectES} / ${subjectEN}`,
+      html: buildPostPaymentEmail({ formUrlEN, formUrlES, lang: emailLang, env }),
+      text: buildPostPaymentText({ formUrlEN, formUrlES, lang: emailLang, env })
     });
   } catch (err) {
     console.error('post-payment email failed:', safeError(err));
@@ -380,48 +406,6 @@ async function handleStripeWebhook(request, env) {
   }
 
   return jsonResponse({ ok: true, paymentIntentId, hasEmail: true });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PREFILL DE PROSPECTO (Cory → worker → Tally), Fase 2.4 de la Link Factory
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Base pública desde donde este worker lee el prefill del prospecto, por slug:
-// `${base}/${slug}/prefill.json`. Sin la var → el prefill se apaga (el flujo de
-// post-pago no cambia). Sin barra final.
-function prospectPrefillBase(env) {
-  return (env.PROSPECT_PREFILL_BASE_URL || '').trim().replace(/\/+$/, '');
-}
-
-// Misma forma exacta de slug que valida el tracker de Cory (stripe.js SLUG_RE):
-// solo se confía en un client_reference_id con esta forma. Validarlo ANTES de
-// construir la URL de fetch evita path-traversal / SSRF por un valor arbitrario.
-const PROSPECT_SLUG_RE = /^[a-z0-9-]{3,80}-[0-9a-f]{6}$/;
-
-function prospectSlug(session) {
-  const raw = String(session?.client_reference_id || '').trim();
-  return PROSPECT_SLUG_RE.test(raw) ? raw : null;
-}
-
-// Construye el fragmento de query `&name=value&...` para prellenar campos de
-// Tally desde un objeto {name: value}:
-// - salta valores vacíos / no-string (un campo que Cory no tiene no se prellena);
-// - URL-encodea nombre y valor;
-// - respeta `maxLen` (largo total del fragmento): agrega pares mientras quepan y
-//   descarta el resto — una URL demasiado larga la truncan navegadores/proxies y
-//   rompería el link. El orden de inserción del objeto define la prioridad.
-// Nunca lanza: ante cualquier entrada rara devuelve "".
-function buildPrefillQuery(prefill, maxLen = 1500) {
-  if (!prefill || typeof prefill !== 'object') return '';
-  let out = '';
-  for (const [name, value] of Object.entries(prefill)) {
-    if (typeof value !== 'string' || value === '') continue;
-    if (typeof name !== 'string' || name === '') continue;
-    const pair = `&${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
-    if (out.length + pair.length > maxLen) continue;
-    out += pair;
-  }
-  return out;
 }
 
 // Lee el prefill.json público del prospecto por slug (Cory lo publica en su
@@ -460,7 +444,7 @@ async function handleTallyWebhook(request, env) {
     return jsonResponse({ ok: false, error: 'Could not read request body' }, 400);
   }
 
-  const secrets = [env.TALLY_SIGNING_SECRET_EN, env.TALLY_SIGNING_SECRET_ES].filter(Boolean);
+  const secrets = [secret(env, 'TALLY_SIGNING_SECRET_EN'), secret(env, 'TALLY_SIGNING_SECRET_ES')].filter(Boolean);
   if (secrets.length === 0) {
     return jsonResponse({ ok: false, error: 'Webhook signature validation not configured' }, 500);
   }
@@ -496,7 +480,7 @@ async function handleTallyWebhook(request, env) {
   // Guard: require valid order_id
   if (!incomingOrderId) {
     await env.SERVICE_MENU_KV.put(
-      `hmu_missing_order:${normalized.submission_id}`,
+      kvKey(env, 'missing_order', normalized.submission_id),
       JSON.stringify({
         submission_id: normalized.submission_id,
         attempted_at: now
@@ -507,21 +491,42 @@ async function handleTallyWebhook(request, env) {
   }
 
   // Validate order exists
-  const existingOrder = await env.SERVICE_MENU_KV.get(`hmu_order:${incomingOrderId}`, { type: 'json' }).catch(() => null);
+  const existingOrder = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', incomingOrderId), { type: 'json' }).catch(() => null);
   if (!existingOrder) {
     await env.SERVICE_MENU_KV.put(
-      `hmu_invalid_order:${incomingOrderId}:${normalized.submission_id}`,
+      kvKey(env, 'invalid_order', incomingOrderId, normalized.submission_id),
       JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, attempted_at: now }),
       { expirationTtl: 2592000 }
     ).catch(() => {});
     return jsonResponse({ ok: false, status: 'invalid_order_id' }, 403);
   }
 
-  // Check order state: only allow generation from 'paid' status
-  const allowedStatuses = ['paid', 'form_sent'];
-  if (!allowedStatuses.includes(existingOrder.status)) {
+  // ¿Es una MODIFICACIÓN de una página ya publicada? (Ola 1c) El formulario
+  // llega con los hidden client_slug + correction_token que puso el enlace de
+  // modificación. Se valida el token ANTES de nada: sin token válido, un envío
+  // con client_slug sería una vía para reescribir la página de otro.
+  const modification = await resolveModification(env, normalized, existingOrder);
+  if (modification.error) {
     await env.SERVICE_MENU_KV.put(
-      `hmu_invalid_order_status:${incomingOrderId}:${normalized.submission_id}`,
+      kvKey(env, 'invalid_modification', incomingOrderId, normalized.submission_id),
+      JSON.stringify({
+        order_id: incomingOrderId,
+        submission_id: normalized.submission_id,
+        reason: modification.error,
+        attempted_at: now
+      }),
+      { expirationTtl: 2592000 }
+    ).catch(() => {});
+    return jsonResponse({ ok: false, status: 'invalid_modification', reason: modification.error }, 403);
+  }
+
+  // Check order state: only allow generation from 'paid' status. Una
+  // modificación llega con la orden ya 'delivered', así que se salta este gate
+  // (su gate es el token, ya validado arriba).
+  const allowedStatuses = ['paid', 'form_sent'];
+  if (!modification.token && !allowedStatuses.includes(existingOrder.status)) {
+    await env.SERVICE_MENU_KV.put(
+      kvKey(env, 'invalid_order_status', incomingOrderId, normalized.submission_id),
       JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, blocked_by_status: existingOrder.status, attempted_at: now }),
       { expirationTtl: 2592000 }
     ).catch(() => {});
@@ -533,7 +538,7 @@ async function handleTallyWebhook(request, env) {
   const orderEmail = (existingOrder.customer_email || '').toLowerCase().trim();
   if (formEmail && orderEmail && formEmail !== orderEmail) {
     await env.SERVICE_MENU_KV.put(
-      `hmu_email_mismatch:${incomingOrderId}:${normalized.submission_id}`,
+      kvKey(env, 'email_mismatch', incomingOrderId, normalized.submission_id),
       JSON.stringify({
         order_id: incomingOrderId,
         submission_id: normalized.submission_id,
@@ -549,57 +554,51 @@ async function handleTallyWebhook(request, env) {
   // Build the sanitized public payload (only approved public fields).
   // Internal answers (contact person, private phone, "keep off page" notes)
   // stay in the KV submission record and are never dispatched.
-  const publicPayload = buildHmuPublicPayload(normalized, incomingOrderId, env);
+  const publicPayload = buildPublicPayload(normalized, incomingOrderId, env);
+
+  // Transporte del payload del catálogo, "opción A" (decisión de Vero 07-25):
+  // el slug del prospecto sale del REGISTRO DE LA ORDEN, donde lo dejó el
+  // client_reference_id del checkout de Stripe — no del formulario. Con él, el
+  // workflow baja de Cory el payload.json de la vista previa que el cliente ya
+  // vio. Leerlo de un hidden field de Tally sería dejar que cualquiera con la
+  // URL reclamara el catálogo de otro negocio.
+  if (publicPayload.template === 'catalog') {
+    publicPayload.prospect_slug = String(existingOrder.prospect_slug || '').trim();
+  }
 
   if (!publicPayload.business_name) {
     await env.SERVICE_MENU_KV.put(
-      `hmu_incomplete_intake:${incomingOrderId}:${normalized.submission_id}`,
+      kvKey(env, 'incomplete_intake', incomingOrderId, normalized.submission_id),
       JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, missing: 'business_name', attempted_at: now }),
       { expirationTtl: 2592000 }
     ).catch(() => {});
-    // FALLO SILENCIOSO #4: intake sin campo obligatorio → página no se genera.
-    await alertOnce(env, `incomplete_intake:${normalized.submission_id}`, 604800,
-      '⚠️ HMU: intake incompleto — falta el nombre del negocio', [
-        'Llegó un formulario de intake sin business_name (campo obligatorio).',
-        'La página NO se generó y el cliente no recibió nada.',
-        '',
-        `order_id: ${incomingOrderId}`,
-        `submission_id: ${normalized.submission_id}`,
-        'falta: business_name',
-        '',
-        'Acción: contactar al cliente para completar el dato, o revisar el mapeo',
-        'del formulario de Tally si el campo sí venía.'
-      ]);
     return jsonResponse({ ok: false, status: 'incomplete_intake', missing: 'business_name' }, 422);
   }
 
-  const hasContact = publicPayload.whatsapp || publicPayload.phone || publicPayload.public_email || publicPayload.booking_url || publicPayload.website;
-  if (!hasContact) {
+  // Qué es un intake "completo" depende de la plantilla: una tarjeta de
+  // contacto necesita un canal, un catálogo necesita su botón de venta y sus
+  // productos (ver missingFromIntake).
+  const missing = missingFromIntake(publicPayload, env);
+  if (missing) {
     await env.SERVICE_MENU_KV.put(
-      `hmu_incomplete_intake:${incomingOrderId}:${normalized.submission_id}`,
-      JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, missing: 'public_contact', attempted_at: now }),
+      kvKey(env, 'incomplete_intake', incomingOrderId, normalized.submission_id),
+      JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, missing, attempted_at: now }),
       { expirationTtl: 2592000 }
     ).catch(() => {});
-    // FALLO SILENCIOSO #4 (bis): intake sin ningún contacto público.
-    await alertOnce(env, `incomplete_intake:${normalized.submission_id}`, 604800,
-      '⚠️ HMU: intake incompleto — sin contacto público', [
-        'Llegó un formulario de intake sin ningún medio de contacto público',
-        '(WhatsApp / teléfono / email / reservas / web). La página NO se generó.',
-        '',
-        `order_id: ${incomingOrderId}`,
-        `submission_id: ${normalized.submission_id}`,
-        'falta: public_contact',
-        '',
-        'Acción: contactar al cliente para completar el dato, o revisar el mapeo',
-        'del formulario de Tally si el campo sí venía.'
-      ]);
-    return jsonResponse({ ok: false, status: 'incomplete_intake', missing: 'public_contact' }, 422);
+    return jsonResponse({ ok: false, status: 'incomplete_intake', missing }, 422);
   }
 
+  // En una modificación se CONSERVA el slug de la página existente: si se
+  // dejara el derivado del nombre del negocio + submission_id, cada
+  // modificación publicaría una página NUEVA y dejaría huérfana la que el
+  // cliente ya compartió. Es el riesgo principal de este flujo.
+  if (modification.slug) {
+    publicPayload.public_slug = modification.slug;
+  }
   const slug = publicPayload.public_slug;
 
   // Save submission to KV (full answers, private fields included — KV only)
-  const submissionKey = `hmu_submission:${normalized.submission_id}`;
+  const submissionKey = kvKey(env, 'submission', normalized.submission_id);
   try {
     await env.SERVICE_MENU_KV.put(submissionKey, JSON.stringify({
       submission_id: normalized.submission_id,
@@ -607,6 +606,12 @@ async function handleTallyWebhook(request, env) {
       customer_email: orderEmail,
       slug,
       answers: normalized.answers,
+      // Lo que el cliente escribió, tal cual, keyed por field name de Tally:
+      // es lo que reconstruye SU formulario cuando pide una modificación.
+      prefill: normalized.prefill,
+      // Marca que este envío EDITA una página ya entregada: /notify lo usa para
+      // mandar el correo de "tu página fue actualizada" en vez del de entrega.
+      is_modification: Boolean(modification.token),
       received_at: now,
       status: 'received'
     }), { expirationTtl: 7776000 }); // 90 days
@@ -621,7 +626,7 @@ async function handleTallyWebhook(request, env) {
     existingOrder.submission_id = normalized.submission_id;
     existingOrder.slug = slug;
     existingOrder.updated_at = now;
-    await env.SERVICE_MENU_KV.put(`hmu_order:${incomingOrderId}`, JSON.stringify(existingOrder));
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', incomingOrderId), JSON.stringify(existingOrder));
   } catch (err) {
     console.error('order update failed:', safeError(err));
     return jsonResponse({ ok: false, error: 'Failed to update order' }, 500);
@@ -641,34 +646,52 @@ async function handleTallyWebhook(request, env) {
     });
   } catch (err) {
     console.error('github dispatch failed:', safeError(err));
-    await env.SERVICE_MENU_KV.put(`hmu_order:${incomingOrderId}`, JSON.stringify({
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', incomingOrderId), JSON.stringify({
       ...existingOrder,
-      status: 'failed_dispatch',
+status: 'failed_dispatch',
       updated_at: now
     }));
-    // FALLO SILENCIOSO #3: pagó + llenó el formulario, pero el dispatch a
-    // GitHub Actions falló → su página no se genera y no hay reintento.
+    // FALLO SILENCIOSO #3: pago + formulario OK, pero el dispatch a GitHub
+    // Actions fallo -> el cliente pago y su pagina NO se esta generando. Aqui
+    // se responde 500 a proposito (para que Stripe reintente), asi que el
+    // dedup por-orden es CRITICO: aunque reintente, sale UNA alerta al dia.
     await alertOnce(env, `failed_dispatch:${incomingOrderId}`, 86400,
-      `⚠️ HMU: falló el dispatch de generación — ${slug}`, [
-        'El cliente pagó y llenó el formulario, pero el dispatch a GitHub Actions',
-        'falló: su página NO se está generando.',
+      `${marca(env)}: pago cobrado pero la generacion NO arranco`, [
+        'El cliente pago y su formulario llego, pero el dispatch a GitHub',
+        'Actions fallo: su pagina NO se esta generando.',
         '',
-        `order_id: ${incomingOrderId}`,
-        `submission_id: ${normalized.submission_id}`,
-        `slug: ${slug}`,
-        `error: ${safeError(err)}`,
+        `orden: ${incomingOrderId}`,
         '',
-        'La orden quedó en failed_dispatch (sin reintento automático).',
-        'Acción: re-disparar la generación o revisar el GITHUB_TOKEN del worker.'
+        'Revisa GITHUB_TOKEN y GITHUB_REPO en el worker.',
       ]);
     return jsonResponse({ ok: false, error: 'Failed to dispatch generation' }, 500);
+  }
+
+  // Modificación despachada: recién ahora se quema el token (si el dispatch
+  // falla, el cliente puede reintentar con el mismo enlace) y se descuenta una
+  // de las incluidas, acuñando la siguiente si le quedan.
+  if (modification.token) {
+    try {
+      modification.record.used_at = now;
+      modification.record.submission_id = normalized.submission_id;
+      await env.SERVICE_MENU_KV.put(
+        kvKey(env, 'correction', modification.token),
+        JSON.stringify(modification.record),
+        { expirationTtl: 7776000 }
+      );
+      if (modification.record.paid !== true) {
+        await consumeFreeChange(env, slug, modification.record);
+      }
+    } catch (err) {
+      console.error('modification token burn failed:', safeError(err));
+    }
   }
 
   // Update order to 'generating'
   try {
     existingOrder.status = 'generating';
     existingOrder.updated_at = now;
-    await env.SERVICE_MENU_KV.put(`hmu_order:${incomingOrderId}`, JSON.stringify(existingOrder));
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', incomingOrderId), JSON.stringify(existingOrder));
   } catch (err) {
     console.error('status update failed:', safeError(err));
   }
@@ -714,12 +737,27 @@ async function handleNotify(request, env) {
   const slug = (body?.slug || '').trim();
   const submissionId = (body?.submission_id || '').trim();
   let orderId = (body?.order_id || '').trim();
+  // QR en base64 que manda el workflow (el asset todavía no está publicado
+  // cuando se dispara /notify, así que no se puede descargar). Fail-open: si no
+  // viene, viene mal formado o viene demasiado grande, el correo sale sin QR —
+  // nunca bloquea la entrega, que es lo que el cliente pagó.
+  const qrPngBase64 = sanitizeBase64Image(body?.qr_png_base64);
 
   // El workflow ya no conoce el order_id (no viaja en client_payload para no
   // aparecer en logs públicos de Actions); se resuelve desde la submission.
-  if (!orderId && submissionId) {
-    const submission = await env.SERVICE_MENU_KV.get(`hmu_submission:${submissionId}`, { type: 'json' }).catch(() => null);
-    orderId = (submission?.order_id || '').trim();
+  let submissionRecord = null;
+  if (submissionId) {
+    submissionRecord = await env.SERVICE_MENU_KV.get(kvKey(env, 'submission', submissionId), { type: 'json' }).catch(() => null);
+  }
+  if (!orderId) {
+    orderId = (submissionRecord?.order_id || '').trim();
+  }
+
+  // Este envío EDITÓ una página ya entregada: el correo que toca es el de
+  // "tu página fue actualizada", no otra entrega (que además sería idempotente
+  // y no mandaría nada — el cliente se quedaría sin aviso).
+  if (submissionRecord?.is_modification && slug) {
+    return await notifyModificationApplied({ env, slug, orderId, submissionId });
   }
 
   if (!slug || !orderId) {
@@ -727,7 +765,7 @@ async function handleNotify(request, env) {
   }
 
   // Get order from KV
-  const order = await env.SERVICE_MENU_KV.get(`hmu_order:${orderId}`, { type: 'json' }).catch(() => null);
+  const order = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', orderId), { type: 'json' }).catch(() => null);
   if (!order) {
     return jsonResponse({ ok: false, error: 'Order not found' }, 404);
   }
@@ -738,7 +776,7 @@ async function handleNotify(request, env) {
   }
 
   // Check if already delivered
-  const deliveryKey = `hmu_delivery:${slug}`;
+  const deliveryKey = kvKey(env, 'delivery', slug);
   const existingDelivery = await env.SERVICE_MENU_KV.get(deliveryKey, { type: 'json' }).catch(() => null);
   if (existingDelivery && existingDelivery.status === 'delivered') {
     return jsonResponse({ ok: true, slug, idempotent: true, alreadyDelivered: true });
@@ -752,11 +790,14 @@ async function handleNotify(request, env) {
 
   // Idioma del cuerpo = idioma del comprador (moneda MXN → español), igual que
   // el asunto. Se guarda también en el token para los correos de corrección.
-  const deliveryLang = (order.currency || '').toLowerCase() === 'mxn' ? 'es' : 'en';
+  // Una moneda que no identifica idioma (CAD, EUR…) cae a inglés: aquí, a
+  // diferencia del correo post-pago, no se manda bilingüe porque este correo
+  // lleva la página YA generada en un idioma concreto.
+  const deliveryLang = emailLangFromCurrency(order.currency) || 'en';
 
   // Save correction token (la corrección gratuita incluida)
   try {
-    await env.SERVICE_MENU_KV.put(`hmu_correction:${correctionToken}`, JSON.stringify({
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction', correctionToken), JSON.stringify({
       correction_token: correctionToken,
       order_id: orderId,
       slug,
@@ -777,9 +818,9 @@ async function handleNotify(request, env) {
       customer_email: customerEmail,
       page_url: pageUrl,
       correction_token: correctionToken,
-      // Contador de modificaciones incluidas (FREE_CHANGES). Se congela AQUÍ el
-      // total que le tocaba al cliente al comprar: si mañana el número cambia,
-      // quien ya compró conserva lo que se le prometió.
+      // Contador de modificaciones incluidas (FREE_CHANGES <- legal.free_changes).
+      // Se congela AQUÍ el total que le tocaba al cliente al comprar: si mañana
+      // la vertical cambia el número, quien ya compró conserva lo prometido.
       free_total: freeChanges(env),
       free_used: 0,
       status: 'delivered',
@@ -790,26 +831,43 @@ async function handleNotify(request, env) {
   }
 
   // Send delivery email
-  if (!env.SENDGRID_API_KEY) {
+  if (!secret(env, 'SENDGRID_API_KEY')) {
     return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
   }
 
-  const correctionUrl = correctionFormUrl(env, correctionToken, deliveryLang);
+  // Formulario completo prellenado si la vertical ya lo soporta; si no, la
+  // página de texto libre de siempre.
+  const correctionUrl = await bestModificationUrl(env, {
+    token: correctionToken,
+    slug,
+    lang: deliveryLang,
+    orderId
+  });
   try {
     await sendEmail({
       env,
       to: customerEmail,
       subject: deliveryLang === 'es'
-        ? '¡Tu página HMU Link está lista! 🎉'
-        : 'Your HMU Link service menu is ready! 🎉',
+        ? `¡Tu página ${brandName(env)} está lista! 🎉`
+        : `Your ${brandName(env)} service menu is ready! 🎉`,
       html: buildDeliveryEmail({
         pageUrl,
         slug,
         lang: deliveryLang,
         correctionUrl,
-        freeTotal: freeChanges(env)
+        hasQr: Boolean(qrPngBase64),
+        env
       }),
-      text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl, freeTotal: freeChanges(env) })
+      text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl, hasQr: Boolean(qrPngBase64), env }),
+      attachments: qrPngBase64
+        ? [{
+            content: qrPngBase64,
+            type: 'image/png',
+            filename: `${(env.PRODUCT_ID || 'hmu').trim()}-qr-${slug}.png`,
+            disposition: 'inline',
+            content_id: DELIVERY_QR_CID
+          }]
+        : []
     });
   } catch (err) {
     console.error('delivery email failed:', safeError(err));
@@ -820,7 +878,7 @@ async function handleNotify(request, env) {
   try {
     order.status = 'delivered';
     order.updated_at = new Date().toISOString();
-    await env.SERVICE_MENU_KV.put(`hmu_order:${orderId}`, JSON.stringify(order));
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify(order));
   } catch (err) {
     console.error('order status update failed:', safeError(err));
   }
@@ -837,19 +895,14 @@ async function handleNotify(request, env) {
 // CORRECTIONS — status, request, purchase, notify
 // ─────────────────────────────────────────────────────────────────────────────
 
-function correctionFormUrl(env, token, lang) {
-  const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
-  return `${baseUrl}/correct/?t=${encodeURIComponent(token)}&l=${lang === 'es' ? 'es' : 'en'}`;
-}
-
 // Marca una modificación gratis como consumida en el registro de entrega y, si
 // al cliente le quedan incluidas, acuña y devuelve el token del SIGUIENTE
 // enlace. Devuelve '' cuando ya no quedan (a partir de ahí se compra).
-// Nunca lanza: un fallo de contador no puede tumbar una corrección ya
-// despachada — en el peor caso el cliente pide la siguiente por correo.
+// Nunca lanza: un fallo de contador no puede tumbar una corrección ya aplicada
+// — en el peor caso el cliente pide la siguiente por correo.
 async function consumeFreeChange(env, slug, tokenRecord) {
   try {
-    const deliveryKey = `hmu_delivery:${slug}`;
+    const deliveryKey = kvKey(env, 'delivery', slug);
     const delivery = await env.SERVICE_MENU_KV.get(deliveryKey, { type: 'json' });
     if (!delivery) return '';
     // Entregas anteriores a esta versión no tienen contador: se asume que la
@@ -862,9 +915,9 @@ async function consumeFreeChange(env, slug, tokenRecord) {
     let nextToken = '';
     if (used < total) {
       nextToken = generateSecureToken();
-      await env.SERVICE_MENU_KV.put(`hmu_correction:${nextToken}`, JSON.stringify({
+      await env.SERVICE_MENU_KV.put(kvKey(env, 'correction', nextToken), JSON.stringify({
         correction_token: nextToken,
-        order_id: tokenRecord.order_id || '',
+        order_id: tokenRecord.order_id,
         slug,
         lang: tokenRecord.lang === 'es' ? 'es' : 'en',
         paid: false,
@@ -879,6 +932,166 @@ async function consumeFreeChange(env, slug, tokenRecord) {
     console.error('free change counter failed:', safeError(err));
     return '';
   }
+}
+
+function correctionFormUrl(env, token, lang) {
+  const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
+  return `${baseUrl}/correct/?t=${encodeURIComponent(token)}&l=${lang === 'es' ? 'es' : 'en'}`;
+}
+
+// Mínimo de campos prellenados para mandar al cliente a SU formulario completo
+// en vez de a la página de texto libre. Con menos, el formulario saldría casi
+// vacío y enviarlo BORRARÍA su información: en ese caso es mejor el camino
+// viejo (/correct/ + IA).
+//
+// OJO: esta cota NO alcanza como red de seguridad, aunque se diseñó para eso.
+// Tally manda un `name` por CADA campo —derivado del título si el spec no lo
+// declara— así que el mapa de prefill nunca está vacío y la condición siempre
+// se cumple, incluso en una vertical sin cablear. La red real es el interruptor
+// MODIFICATION_FORM_PREFILL de arriba (hallazgo del 2026-07-21).
+const MIN_PREFILL_FIELDS_FOR_FORM_EDIT = 3;
+
+// Tope del fragmento de prefill: un intake completo es mucho más largo que el
+// de un prospecto (1500). 6000 deja la URL dentro de lo que navegadores y
+// proxies manejan sin truncar.
+const MODIFICATION_PREFILL_MAX = 6000;
+
+/**
+ * Enlace de MODIFICACIÓN: el formulario de intake del cliente, prellenado con
+ * lo que él mismo escribió, más los hidden que lo convierten en una edición de
+ * su página existente (client_slug + correction_token) en vez de una página
+ * nueva. Devuelve '' si no hay con qué prellenar — quien llama cae a
+ * `correctionFormUrl`.
+ */
+function modificationFormUrl(env, { token, slug, lang, orderId, customerEmail, prefill }) {
+  // Interruptor explícito por vertical: sin el cableado de hidden fields +
+  // "default answer" en Tally, el formulario llega VACÍO y enviarlo borraría lo
+  // que el cliente no reescriba. Apagado = `/correct/` de texto libre, que
+  // funciona. Ver modificationFormPrefillEnabled en product-config.mjs.
+  if (!modificationFormPrefillEnabled(env)) return '';
+  const base = ((lang === 'es' ? env.TALLY_FORM_URL_ES : env.TALLY_FORM_URL_EN) || '').trim();
+  if (!base || !slug || !token) return '';
+  const fields = prefill && typeof prefill === 'object' ? Object.keys(prefill).length : 0;
+  if (fields < MIN_PREFILL_FIELDS_FOR_FORM_EDIT) return '';
+
+  // Las bases TALLY_FORM_URL_* ya terminan en `?order_id=`.
+  let url = `${base}${encodeURIComponent(orderId || '')}`;
+  url += `&customer_email=${encodeURIComponent(customerEmail || '')}`;
+  url += `&client_slug=${encodeURIComponent(slug)}`;
+  url += `&correction_token=${encodeURIComponent(token)}`;
+  url += buildPrefillQuery(prefill, MODIFICATION_PREFILL_MAX);
+  return url;
+}
+
+// Enlace de modificación con caída al camino viejo: formulario completo
+// prellenado si se puede, página de texto libre si no.
+/**
+ * Correo de "tu página fue actualizada" tras una modificación hecha con el
+ * formulario completo. Reusa los mismos cuerpos que la corrección por texto
+ * libre, e incluye el enlace de la SIGUIENTE modificación si al cliente le
+ * quedan incluidas (consumeFreeChange ya la acuñó y la dejó en el registro de
+ * entrega). Idempotente por submission_id: Actions puede reintentar.
+ */
+async function notifyModificationApplied({ env, slug, orderId, submissionId }) {
+  const deliveryKey = kvKey(env, 'delivery', slug);
+  const delivery = await env.SERVICE_MENU_KV.get(deliveryKey, { type: 'json' }).catch(() => null);
+  if (delivery?.last_modification_notified === submissionId) {
+    return jsonResponse({ ok: true, idempotent: true, slug });
+  }
+
+  const order = orderId
+    ? await env.SERVICE_MENU_KV.get(kvKey(env, 'order', orderId), { type: 'json' }).catch(() => null)
+    : null;
+  const customerEmail = order?.customer_email || delivery?.customer_email || '';
+  const lang = emailLangFromCurrency(order?.currency) || 'en';
+  const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
+  const pageUrl = `${baseUrl}/links/${slug}/`;
+
+  // Enlace de la siguiente modificación incluida, si quedan.
+  let nextCorrectionUrl = '';
+  const nextToken = delivery?.correction_token || '';
+  if (nextToken) {
+    const nextRecord = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', nextToken), { type: 'json' }).catch(() => null);
+    if (nextRecord && !nextRecord.used_at) {
+      nextCorrectionUrl = await bestModificationUrl(env, { token: nextToken, slug, lang, orderId });
+    }
+  }
+
+  if (customerEmail && secret(env, 'SENDGRID_API_KEY')) {
+    try {
+      await sendEmail({
+        env,
+        to: customerEmail,
+        subject: lang === 'es'
+          ? `✅ Tu página ${brandName(env)} fue actualizada`
+          : `✅ Your ${brandName(env)} page was updated`,
+        html: buildCorrectionAppliedEmail({
+          pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, env
+        }),
+        text: buildCorrectionAppliedText({
+          pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, env
+        })
+      });
+    } catch (err) {
+      console.error('modification applied email failed:', safeError(err));
+      return jsonResponse({ ok: false, error: 'Failed to send modification email' }, 500);
+    }
+  }
+
+  if (delivery) {
+    delivery.last_modification_notified = submissionId;
+    delivery.updated_at = new Date().toISOString();
+    await env.SERVICE_MENU_KV.put(deliveryKey, JSON.stringify(delivery), { expirationTtl: 7776000 }).catch(() => {});
+  }
+  return jsonResponse({ ok: true, slug, status: 'modification_notified' });
+}
+
+/**
+ * ¿Este envío del formulario es una modificación de una página ya publicada?
+ * Devuelve {slug, token, record} si el token es válido para ese slug y esa
+ * orden, {} si el envío es un intake normal, o {error} si trae credenciales de
+ * modificación que no cuadran (se rechaza: nunca se degrada a intake nuevo, que
+ * publicaría una página duplicada en silencio).
+ */
+async function resolveModification(env, normalized, order) {
+  const slug = (cleanValue(getAnswer(normalized.answers, 'client_slug')) || '').trim();
+  const token = (cleanValue(getAnswer(normalized.answers, 'correction_token')) || '').trim();
+  if (!slug && !token) return {};
+  if (!slug || !token) return { error: 'incomplete_modification_credentials' };
+  if (!SLUG_RE.test(slug) || token.length > 64) return { error: 'malformed_modification_credentials' };
+
+  const record = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', token), { type: 'json' }).catch(() => null);
+  if (!record) return { error: 'unknown_correction_token' };
+  if (record.used_at) return { error: 'correction_token_already_used' };
+  if (record.slug !== slug) return { error: 'token_slug_mismatch' };
+  if (record.order_id && order?.order_id && record.order_id !== order.order_id) {
+    return { error: 'token_order_mismatch' };
+  }
+  return { slug, token, record };
+}
+
+async function bestModificationUrl(env, { token, slug, lang, orderId }) {
+  try {
+    const order = orderId
+      ? await env.SERVICE_MENU_KV.get(kvKey(env, 'order', orderId), { type: 'json' })
+      : null;
+    const submissionId = order?.submission_id || '';
+    const submission = submissionId
+      ? await env.SERVICE_MENU_KV.get(kvKey(env, 'submission', submissionId), { type: 'json' })
+      : null;
+    const url = modificationFormUrl(env, {
+      token,
+      slug,
+      lang,
+      orderId,
+      customerEmail: order?.customer_email || '',
+      prefill: submission?.prefill
+    });
+    if (url) return url;
+  } catch (err) {
+    console.error('modification url build failed:', safeError(err));
+  }
+  return correctionFormUrl(env, token, lang);
 }
 
 // La compra de corrección adicional pasa por el worker (crea el Checkout
@@ -897,7 +1110,7 @@ async function handleCorrectionStatus(url, env) {
   if (!token || token.length > 64) {
     return jsonResponse({ ok: true, state: 'invalid' });
   }
-  const record = await env.SERVICE_MENU_KV.get(`hmu_correction:${token}`, { type: 'json' }).catch(() => null);
+  const record = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', token), { type: 'json' }).catch(() => null);
   if (!record) {
     return jsonResponse({ ok: true, state: 'invalid' });
   }
@@ -944,7 +1157,7 @@ async function handleCorrectionRequest(request, env) {
     return jsonResponse({ ok: false, error: 'changes_too_long' }, 400);
   }
 
-  const record = await env.SERVICE_MENU_KV.get(`hmu_correction:${token}`, { type: 'json' }).catch(() => null);
+  const record = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', token), { type: 'json' }).catch(() => null);
   if (!record) {
     return jsonResponse({ ok: false, state: 'invalid' }, 403);
   }
@@ -959,7 +1172,7 @@ async function handleCorrectionRequest(request, env) {
   // El registro guarda el texto completo (KV, privado); a Actions solo viaja
   // el texto saneado + slug + correction_id — nunca order_id ni el token.
   try {
-    await env.SERVICE_MENU_KV.put(`hmu_correction_request:${correctionId}`, JSON.stringify({
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction_request', correctionId), JSON.stringify({
       correction_id: correctionId,
       correction_token: token,
       order_id: record.order_id,
@@ -994,24 +1207,24 @@ async function handleCorrectionRequest(request, env) {
   try {
     record.used_at = now;
     record.correction_id = correctionId;
-    await env.SERVICE_MENU_KV.put(`hmu_correction:${token}`, JSON.stringify(record), { expirationTtl: 7776000 });
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction', token), JSON.stringify(record), { expirationTtl: 7776000 });
   } catch (err) {
     console.error('correction token update failed:', safeError(err));
   }
 
-  // Contador de modificaciones GRATIS: antes cada token valía por una y se
-  // acababa ahí; ahora, si al cliente le quedan incluidas, se acuña el siguiente
-  // enlace aquí y viaja en el correo de "tu página fue actualizada". Solo
-  // consumen cupo las gratis: una corrección comprada no descuenta.
+  // Contador de modificaciones GRATIS (estándar de la casa: 2, configurable por
+  // vertical con FREE_CHANGES <- legal.free_changes). Antes cada token valía por
+  // una y se acababa ahí; ahora, si al cliente le quedan incluidas, se acuña el
+  // siguiente enlace aquí y viaja en el correo de "tu página fue actualizada".
+  // Solo consumen cupo las gratis: una modificación comprada no descuenta.
   if (record.paid !== true) {
     const nextToken = await consumeFreeChange(env, slug, record);
     if (nextToken) {
       try {
-        const key = `hmu_correction_request:${correctionId}`;
-        const requestRecord = await env.SERVICE_MENU_KV.get(key, { type: 'json' });
+        const requestRecord = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction_request', correctionId), { type: 'json' });
         if (requestRecord) {
           requestRecord.next_correction_token = nextToken;
-          await env.SERVICE_MENU_KV.put(key, JSON.stringify(requestRecord), { expirationTtl: 7776000 });
+          await env.SERVICE_MENU_KV.put(kvKey(env, 'correction_request', correctionId), JSON.stringify(requestRecord), { expirationTtl: 7776000 });
         }
       } catch (err) {
         console.error('next correction token save failed:', safeError(err));
@@ -1020,9 +1233,9 @@ async function handleCorrectionRequest(request, env) {
   }
 
   // Copia de auditoría para Verónica — nunca bloquea la respuesta al cliente.
-  await notifyAdmin(env, `HMU corrección solicitada — ${slug}`, [
+  await notifyAdmin(env, `${brandName(env)} corrección solicitada — ${slug}`, [
     `Corrección ${record.paid ? 'ADICIONAL (pagada)' : 'gratuita'} solicitada.`,
-    `Página: https://www.hmulink.com/links/${slug}/`,
+    `Página: ${(env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim()}/links/${slug}/`,
     `correction_id: ${correctionId}`,
     '',
     'Cambios pedidos por el cliente:',
@@ -1047,13 +1260,14 @@ async function handleBuyCorrection(url, env) {
     return Response.redirect(unavailableUrl, 302);
   }
 
-  const delivery = await env.SERVICE_MENU_KV.get(`hmu_delivery:${slug}`, { type: 'json' }).catch(() => null);
-  if (!delivery || !env.STRIPE_SECRET_KEY) {
+  const delivery = await env.SERVICE_MENU_KV.get(kvKey(env, 'delivery', slug), { type: 'json' }).catch(() => null);
+  const stripeKey = secret(env, 'STRIPE_SECRET_KEY');
+  if (!delivery || !stripeKey) {
     return Response.redirect(unavailableUrl, 302);
   }
 
   const order = delivery.order_id
-    ? await env.SERVICE_MENU_KV.get(`hmu_order:${delivery.order_id}`, { type: 'json' }).catch(() => null)
+    ? await env.SERVICE_MENU_KV.get(kvKey(env, 'order', delivery.order_id), { type: 'json' }).catch(() => null)
     : null;
   const currency = (order?.currency || '').toLowerCase() === 'mxn' ? 'mxn' : 'usd';
   const lang = currency === 'mxn' ? 'es' : 'en';
@@ -1066,9 +1280,12 @@ async function handleBuyCorrection(url, env) {
   params.set('line_items[0][price_data][unit_amount]', String(price.unit_amount));
   params.set(
     'line_items[0][price_data][product_data][name]',
-    lang === 'es' ? 'HMU Link — Corrección adicional' : 'HMU Link — Extra correction'
+    lang === 'es' ? `${brandName(env)} — Corrección adicional` : `${brandName(env)} — Extra correction`
   );
-  params.set('metadata[hmu_correction]', '1');
+  // Metadata por vertical (<PRODUCT_ID>_correction) — el webhook la detecta
+  // con la MISMA función en stripe-filter.mjs; un literal fijo colisionaría
+  // entre verticales en la cuenta compartida de Stripe.
+  params.set(`metadata[${correctionMetadataKey(env)}]`, '1');
   params.set('metadata[slug]', slug);
   params.set('success_url', `${baseUrl}/correct/thanks/?l=${lang}`);
   params.set('cancel_url', `${baseUrl}/links/${slug}/`);
@@ -1081,7 +1298,7 @@ async function handleBuyCorrection(url, env) {
     const resp = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
+        'Authorization': `Bearer ${stripeKey}`,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: params.toString()
@@ -1110,7 +1327,7 @@ async function handleCorrectionPurchase(session, env) {
     return jsonResponse({ ok: false, error: 'Missing payment_intent id' }, 400);
   }
 
-  const processedKey = `hmu_processed:${paymentIntentId}`;
+  const processedKey = kvKey(env, 'processed', paymentIntentId);
   const alreadyProcessed = await env.SERVICE_MENU_KV.get(processedKey).catch(() => null);
   if (alreadyProcessed) {
     return jsonResponse({ ok: true, idempotent: true, paymentIntentId });
@@ -1119,10 +1336,10 @@ async function handleCorrectionPurchase(session, env) {
   const slug = cleanValue(session.metadata?.slug || '').toLowerCase();
   const buyerEmail = session.customer_email || session.customer_details?.email || '';
   const delivery = SLUG_RE.test(slug)
-    ? await env.SERVICE_MENU_KV.get(`hmu_delivery:${slug}`, { type: 'json' }).catch(() => null)
+    ? await env.SERVICE_MENU_KV.get(kvKey(env, 'delivery', slug), { type: 'json' }).catch(() => null)
     : null;
   const order = delivery?.order_id
-    ? await env.SERVICE_MENU_KV.get(`hmu_order:${delivery.order_id}`, { type: 'json' }).catch(() => null)
+    ? await env.SERVICE_MENU_KV.get(kvKey(env, 'order', delivery.order_id), { type: 'json' }).catch(() => null)
     : null;
   // SOLO el email del pedido/entrega original recibe el token (nunca el
   // comprador de la sesión si no hay registro — eso sería regalar acceso).
@@ -1134,7 +1351,7 @@ async function handleCorrectionPurchase(session, env) {
 
   if (!delivery || !ownerEmail) {
     // Sin registro de entrega no se puede acuñar con seguridad: atender a mano.
-    await notifyAdmin(env, `HMU corrección pagada SIN registro — atender manual`, [
+    await notifyAdmin(env, `${brandName(env)} corrección pagada SIN registro — atender manual`, [
       'Se pagó una corrección adicional pero no hay registro de entrega en KV.',
       `slug (metadata): ${slug || '(vacío)'}`,
       `email del comprador (Stripe): ${buyerEmail || '(sin email)'}`,
@@ -1147,7 +1364,7 @@ async function handleCorrectionPurchase(session, env) {
 
   const token = generateSecureToken();
   try {
-    await env.SERVICE_MENU_KV.put(`hmu_correction:${token}`, JSON.stringify({
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction', token), JSON.stringify({
       correction_token: token,
       order_id: delivery.order_id || '',
       slug,
@@ -1169,10 +1386,10 @@ async function handleCorrectionPurchase(session, env) {
       env,
       to: ownerEmail,
       subject: lang === 'es'
-        ? 'Tu corrección adicional de HMU Link — pídela aquí'
-        : 'Your extra HMU Link correction — request it here',
-      html: buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang }),
-      text: buildCorrectionPurchaseText({ formUrl, pageUrl, lang })
+        ? `Tu corrección adicional de ${brandName(env)} — pídela aquí`
+        : `Your extra ${brandName(env)} correction — request it here`,
+      html: buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang, env }),
+      text: buildCorrectionPurchaseText({ formUrl, pageUrl, lang, env })
     });
   } catch (err) {
     console.error('correction purchase email failed:', safeError(err));
@@ -1181,8 +1398,8 @@ async function handleCorrectionPurchase(session, env) {
   }
 
   // Sin copia de admin por la compra en sí: el recibo de Stripe ya registra el
-  // pago, y el aviso "HMU corrección solicitada" (handleCorrectionRequest) llega
-  // con el cambio real cuando el comprador lo envía.
+  // pago, y el aviso "<marca> corrección solicitada" (handleCorrectionRequest)
+  // llega con el cambio real cuando el comprador lo envía.
   return jsonResponse({ ok: true, paymentIntentId, slug });
 }
 
@@ -1193,7 +1410,7 @@ async function handleCorrectionNotify(body, env) {
   const correctionId = cleanValue(body?.correction_id);
   const status = body?.correction_status === 'applied' ? 'applied' : 'manual';
 
-  const record = await env.SERVICE_MENU_KV.get(`hmu_correction_request:${correctionId}`, { type: 'json' }).catch(() => null);
+  const record = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction_request', correctionId), { type: 'json' }).catch(() => null);
   if (!record) {
     return jsonResponse({ ok: false, error: 'Correction request not found' }, 404);
   }
@@ -1202,7 +1419,7 @@ async function handleCorrectionNotify(body, env) {
   }
 
   const order = record.order_id
-    ? await env.SERVICE_MENU_KV.get(`hmu_order:${record.order_id}`, { type: 'json' }).catch(() => null)
+    ? await env.SERVICE_MENU_KV.get(kvKey(env, 'order', record.order_id), { type: 'json' }).catch(() => null)
     : null;
   const customerEmail = order?.customer_email || '';
   const lang = record.lang === 'es' ? 'es' : 'en';
@@ -1210,17 +1427,15 @@ async function handleCorrectionNotify(body, env) {
   const pageUrl = `${baseUrl}/links/${record.slug}/`;
   const buyUrl = buyCorrectionUrl(env, record.slug);
   // Si al cliente le quedaban modificaciones incluidas, /correct ya acuñó el
-  // siguiente enlace: va en este mismo correo para que no tenga que pedirlo (y
-  // para no ofrecerle el de pago teniendo una gratis disponible).
-  let nextCorrectionUrl = '';
-  if (record.next_correction_token) {
-    const nextRecord = await env.SERVICE_MENU_KV
-      .get(`hmu_correction:${record.next_correction_token}`, { type: 'json' })
-      .catch(() => null);
-    if (nextRecord && !nextRecord.used_at) {
-      nextCorrectionUrl = correctionFormUrl(env, record.next_correction_token, lang);
-    }
-  }
+  // siguiente enlace: va en este mismo correo para que no tenga que pedirlo.
+  const nextCorrectionUrl = record.next_correction_token
+    ? await bestModificationUrl(env, {
+        token: record.next_correction_token,
+        slug: record.slug,
+        lang,
+        orderId: record.order_id
+      })
+    : '';
 
   if (customerEmail) {
     try {
@@ -1229,10 +1444,10 @@ async function handleCorrectionNotify(body, env) {
           env,
           to: customerEmail,
           subject: lang === 'es'
-            ? '✅ Tu página HMU Link fue actualizada'
-            : '✅ Your HMU Link page was updated',
-          html: buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl }),
-          text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl })
+            ? `✅ Tu página ${brandName(env)} fue actualizada`
+            : `✅ Your ${brandName(env)} page was updated`,
+          html: buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl, env }),
+          text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, env })
         });
       } else {
         await sendEmail({
@@ -1241,8 +1456,8 @@ async function handleCorrectionNotify(body, env) {
           subject: lang === 'es'
             ? 'Recibimos tu corrección — la aplicamos en 1 día hábil'
             : 'We received your correction — applying it within 1 business day',
-          html: buildCorrectionManualEmail({ pageUrl, lang }),
-          text: buildCorrectionManualText({ pageUrl, lang })
+          html: buildCorrectionManualEmail({ pageUrl, lang, env }),
+          text: buildCorrectionManualText({ pageUrl, lang, env })
         });
       }
     } catch (err) {
@@ -1252,7 +1467,7 @@ async function handleCorrectionNotify(body, env) {
   }
 
   if (status === 'manual') {
-    await notifyAdmin(env, `⚠️ HMU corrección MANUAL pendiente — ${record.slug}`, [
+    await notifyAdmin(env, `⚠️ ${brandName(env)} corrección MANUAL pendiente — ${record.slug}`, [
       'La corrección automática no se pudo aplicar; hay que hacerla a mano.',
       `Página: ${pageUrl}`,
       `correction_id: ${correctionId}`,
@@ -1268,7 +1483,7 @@ async function handleCorrectionNotify(body, env) {
   try {
     record.status = status;
     record.notified_at = new Date().toISOString();
-    await env.SERVICE_MENU_KV.put(`hmu_correction_request:${correctionId}`, JSON.stringify(record), { expirationTtl: 7776000 });
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction_request', correctionId), JSON.stringify(record), { expirationTtl: 7776000 });
   } catch (err) {
     console.error('correction request update failed:', safeError(err));
   }
@@ -1295,22 +1510,32 @@ async function notifyAdmin(env, subject, lines) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ALERTAS DE EMBUDO MUERTO (Bloque A.3 de la auditoría 2026-07-21)
-// ─────────────────────────────────────────────────────────────────────────────
-// El embudo fallaba en silencio: un payment link desfasado → 200 {ignored} y un
-// console.log; "el cliente era el monitor". alertOnce conecta notifyAdmin a los
-// puntos de fallo silencioso con dedup en KV para que un reintento de Stripe no
-// dispare una tormenta de correos.
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
-// Destino de las alertas: ALERT_EMAIL si está configurado; si no, el buzón de
-// Vero (REPLY_TO_EMAIL) — así funcionan desde el primer deploy sin config nueva.
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILITY FUNCTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Nombre legible del producto para los correos de alerta. Sale de PRODUCT_ID
+ * para que un vertical exportado NO herede el nombre de HMU en sus avisos. */
+function marca(env) {
+  const id = String(env.PRODUCT_ID || 'el producto').trim();
+  return id.charAt(0).toUpperCase() + id.slice(1);
+}
+
 function alertEmail(env) {
   return (env.ALERT_EMAIL || env.REPLY_TO_EMAIL || '').trim();
 }
 
 // Payment links de OTROS productos de la cuenta Stripe compartida que ya sabemos
-// que no son de HMU: NO alertamos por ellos (evita el ruido de cada venta de un
+// que no son del producto: NO alertamos por ellos (evita el ruido de cada venta de un
 // producto hermano). Mismo formato que STRIPE_PAYMENT_LINK_ID (coma-separado).
 function knownOtherPaymentLinks(env) {
   return (env.KNOWN_OTHER_PAYMENT_LINKS || '')
@@ -1396,34 +1621,6 @@ async function handleGenerationFailedAlert(request, env) {
   return jsonResponse({ ok: true });
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// UTILITY FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Event Webhook del proveedor de correo (SendGrid): avisa cuando un correo de
- * ENTREGA rebota o se descarta.
- *
- * Es el ultimo fallo silencioso del embudo que quedaba sin cubrir, y el peor de
- * todos: el cliente PAGO, el sistema genero su pagina y mando el correo... que
- * nunca llego (buzon lleno, direccion mal escrita, filtro de spam). Sin esto,
- * Vero se entera cuando el cliente reclama -- o nunca.
- *
- * Seguridad: endpoint PUBLICO, asi que exige la firma ECDSA de SendGrid
- * (`X-Twilio-Email-Event-Webhook-Signature` + `-Timestamp`, clave publica en
- * `SENDGRID_WEBHOOK_PUBLIC_KEY`). Sin clave configurada NO se procesa nada: se
- * responde 503 en vez de aceptar eventos sin verificar, que seria una puerta
- * abierta a que cualquiera dispare correos de alerta.
- */
 const EMAIL_FAILURE_EVENTS = new Set(['bounce', 'dropped', 'blocked', 'spamreport']);
 
 /**
@@ -1609,7 +1806,8 @@ async function verifyTallySignature(rawBody, signatureHeader, secret) {
 }
 
 async function dispatchGitHubAction(env, payload) {
-  if (!env.GITHUB_TOKEN || !env.GITHUB_REPO) {
+  const githubToken = secret(env, 'GITHUB_TOKEN');
+  if (!githubToken || !env.GITHUB_REPO) {
     throw new Error('GITHUB_TOKEN or GITHUB_REPO not configured');
   }
 
@@ -1619,11 +1817,11 @@ async function dispatchGitHubAction(env, payload) {
   const response = await fetch(`https://api.github.com/repos/${repo}/dispatches`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${env.GITHUB_TOKEN}`,
+      'Authorization': `Bearer ${githubToken}`,
       'Accept': 'application/vnd.github+json',
       'Content-Type': 'application/json',
       // GitHub API rechaza con 403 cualquier request sin User-Agent.
-      'User-Agent': 'service-menu-worker'
+      'User-Agent': workerName(env)
     },
     body: JSON.stringify({
       event_type: eventType,
@@ -1636,6 +1834,29 @@ async function dispatchGitHubAction(env, payload) {
   }
 }
 
+/**
+ * Limitador de ritmo BEST-EFFORT. No es un control de seguridad.
+ *
+ * Decision formal del hallazgo #5 de la auditoria del 2026-07-23, que ofrecia
+ * dos salidas: migrarlo a Durable Object o aceptarlo documentado. Se acepta
+ * documentado, y estas son las razones:
+ *
+ *  1. NO es la barrera. Cada ruta que pasa por aqui tiene un segundo candado
+ *     REAL detras: firma HMAC en /stripe/webhook y /tally-webhook, token de
+ *     256 bits en /correct y /correction-status, Bearer en /notify. Si este
+ *     limitador desapareciera, nadie entraria: solo llegaria mas ruido.
+ *  2. Falla-ABIERTO a proposito. Si KV tiene un hipo, el .catch() deja pasar.
+ *     Fallar-cerrado seria PEOR: bloquearia webhooks de Stripe legitimos, es
+ *     decir, pagos de clientes reales que no se procesarian.
+ *  3. Es por IP y no es atomico (lee-luego-escribe), asi que quien rote IPs lo
+ *     esquiva y varias peticiones simultaneas pueden contar de menos. Ambas
+ *     cosas se ACEPTAN: mitigarlas de verdad exigiria un Durable Object
+ *     -- binding nuevo, migracion y redeploy de 5 workers -- para endurecer
+ *     algo que no es lo que detiene a nadie.
+ *
+ * Si algun dia una ruta que GASTA dinero queda sin segundo candado, esta
+ * decision se revisa: ahi si haria falta un limitador de verdad.
+ */
 async function checkRateLimit(env, key, limit, ttl) {
   const current = await env.SERVICE_MENU_KV.get(key, { type: 'json' }).catch(() => null);
   const count = (current?.count || 0) + 1;
@@ -1646,16 +1867,17 @@ async function checkRateLimit(env, key, limit, ttl) {
   return true;
 }
 
-async function sendEmail({ env, to, subject, html, text }) {
-  if (!env.SENDGRID_API_KEY) {
+async function sendEmail({ env, to, subject, html, text, attachments }) {
+  const sendgridKey = secret(env, 'SENDGRID_API_KEY');
+  if (!sendgridKey) {
     throw new Error('SENDGRID_API_KEY not configured');
   }
 
-  const fromRaw = env.FROM_EMAIL || 'HMU Link <hello@hmulink.com>';
+  const fromRaw = env.FROM_EMAIL || `${brandName(env)} <hello@hmulink.com>`;
   const fromEmail = fromRaw.split('<').pop().replace('>', '').trim();
   // Display name del remitente: sin él, los clientes ven "hello" a secas y
   // los filtros de spam desconfían más.
-  const fromName = fromRaw.includes('<') ? fromRaw.split('<')[0].trim() : 'HMU Link';
+  const fromName = fromRaw.includes('<') ? fromRaw.split('<')[0].trim() : brandName(env);
   // hello@hmulink.com no es un buzón real: las respuestas del cliente
   // (incluida la solicitud de corrección gratuita) deben llegar a un correo
   // monitoreado, no rebotar.
@@ -1679,11 +1901,16 @@ async function sendEmail({ env, to, subject, html, text }) {
   if (replyTo) {
     body.reply_to = { email: replyTo };
   }
+  // Adjuntos (hoy: el QR de la entrega, inline vía content_id). Solo se agrega
+  // la clave si hay algo: SendGrid rechaza `attachments: []`.
+  if (Array.isArray(attachments) && attachments.length) {
+    body.attachments = attachments;
+  }
 
   const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
+      'Authorization': `Bearer ${sendgridKey}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
@@ -1726,19 +1953,42 @@ function normalizeTallyPayload(payload) {
     Array.isArray(payload?.fields) ? payload.fields :
     [];
 
+  // `prefill` guarda SOLO {field name de Tally -> texto}, que es justo lo que
+  // se puede volver a meter en el formulario por URL (Ola 1c). `answers` mezcla
+  // labels, ids y claves normalizadas — sirve para leer el intake, pero no para
+  // reconstruirlo. Los nombres son estables porque tally_form.yaml los declara
+  // (`name:` por pregunta); si una vertical aún no los declara, este mapa sale
+  // casi vacío y el flujo cae solo al camino viejo (/correct/ de texto libre).
+  const prefill = {};
+
   for (const field of fields) {
     const value = extractTallyFieldValue(field);
+    // Desde el cableado de prefill (2026-07-21) cada campo de texto tiene un
+    // HIDDEN FIELD con su MISMO nombre (asi Tally muestra el valor de la URL
+    // como default answer). En el submit llegan LOS DOS con ese nombre: el
+    // hidden trae lo que decia la URL y el visible lo que el cliente dejo al
+    // enviar. El visible SIEMPRE manda — un hidden nunca pisa una respuesta ya
+    // escrita (si el cliente edito el campo, honrar el hidden publicaria el
+    // valor viejo) y jamas entra al mapa de prefill.
+    const isHidden = field?.type === 'HIDDEN_FIELDS';
     const keys = [field?.key, field?.name, field?.label, field?.title, field?.id].filter(Boolean);
     for (const key of keys) {
-      answers[String(key)] = value;
-      answers[normalizeKey(String(key))] = value;
+      for (const k of [String(key), normalizeKey(String(key))]) {
+        if (isHidden && k in answers && cleanValue(answers[k]) !== '') continue;
+        answers[k] = value;
+      }
+    }
+    const name = typeof field?.name === 'string' ? field.name.trim() : '';
+    if (!isHidden && name && typeof value === 'string' && value !== '') {
+      prefill[name] = value;
     }
   }
 
   return {
     submission_id: String(submissionId || ''),
     form_id: String(payload?.data?.formId || payload?.formId || ''),
-    answers
+    answers,
+    prefill
   };
 }
 
@@ -1798,16 +2048,6 @@ function getAnswer(answers, key) {
   const normalizedKey = normalizeKey(key);
   if (normalizedKey in answers) return answers[normalizedKey];
   return undefined;
-}
-
-function normalizeKey(key) {
-  return String(key || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
 }
 
 function answerAny(answers, keys) {
@@ -1945,62 +2185,73 @@ function normalizePrimaryCta(value) {
   return aliases[normalized] || '';
 }
 
-// Idioma del formulario de Tally al que corresponde un form_id, derivado de
-// las env vars TALLY_FORM_URL_ES/EN (formato `https://tally.so/r/<FORM_ID>?order_id=`).
-// Antes el fallback de idioma comparaba form_id contra el literal 'MeyDpk';
-// en HMU coincidía con su propio form ES (funcionaba), pero el mismo código
-// copiado a las verticales clonadas mandaba TODO a inglés — parametrizado
-// aquí también por consistencia con el motor de la fábrica (Fase 2.6).
-// Devuelve 'es'/'en' o null si el form_id no se reconoce. Nunca lanza.
-function tallyFormLang(env, formId) {
-  const id = String(formId || '').trim();
-  if (!id) return null;
-  const idFromUrl = (url) => {
-    const m = String(url || '').match(/tally\.so\/r\/([A-Za-z0-9]+)/);
-    return m ? m[1] : null;
-  };
-  if (idFromUrl(env && env.TALLY_FORM_URL_ES) === id) return 'es';
-  if (idFromUrl(env && env.TALLY_FORM_URL_EN) === id) return 'en';
-  return null;
-}
-
-// Regla completa del idioma por defecto de la página del cliente:
-// (1) respuesta explícita a la pregunta de idioma → esa manda;
-// (2) sin respuesta, el idioma del formulario que llenó (tallyFormLang);
-// (3) último recurso → 'en'.
-function resolveDefaultLanguage(langRaw, env, formId) {
-  const raw = String(langRaw || '').toLowerCase();
-  if (raw.includes('espa') || raw.includes('span')) return 'es';
-  if (raw.includes('engl') || raw.includes('ingl')) return 'en';
-  return tallyFormLang(env, formId) || 'en';
-}
-
-// Mapea las respuestas del intake (formularios EN yPkN5X y ES MeyDpk) al
-// payload público que consume el generador. SOLO campos públicos aprobados:
-// los datos internos (nombre de contacto, teléfono privado, notas "keep off")
-// se quedan en KV y nunca se despachan a GitHub Actions.
-function buildHmuPublicPayload(normalized, orderId, env) {
+// Lo que TODA página necesita, sea del tipo que sea: estilo, idioma, nombre del
+// negocio y slug público. Sale de aquí (y no duplicado en cada rama) porque las
+// cuatro derivaciones son transformaciones delicadas — el estilo cae a un
+// fallback marcado, el idioma tiene una regla de precedencia de tres niveles, y
+// el slug es lo que hace que una modificación no publique una página nueva. Una
+// segunda copia de esto es una copia que se queda atrás.
+function intakeIdentity(normalized, orderId, env) {
   const a = normalized.answers;
 
-  const styleRaw = answerAny(a, ['pick_your_style', 'elige_tu_estilo']);
+  // El separador entre el NOMBRE del estilo y su descripción es la raya (— o –),
+  // nunca el guion normal: un nombre de estilo LO LLEVA DENTRO ('sunny-paws',
+  // 'warm-sand'), porque el catálogo de cada vertical son slugs. Incluir '-' aquí
+  // (como estaba hasta el 2026-07-25) cortaba 'sunny-paws — alegre y jugueton' en
+  // 'sunny', que no existe en ninguna vertical: PawContact entero caía a
+  // fallbackBrandStyle y sus 4 opciones entregaban la MISMA página warm-sand.
+  // Si alguna vertical vuelve a usar guion como separador,
+  // `create_tally_forms.py --check-mapping` lo caza antes del deploy.
+  const styleRaw = answerAny(a, FIELD_ALIASES.pick_your_style);
   const styleName = styleRaw.split(/[—–]/)[0] || '';
   let brandStyle = slugify(styleName);
   let styleUnmapped = false;
-  if (!VALID_BRAND_STYLES.includes(brandStyle)) {
+  const validStyles = validBrandStyles(env || {});
+  if (!validStyles.includes(brandStyle)) {
     styleUnmapped = true;
-    brandStyle = 'warm-sand';
+    brandStyle = fallbackBrandStyle(validStyles);
   }
 
-  const langRaw = answerAny(a, [
-    'which_language_should_your_hmu_link_show_first',
-    'en_que_idioma_debe_aparecer_primero_tu_hmu_link'
-  ]);
+  // FIELD_ALIASES.default_language solo trae alias genéricos (sin marca); los
+  // dos alias específicos de marca ("...your <BRAND> show first") se derivan de
+  // BRAND_NAME en tiempo de ejecución (languageQuestionAliases, Fase 2.3/2.9 —
+  // antes 'hmu_link' vivía hardcodeado en el JSON compartido con cada vertical).
+  // Regla del idioma (ronda 3 de deuda del worker): respuesta explícita del
+  // cliente > idioma del formulario que llenó (form_id vs TALLY_FORM_URL_ES/EN,
+  // ver tallyFormLang) > 'en'. Antes el fallback comparaba contra 'MeyDpk' (el
+  // form ES de HMU, hardcodeado), así que toda vertical exportada caía a inglés.
+  const langAliases = [...FIELD_ALIASES.default_language, ...languageQuestionAliases(env)];
+  const langRaw = answerAny(a, langAliases);
   const defaultLanguage = resolveDefaultLanguage(langRaw, env, normalized.form_id);
 
-  const businessName = answerAny(a, ['business_name', 'nombre_del_negocio']);
+  const businessName = answerAny(a, FIELD_ALIASES.business_name);
   const suffix = String(normalized.submission_id || orderId || '')
     .toLowerCase().replace(/[^a-z0-9]/g, '').slice(-7) || 'x0';
   const publicSlug = `${slugify(businessName) || 'hmu-page'}-${suffix}`;
+
+  return { brandStyle, styleUnmapped, defaultLanguage, businessName, publicSlug };
+}
+
+// Mapea las respuestas del intake (formularios EN/ES de la vertical) al
+// payload público que consume el generador. SOLO campos públicos aprobados:
+// los datos internos (nombre de contacto, teléfono privado, notas "keep off")
+// se quedan en KV y nunca se despachan a GitHub Actions.
+//
+// Los alias de título por campo (FIELD_ALIASES) viven en tally-field-aliases.json
+// — única fuente de verdad, compartida con create_tally_forms.py --check-mapping.
+// Aquí solo quedan las transformaciones no-triviales (estilo, idioma, slug, CTA,
+// archivos, fallbacks answerContains). `env` aporta el catálogo de estilos válido
+// de la vertical (validBrandStyles); sin él, cae a los 12 de HMU.
+function buildPublicPayload(normalized, orderId, env) {
+  // La plantilla decide QUÉ campos se extraen. `service-menu` es el default y su
+  // rama es la de siempre, sin un byte de cambio: los 5 workers desplegados no
+  // declaran TEMPLATE, así que caen aquí igual que ayer.
+  if (pageTemplate(env) === 'catalog') {
+    return buildCatalogPublicPayload(normalized, orderId, env);
+  }
+  const a = normalized.answers;
+  const { brandStyle, styleUnmapped, defaultLanguage, businessName, publicSlug } =
+    intakeIdentity(normalized, orderId, env);
 
   return {
     public_slug: publicSlug,
@@ -2008,163 +2259,131 @@ function buildHmuPublicPayload(normalized, orderId, env) {
     brand_style: brandStyle,
     style_unmapped: styleUnmapped,
     business_name: businessName,
-    business_type: answerAny(a, [
-      'business_type',
-      'type_of_business',
-      'what_type_of_business_is_it',
-      'what_type_of_business_is_this',
-      'what_type_of_business_do_you_have',
-      'tipo_de_negocio',
-      'que_tipo_de_negocio_es',
-      'cual_es_tu_tipo_de_negocio'
-    ]),
-    short_description: answerAny(a, [
-      'describe_your_business_in_1_2_sentences',
-      'describe_tu_negocio_en_1_2_frases'
-    ]),
-    whatsapp: answerAny(a, ['public_whatsapp_number_for_clients', 'whatsapp_publico_para_tus_clientes']),
-    phone: answerAny(a, ['public_phone_number_for_calls', 'telefono_publico_para_llamadas']),
-    public_email: answerAny(a, ['public_email', 'correo_publico']),
-    instagram: answerAny(a, ['instagram']),
-    facebook: answerAny(a, ['facebook']),
-    tiktok: answerAny(a, ['tiktok']),
-    website: answerAny(a, ['website', 'sitio_web']),
-    other_public_link: answerAny(a, ['other_public_link', 'otro_enlace_publico']),
-    delivery_pickup_links_text: answerAny(a, [
-      'delivery_pickup_links',
-      'delivery_or_pickup_links',
-      'links_for_delivery_or_pickup',
-      'links_de_delivery_pickup',
-      'links_de_delivery_o_pickup',
-      'enlaces_de_delivery_o_pickup',
-      'enlaces_de_entrega_a_domicilio_o_para_llevar'
-    ]),
-    portfolio_link: answerAny(a, ['portfolio_link', 'portfolio_url', 'enlace_de_portafolio', 'link_de_portafolio']),
-    booking_url: answerAny(a, ['external_booking_link', 'enlace_externo_de_reservas']),
-    primary_cta: normalizePrimaryCta(answerAny(a, [
-      'featured_button',
-      'primary_button',
-      'main_button',
-      'preferred_button',
-      'highlight_button',
-      'call_to_action_button',
-      'which_button_should_be_featured',
-      'which_button_should_stand_out_on_your_page',
-      'which_button_should_be_the_main_button',
-      'which_one_should_be_the_main_button',
-      'boton_destacado',
-      'boton_principal',
-      'boton_a_destacar',
-      'que_boton_quieres_destacar',
-      'que_boton_debe_destacar',
-      'que_boton_debe_ser_el_principal',
-      'cual_debe_ser_el_boton_principal'
-    ])),
-    google_maps_url: answerAny(a, ['location_1_google_maps_link', 'ubicacion_1_enlace_de_google_maps']),
-    google_reviews_url: answerAny(a, ['google_reviews_link', 'enlace_de_google_reviews']),
-    address: answerAny(a, ['location_1_public_address', 'ubicacion_1_direccion_publica']),
-    location_1_notes: answerAny(a, ['location_1_notes', 'ubicacion_1_notas']),
-    service_area_text: answerAny(a, [
-      'where_do_you_offer_your_services',
-      'donde_ofreces_tus_servicios',
-      'what_areas_do_you_cover',
-      'que_zonas_cubres'
-    ]),
-    client_care_text: answerAny(a, [
-      'how_do_clients_get_service',
-      'como_atiendes_a_tus_clientes',
-      'do_you_work_with_clients_online_in_person_or_both',
-      'trabajas_con_clientes_en_linea_en_persona_o_ambas',
-      'how_do_you_serve_your_clients',
-      'how_do_you_work_with_clients',
-      'how_do_you_attend_to_your_clients'
-    ]),
-    reservations_text: answerAny(a, [
-      'do_you_take_reservations',
-      'aceptan_reservaciones',
-      'do_you_accept_reservations',
-      'do_you_accept_bookings',
-      'accept_reservations',
-      'si_aceptas_reservaciones',
-      'aceptas_reservaciones'
-    ]),
-    class_schedule_text: answerAny(a, [
-      'class_schedule',
-      'class_timetable',
-      'your_class_schedule',
-      'horario_de_clases',
-      'horario_clases'
-    ]) || answerContains(a, [['class', 'schedule'], ['class', 'timetable'], ['horario', 'clase']]),
-    tour_details_text: answerAny(a, [
-      'tour_details',
-      'tour_or_experience_details',
-      'details_of_your_tours_or_experiences',
-      'details_of_your_tour_or_experience',
-      'detalles_de_tus_tours_o_experiencias',
-      'detalles_de_tu_tour_o_experiencia',
-      'detalles_de_tour'
-    ]) || answerContains(a, [['tour'], ['experience', 'detail'], ['experiencia', 'detalle']]),
-    pet_notes_text: answerAny(a, [
-      'pet_notes',
-      'anything_clients_should_know_before_bringing_their_pet',
-      'anything_your_clients_should_know_before_bringing_their_pet',
-      'before_bringing_your_pet',
-      'algo_que_los_clientes_deban_saber_antes_de_traer_a_su_mascota',
-      'antes_de_traer_a_su_mascota'
-    ]) || answerContains(a, [['pet'], ['mascota']]),
-    opening_hours_text: answerAny(a, ['what_are_your_business_hours', 'cuales_son_tus_horarios_de_atencion']),
-    service_categories_text: answerAny(a, ['how_do_you_group_your_services', 'como_agrupas_tus_servicios']),
-    price_display: answerAny(a, [
-      'how_should_prices_appear_on_your_public_page',
-      'como_deben_aparecer_los_precios_en_tu_pagina_publica'
-    ]),
-    services_text: answerAny(a, ['list_your_services_with_prices', 'lista_tus_servicios_con_precios']),
-    faq_text: answerAny(a, [
-      'faq_for_your_page',
-      'preguntas_frecuentes_para_tu_pagina',
-      'faq',
-      'frequently_asked_questions',
-      'common_questions',
-      'questions_your_clients_ask',
-      'faq_your_clients_should_see',
-      'frequently_asked_questions_your_clients_should_see',
-      'preguntas_frecuentes',
-      'preguntas_frecuentes_que_tus_clientes_deben_ver',
-      'preguntas_que_tus_clientes_hacen',
-      'preguntas_y_respuestas_frecuentes'
-    ]),
-    featured_text: answerAny(a, [
-      'featured_package_promo_or_signature_offer',
-      'paquete_destacado_promocion_u_oferta_especial'
-    ]),
-    policies_text: answerAny(a, ['policies_your_clients_should_see', 'politicas_que_tus_clientes_deben_ver']),
-    logo_url: answerFileUrl(a, ['upload_your_logo', 'sube_tu_logo']),
-    image_url: answerFileUrl(a, ['upload_a_main_photo', 'sube_una_foto_principal']),
-    gallery_image_urls: answerFileUrls(a, [
-      'more_photos',
-      'additional_photos',
-      'extra_photos',
-      'mas_fotos',
-      'fotos_adicionales',
-      'fotos_extra'
-    ], 5),
-    location_1_name: answerAny(a, ['location_1_name', 'ubicacion_1_nombre']),
-    location_2_name: answerAny(a, ['location_2_name', 'ubicacion_2_nombre']),
-    location_2_address: answerAny(a, ['location_2_public_address', 'ubicacion_2_direccion_publica']),
-    location_2_maps_url: answerAny(a, ['location_2_google_maps_link', 'ubicacion_2_enlace_de_google_maps']),
-    location_2_notes: answerAny(a, [
-      'location_2_phone_whatsapp_or_hours_if_different',
-      'ubicacion_2_telefono_whatsapp_u_horarios_si_son_diferentes'
-    ]),
-    location_3_name: answerAny(a, ['location_3_name', 'ubicacion_3_nombre']),
-    location_3_address: answerAny(a, ['location_3_public_address', 'ubicacion_3_direccion_publica']),
-    location_3_maps_url: answerAny(a, ['location_3_google_maps_link', 'ubicacion_3_enlace_de_google_maps']),
-    location_3_notes: answerAny(a, [
-      'location_3_phone_whatsapp_or_hours_if_different',
-      'ubicacion_3_telefono_whatsapp_u_horarios_si_son_diferentes'
-    ]),
-    additional_locations_text: answerAny(a, ['additional_locations', 'ubicaciones_adicionales'])
+    business_type: answerAny(a, FIELD_ALIASES.business_type),
+    short_description: answerAny(a, FIELD_ALIASES.short_description),
+    whatsapp: answerAny(a, FIELD_ALIASES.whatsapp),
+    phone: answerAny(a, FIELD_ALIASES.phone),
+    public_email: answerAny(a, FIELD_ALIASES.public_email),
+    instagram: answerAny(a, FIELD_ALIASES.instagram),
+    facebook: answerAny(a, FIELD_ALIASES.facebook),
+    tiktok: answerAny(a, FIELD_ALIASES.tiktok),
+    website: answerAny(a, FIELD_ALIASES.website),
+    other_public_link: answerAny(a, FIELD_ALIASES.other_public_link),
+    delivery_pickup_links_text: answerAny(a, FIELD_ALIASES.delivery_pickup_links_text),
+    portfolio_link: answerAny(a, FIELD_ALIASES.portfolio_link),
+    booking_url: answerAny(a, FIELD_ALIASES.booking_url),
+    primary_cta: normalizePrimaryCta(answerAny(a, FIELD_ALIASES.primary_cta)),
+    google_maps_url: answerAny(a, FIELD_ALIASES.google_maps_url),
+    google_reviews_url: answerAny(a, FIELD_ALIASES.google_reviews_url),
+    address: answerAny(a, FIELD_ALIASES.address),
+    location_1_notes: answerAny(a, FIELD_ALIASES.location_1_notes),
+    service_area_text: answerAny(a, FIELD_ALIASES.service_area_text),
+    client_care_text: answerAny(a, FIELD_ALIASES.client_care_text),
+    reservations_text: answerAny(a, FIELD_ALIASES.reservations_text),
+    class_schedule_text: answerAny(a, FIELD_ALIASES.class_schedule_text)
+      || answerContains(a, [['class', 'schedule'], ['class', 'timetable'], ['horario', 'clase']]),
+    tour_details_text: answerAny(a, FIELD_ALIASES.tour_details_text)
+      || answerContains(a, [['tour'], ['experience', 'detail'], ['experiencia', 'detalle']]),
+    pet_notes_text: answerAny(a, FIELD_ALIASES.pet_notes_text)
+      || answerContains(a, [['pet'], ['mascota']]),
+    opening_hours_text: answerAny(a, FIELD_ALIASES.opening_hours_text),
+    service_categories_text: answerAny(a, FIELD_ALIASES.service_categories_text),
+    price_display: answerAny(a, FIELD_ALIASES.price_display),
+    services_text: answerAny(a, FIELD_ALIASES.services_text),
+    faq_text: answerAny(a, FIELD_ALIASES.faq_text),
+    featured_text: answerAny(a, FIELD_ALIASES.featured_text),
+    policies_text: answerAny(a, FIELD_ALIASES.policies_text),
+    logo_url: answerFileUrl(a, FIELD_ALIASES.logo_url),
+    image_url: answerFileUrl(a, FIELD_ALIASES.image_url),
+    gallery_image_urls: answerFileUrls(a, FIELD_ALIASES.gallery_image_urls, 5),
+    location_1_name: answerAny(a, FIELD_ALIASES.location_1_name),
+    location_2_name: answerAny(a, FIELD_ALIASES.location_2_name),
+    location_2_address: answerAny(a, FIELD_ALIASES.location_2_address),
+    location_2_maps_url: answerAny(a, FIELD_ALIASES.location_2_maps_url),
+    location_2_notes: answerAny(a, FIELD_ALIASES.location_2_notes),
+    location_3_name: answerAny(a, FIELD_ALIASES.location_3_name),
+    location_3_address: answerAny(a, FIELD_ALIASES.location_3_address),
+    location_3_maps_url: answerAny(a, FIELD_ALIASES.location_3_maps_url),
+    location_3_notes: answerAny(a, FIELD_ALIASES.location_3_notes),
+    additional_locations_text: answerAny(a, FIELD_ALIASES.additional_locations_text)
   };
+}
+
+// Rama de la plantilla `catalog` (The Catalog Link, F6 bloque 2).
+//
+// Un catálogo NO es un menú de servicios con otra hoja de estilos: no tiene
+// ocho canales de contacto, ni horarios, ni sucursales, ni FAQ — tiene
+// PRODUCTOS y UN botón de venta. Extraer aquí los 47 campos de service-menu
+// llenaría el payload de cadenas vacías y, peor, dejaría al generador del
+// catálogo sin lo único que le importa. Por eso es una rama y no una suma de
+// campos opcionales.
+//
+// El formulario del claim tiene DOS caminos (decisión de Vero del 07-24) y este
+// payload sirve a los dos:
+//   - PRELLENADO: el negocio ya vio su vista previa. Solo confirma y elige su
+//     botón de venta. Sus ~20 productos con fotos NO viajan por el formulario
+//     (no caben en un prefill de Tally, que va por query string): viven en Cory
+//     y el workflow los baja por slug — transporte "opción A", decidido el
+//     07-25. Por eso este payload lleva `prospect_slug` y no `products`.
+//   - ORGÁNICO: llegó por la tienda sin vista previa y captura lo suyo. Ahí sí
+//     viajan `products_text` (una línea por producto) y las fotos que subió a
+//     Tally, que build_client_from_intake parsea igual que hace hoy con
+//     `services_text`.
+//
+// `prospect_slug` NO se lee del formulario a propósito: se rellena en el
+// call-site desde el registro de la orden, donde lo puso el
+// `client_reference_id` del checkout de Stripe. Un hidden field de Tally lo
+// puede editar cualquiera con la URL, y con eso se reclamaría el catálogo de
+// otro negocio.
+function buildCatalogPublicPayload(normalized, orderId, env) {
+  const a = normalized.answers;
+  const { brandStyle, styleUnmapped, defaultLanguage, businessName, publicSlug } =
+    intakeIdentity(normalized, orderId, env);
+
+  const saleKind = normalizeSaleKind(answerAny(a, FIELD_ALIASES.sale_button_kind));
+  const saleValue = normalizeSaleValue(answerAny(a, FIELD_ALIASES.sale_button_value));
+
+  return {
+    template: 'catalog',
+    public_slug: publicSlug,
+    default_language: defaultLanguage,
+    brand_style: brandStyle,
+    style_unmapped: styleUnmapped,
+    business_name: businessName,
+    short_description: answerAny(a, FIELD_ALIASES.short_description),
+    address: answerAny(a, FIELD_ALIASES.address),
+    // El generador exige sale_button.kind válido y un value que produzca enlace;
+    // se manda lo que haya (aunque venga incompleto) para que el gate de intake
+    // del call-site pueda decir exactamente qué faltó, en vez de que el
+    // generador falle después con un payload que ya nadie puede inspeccionar.
+    sale_button: { kind: saleKind, value: saleValue },
+    catalog_mode: answerAny(a, FIELD_ALIASES.catalog_mode),
+    products_text: answerAny(a, FIELD_ALIASES.products_text),
+    // 20 = el tope de productos por catálogo que fijó F2.
+    product_image_urls: answerFileUrls(a, FIELD_ALIASES.product_image_urls, 20),
+    logo_url: answerFileUrl(a, FIELD_ALIASES.logo_url),
+    prospect_slug: ''
+  };
+}
+
+// ¿Este intake trae lo mínimo para publicar? Cambia por plantilla: en
+// service-menu el mínimo es UN canal de contacto (la página es una tarjeta de
+// contacto); en el catálogo es el botón de venta (sin él, las tarjetas de
+// producto no llevan a ningún lado) MÁS una fuente de productos — la vista
+// previa de Cory (prospect_slug) o lo que el cliente escribió.
+//
+// Devuelve '' si está completo, o el nombre de lo que falta (el mismo string
+// que ya viajaba en el 422 `incomplete_intake`).
+function missingFromIntake(payload, env) {
+  if (pageTemplate(env) !== 'catalog') {
+    const hasContact = payload.whatsapp || payload.phone || payload.public_email
+      || payload.booking_url || payload.website;
+    return hasContact ? '' : 'public_contact';
+  }
+  const sale = payload.sale_button || {};
+  if (!SALE_BUTTON_KINDS.includes(sale.kind) || !sale.value) return 'sale_button';
+  if (!payload.prospect_slug && !payload.products_text) return 'products';
+  return '';
 }
 
 function cleanValue(val) {
@@ -2202,9 +2421,11 @@ function safeError(error) {
 function corsHeaders() {
   // This API is server-to-server only (Stripe, Tally, GitHub Actions) — no
   // browser calls it, so no wildcard is needed. Scope to the site origin
-  // instead of '*' to shrink the surface.
+  // instead of '*' to shrink the surface. El origin sale de la config de la
+  // vertical (corsOrigin lee PUBLIC_BOOK_BASE_URL); `env` viene del caché de
+  // módulo (_workerEnv), así los call-sites de jsonResponse no cambian.
   return {
-    'Access-Control-Allow-Origin': 'https://www.hmulink.com',
+    'Access-Control-Allow-Origin': corsOrigin(_workerEnv || {}),
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type'
   };
@@ -2228,15 +2449,21 @@ function jsonResponse(data, status = 200) {
 // en inglés con cuerpo en español (o viceversa) confunde y dispara filtros de spam
 // por incongruencia de idioma — el asunto ya se localiza, así que el cuerpo también.
 // El correo enlaza AMBOS formularios; el del idioma del comprador va primero.
-function buildPostPaymentEmail({ formUrlEN, formUrlES, lang }) {
+// Qué versiones del correo post-pago se mandan: una sola cuando la moneda
+// identifica el idioma (MXN/USD), las dos cuando no (emailLangFromCurrency
+// devuelve null). Inglés primero en el caso bilingüe: si la moneda no es ni MXN
+// ni USD, el comprador es de fuera y el inglés es la apuesta más segura.
+function postPaymentLangs(lang) {
+  return lang === 'es' || lang === 'en' ? [lang] : ['en', 'es'];
+}
+
+function postPaymentCopy(lang, { btnES, btnEN, env }) {
   const es = lang !== 'en';
-  const btnES = `<a href="${formUrlES}" style="display: inline-block; background: #f478b0; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">Abrir Formulario (Español)</a>`;
-  const btnEN = `<a href="${formUrlEN}" style="display: inline-block; background: #00a0b5; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">Open Form (English)</a>`;
   const t = es
     ? {
         heading: '¡Tu página de servicios está casi lista!',
         greeting: 'Hola,',
-        intro: 'Gracias por tu compra en HMU Link. Solo falta un paso: completa tu formulario de información para que generemos tu página.',
+        intro: `Gracias por tu compra en ${brandName(env)}. Solo falta un paso: completa tu formulario de información para que generemos tu página.`,
         cta: '📋 Completa tu información:',
         or: 'o',
         firstBtn: btnES,
@@ -2246,22 +2473,22 @@ function buildPostPaymentEmail({ formUrlEN, formUrlES, lang }) {
     : {
         heading: 'Your service page is almost ready!',
         greeting: 'Hi,',
-        intro: 'Thanks for your purchase at HMU Link. Just one step left: fill out your info form so we can generate your page.',
+        intro: `Thanks for your purchase at ${brandName(env)}. Just one step left: fill out your info form so we can generate your page.`,
         cta: '📋 Complete your information:',
         or: 'or',
         firstBtn: btnEN,
         secondBtn: btnES,
         closing: "Once you complete the form, we'll generate your page and you'll get a link to share with your customers."
       };
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; margin: 0; padding: 20px;">
-  <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+  return t;
+}
+
+function buildPostPaymentEmail({ formUrlEN, formUrlES, lang, env }) {
+  const btnES = `<a href="${formUrlES}" style="display: inline-block; background: #f478b0; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">Abrir Formulario (Español)</a>`;
+  const btnEN = `<a href="${formUrlEN}" style="display: inline-block; background: #00a0b5; color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 500;">Open Form (English)</a>`;
+  const sections = postPaymentLangs(lang).map((l) => {
+    const t = postPaymentCopy(l, { btnES, btnEN, env });
+    return `
     <h2 style="margin-top: 0; color: #1a1a1a;">${t.heading}</h2>
     <p>${t.greeting}</p>
     <p>${t.intro}</p>
@@ -2273,10 +2500,21 @@ function buildPostPaymentEmail({ formUrlEN, formUrlES, lang }) {
       ${t.secondBtn}
     </div>
 
-    <p style="color: #666; font-size: 14px;">${t.closing}</p>
+    <p style="color: #666; font-size: 14px;">${t.closing}</p>`;
+  });
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; margin: 0; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+${sections.join('\n    <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">\n')}
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-    <p style="color: #999; font-size: 12px; margin: 0;">HMU Link — Service Menus for Small Businesses</p>
+    <p style="color: #999; font-size: 12px; margin: 0;">${emailFooterHtml(env)}</p>
   </div>
 </body>
 </html>
@@ -2284,50 +2522,67 @@ function buildPostPaymentEmail({ formUrlEN, formUrlES, lang }) {
 }
 
 // Versión text/plain del correo post-pago (multipart mejora deliverability).
-function buildPostPaymentText({ formUrlEN, formUrlES, lang }) {
-  const es = lang !== 'en';
+function buildPostPaymentText({ formUrlEN, formUrlES, lang, env }) {
   const lineES = `Completa tu formulario (Español): ${formUrlES}`;
   const lineEN = `Open your form (English): ${formUrlEN}`;
-  if (es) {
-    return [
-      '¡Tu página de servicios está casi lista!',
-      '',
-      'Gracias por tu compra en HMU Link. Solo falta un paso: completa tu formulario de información para que generemos tu página.',
-      '',
-      lineES,
-      lineEN,
-      '',
-      'Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.',
-      '',
-      'HMU Link — hmulink.com'
-    ].join('\n');
-  }
-  return [
-    'Your service page is almost ready!',
-    '',
-    'Thanks for your purchase at HMU Link. Just one step left: fill out your info form so we can generate your page.',
-    '',
-    lineEN,
-    lineES,
-    '',
-    "Once you complete the form, we'll generate your page and you'll get a link to share with your customers.",
-    '',
-    'HMU Link — hmulink.com'
-  ].join('\n');
+  const block = (l) => (l === 'es'
+    ? [
+        '¡Tu página de servicios está casi lista!',
+        '',
+        `Gracias por tu compra en ${brandName(env)}. Solo falta un paso: completa tu formulario de información para que generemos tu página.`,
+        '',
+        lineES,
+        lineEN,
+        '',
+        'Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.'
+      ]
+    : [
+        'Your service page is almost ready!',
+        '',
+        `Thanks for your purchase at ${brandName(env)}. Just one step left: fill out your info form so we can generate your page.`,
+        '',
+        lineEN,
+        lineES,
+        '',
+        "Once you complete the form, we'll generate your page and you'll get a link to share with your customers."
+      ]);
+  const body = postPaymentLangs(lang).map((l) => block(l).join('\n')).join('\n\n---\n\n');
+  return [body, '', emailFooterText(env)].join('\n');
 }
+
+// content_id del QR que se adjunta inline en el correo de entrega: el HTML lo
+// referencia como `cid:<esto>` y SendGrid resuelve el adjunto.
+const DELIVERY_QR_CID = 'delivery-qr';
 
 // La corrección gratuita se pide con el botón (flujo automatizado /correct/)
 // o respondiendo al correo (reply_to va al buzón real) — ambas vías valen.
-function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, freeTotal }) {
+function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, hasQr, env }) {
   const es = lang !== 'en';
-  // El correo dice el MISMO número que los Términos y que el contador del
-  // worker (FREE_CHANGES).
-  const free = Number.isInteger(freeTotal) ? freeTotal : DEFAULT_FREE_CHANGES;
+  // Cuántas modificaciones gratis incluye la compra (FREE_CHANGES <-
+  // legal.free_changes): el correo dice el MISMO número que los Términos.
+  const free = freeChanges(env);
+  const qrCopy = es
+    ? {
+        title: '📲 Tu código QR',
+        body: 'Imprímelo o pégalo donde tus clientes puedan escanearlo. También va adjunto como imagen PNG en este correo.'
+      }
+    : {
+        title: '📲 Your QR code',
+        body: 'Print it or put it anywhere your customers can scan it. It is also attached to this email as a PNG image.'
+      };
+  const qrBlock = hasQr
+    ? `
+    <div style="margin: 30px 0; text-align: center;">
+      <p style="margin: 0 0 12px 0; color: #333; font-weight: 500;">${qrCopy.title}</p>
+      <img src="cid:${DELIVERY_QR_CID}" alt="QR" width="180" height="180" style="display: inline-block; border: 1px solid #eee; border-radius: 8px;">
+      <p style="margin: 12px 0 0 0; color: #888; font-size: 12px;">${qrCopy.body}</p>
+    </div>`
+    : '';
   const t = es
     ? {
         heading: '¡Tu página de servicios está lista! 🎉',
         greeting: 'Hola,',
-        intro: 'Tu página de servicios en HMU Link ha sido generada exitosamente. Aquí está tu link público:',
+        intro: `Tu página de servicios en ${brandName(env)} ha sido generada exitosamente. Aquí está tu link público:`,
         label: 'Tu página pública:',
         note: 'Nota: tu página puede tardar unos minutos en estar activa mientras se publica.',
         stepsTitle: 'Próximos pasos:',
@@ -2337,16 +2592,16 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, freeTotal }) {
           'Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.'
         ],
         correctionTitle: free === 1
-          ? '✏️ Incluido: Una corrección gratuita'
+          ? '✏️ Incluido: 1 modificación gratis'
           : `✏️ Incluido: ${free} modificaciones gratis`,
-        correctionBody: `Si necesitas hacer cambios en tu información (horarios, servicios, precios, etc.), tu compra incluye ${free === 1 ? 'una corrección gratuita' : `${free} modificaciones sin costo`}. Pídelas con este botón y las aplicamos automáticamente:`,
-        correctionBtn: 'Solicitar mi corrección',
+        correctionBody: `Si necesitas cambiar tu información (horarios, servicios, precios, etc.), tu compra incluye ${free === 1 ? 'una modificación' : `${free} modificaciones`} sin costo. Ábrela con este botón: verás tu información actual y editas solo lo que quieras cambiar.`,
+        correctionBtn: 'Usar mi modificación incluida',
         correctionAlt: 'También puedes simplemente responder a este correo con los cambios que quieras. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.'
       }
     : {
         heading: 'Your service page is ready! 🎉',
         greeting: 'Hi,',
-        intro: 'Your HMU Link service page has been generated successfully. Here is your public link:',
+        intro: `Your ${brandName(env)} service page has been generated successfully. Here is your public link:`,
         label: 'Your public page:',
         note: 'Note: your page may take a few minutes to go live while it publishes.',
         stepsTitle: 'Next steps:',
@@ -2356,10 +2611,10 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, freeTotal }) {
           'Share the link in your Instagram bio, WhatsApp, business cards, etc.'
         ],
         correctionTitle: free === 1
-          ? '✏️ Included: One free correction'
+          ? '✏️ Included: 1 free modification'
           : `✏️ Included: ${free} free modifications`,
-        correctionBody: `If you need to change your info (hours, services, prices, etc.), your purchase includes ${free === 1 ? 'one free correction' : `${free} free modifications`}. Request them with this button and we'll apply them automatically:`,
-        correctionBtn: 'Request my correction',
+        correctionBody: `If you need to change your info (hours, services, prices, etc.), your purchase includes ${free === 1 ? 'one free modification' : `${free} free modifications`}. Open it with this button: you will see your current information and edit only what you want to change.`,
+        correctionBtn: 'Use my included modification',
         correctionAlt: 'You can also simply reply to this email with the changes you want. To change photos or your logo, reply to this email with the files attached.'
       };
   return `
@@ -2381,7 +2636,7 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, freeTotal }) {
     </div>
 
     <p style="color: #999; font-size: 13px;">${t.note}</p>
-
+${qrBlock}
     <h3 style="color: #1a1a1a; margin-top: 30px;">${t.stepsTitle}</h3>
     <ul style="color: #666;">
       <li>${t.steps[0]}</li>
@@ -2397,7 +2652,7 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, freeTotal }) {
     </div>
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-    <p style="color: #999; font-size: 12px; margin: 0;">HMU Link — Service Menus for Small Businesses</p>
+    <p style="color: #999; font-size: 12px; margin: 0;">${emailFooterHtml(env)}</p>
   </div>
 </body>
 </html>
@@ -2405,9 +2660,9 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, freeTotal }) {
 }
 
 // Versión text/plain del correo de entrega.
-function buildDeliveryText({ pageUrl, lang, correctionUrl, freeTotal }) {
+function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
   const es = lang !== 'en';
-  const free = Number.isInteger(freeTotal) ? freeTotal : DEFAULT_FREE_CHANGES;
+  const free = freeChanges(env);
   if (es) {
     return [
       '¡Tu página de servicios está lista!',
@@ -2418,14 +2673,16 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, freeTotal }) {
       '',
       'Próximos pasos:',
       '- Abre tu página y verifica que todo se vea correcto',
-      '- Descarga el código QR desde tu página para compartir fácilmente',
+      hasQr
+      ? '- Tu código QR va adjunto en este correo (PNG), listo para imprimir'
+      : '- Descarga el código QR desde tu página para compartir fácilmente',
       '- Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.',
       '',
-      `Incluido: ${free === 1 ? 'una corrección gratuita' : `${free} modificaciones gratis`}. Si necesitas cambios (horarios, servicios, precios, etc.), pídelos aquí y los aplicamos automáticamente:`,
+      `Incluido: ${free === 1 ? 'una modificación' : `${free} modificaciones`} sin costo. Ábrela aquí y edita solo lo que quieras cambiar:`,
       correctionUrl,
       'También puedes responder a este correo con los cambios (fotos o logo: adjúntalos en tu respuesta).',
       '',
-      'HMU Link — hmulink.com'
+      emailFooterText(env)
     ].join('\n');
   }
   return [
@@ -2437,21 +2694,23 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, freeTotal }) {
     '',
     'Next steps:',
     '- Open your page and check that everything looks right',
-    '- Download the QR code from your page to share it easily',
+    hasQr
+      ? '- Your QR code is attached to this email (PNG), ready to print'
+      : '- Download the QR code from your page to share it easily',
     '- Share the link in your Instagram bio, WhatsApp, business cards, etc.',
     '',
-    `Included: ${free === 1 ? 'one free correction' : `${free} free modifications`}. If you need changes (hours, services, prices, etc.), request them here and we'll apply them automatically:`,
+    `Included: ${free === 1 ? 'one free modification' : `${free} free modifications`}. Open it here and edit only what you want to change:`,
     correctionUrl,
     'You can also reply to this email with the changes (photos or logo: attach the files in your reply).',
     '',
-    'HMU Link — hmulink.com'
+    emailFooterText(env)
   ].join('\n');
 }
 
 // ─── Correos del flujo de correcciones ───────────────────────────────────────
 
 // Cascarón compartido de los correos de corrección (mismo look del resto).
-function correctionEmailShell(innerHtml) {
+function correctionEmailShell(innerHtml, env) {
   return `
 <!DOCTYPE html>
 <html>
@@ -2463,7 +2722,7 @@ function correctionEmailShell(innerHtml) {
   <div style="max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 40px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
     ${innerHtml}
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-    <p style="color: #999; font-size: 12px; margin: 0;">HMU Link — Service Menus for Small Businesses</p>
+    <p style="color: #999; font-size: 12px; margin: 0;">${emailFooterHtml(env)}</p>
   </div>
 </body>
 </html>
@@ -2472,7 +2731,7 @@ function correctionEmailShell(innerHtml) {
 
 // Corrección aplicada: confirma y ofrece la corrección adicional de pago
 // (precio de la sección 3 de los Términos).
-function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl }) {
+function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl, env }) {
   const es = lang !== 'en';
   const priceLabel = es ? CORRECTION_PRICE.mxn.label : CORRECTION_PRICE.usd.label;
   const t = es
@@ -2484,7 +2743,7 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl 
         buyBtn: 'Comprar corrección adicional',
         alt: 'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.',
         nextTitle: '✏️ Todavía te queda una modificación incluida',
-        nextBody: 'Cuando la necesites, ábrela con este enlace y pídela sin costo.',
+        nextBody: 'Cuando la necesites, ábrela con este enlace: verás tu información actual y editas solo lo que quieras cambiar.',
         nextBtn: 'Usar mi modificación incluida'
       }
     : {
@@ -2495,7 +2754,7 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl 
         buyBtn: 'Buy an extra correction',
         alt: 'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.',
         nextTitle: '✏️ You still have one included modification',
-        nextBody: 'Whenever you need it, open this link and request it at no cost.',
+        nextBody: 'Whenever you need it, open this link: you will see your current information and edit only what you want to change.',
         nextBtn: 'Use my included modification'
       };
   // Si al cliente le quedan modificaciones incluidas se le ofrece ESA, no la de
@@ -2522,10 +2781,10 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl 
     <p><a href="${pageUrl}" style="color: #00a0b5; font-size: 18px; font-weight: 500; word-break: break-all;">${pageUrl}</a></p>
     ${nextBlock}${buyBlock}
     <p style="color: #666; font-size: 14px;">${t.alt}</p>
-  `);
+  `, env);
 }
 
-function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl }) {
+function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, env }) {
   const es = lang !== 'en';
   const priceLabel = es ? CORRECTION_PRICE.mxn.label : CORRECTION_PRICE.usd.label;
   const lines = es
@@ -2535,11 +2794,11 @@ function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl }
         `Revisa tu página (puede tardar unos minutos en reflejarse): ${pageUrl}`,
         '',
         ...(nextCorrectionUrl
-          ? [`Todavía te queda una modificación incluida. Pídela aquí sin costo: ${nextCorrectionUrl}`, '']
+          ? [`Todavía te queda una modificación incluida. Ábrela aquí y edita solo lo que quieras cambiar: ${nextCorrectionUrl}`, '']
           : buyUrl ? [`¿Necesitas otro cambio? Compra una corrección adicional por ${priceLabel}: ${buyUrl}`, ''] : []),
         'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.',
         '',
-        'HMU Link — hmulink.com'
+        emailFooterText(env)
       ]
     : [
         'Your page was updated.',
@@ -2547,18 +2806,18 @@ function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl }
         `Check your page (it may take a few minutes to refresh): ${pageUrl}`,
         '',
         ...(nextCorrectionUrl
-          ? [`You still have one included modification. Request it here at no cost: ${nextCorrectionUrl}`, '']
+          ? [`You still have one included modification. Open it here and edit only what you want to change: ${nextCorrectionUrl}`, '']
           : buyUrl ? [`Need another change? Buy an extra correction for ${priceLabel}: ${buyUrl}`, ''] : []),
         'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.',
         '',
-        'HMU Link — hmulink.com'
+        emailFooterText(env)
       ];
   return lines.join('\n');
 }
 
 // La corrección no se pudo aplicar automáticamente: promesa honesta de 1 día
 // hábil, sin pedirle nada más al cliente (Verónica ya recibió el detalle).
-function buildCorrectionManualEmail({ pageUrl, lang }) {
+function buildCorrectionManualEmail({ pageUrl, lang, env }) {
   const es = lang !== 'en';
   const t = es
     ? {
@@ -2576,10 +2835,10 @@ function buildCorrectionManualEmail({ pageUrl, lang }) {
     <p>${t.body}</p>
     <p style="color: #666; font-size: 12px; margin-bottom: 4px;">${t.label}</p>
     <p style="margin-top: 0;"><a href="${pageUrl}" style="color: #00a0b5; word-break: break-all;">${pageUrl}</a></p>
-  `);
+  `, env);
 }
 
-function buildCorrectionManualText({ pageUrl, lang }) {
+function buildCorrectionManualText({ pageUrl, lang, env }) {
   const es = lang !== 'en';
   return (es
     ? [
@@ -2589,7 +2848,7 @@ function buildCorrectionManualText({ pageUrl, lang }) {
         '',
         `Tu página: ${pageUrl}`,
         '',
-        'HMU Link — hmulink.com'
+        emailFooterText(env)
       ]
     : [
         'We received your correction.',
@@ -2598,12 +2857,12 @@ function buildCorrectionManualText({ pageUrl, lang }) {
         '',
         `Your page: ${pageUrl}`,
         '',
-        'HMU Link — hmulink.com'
+        emailFooterText(env)
       ]).join('\n');
 }
 
 // Compra de corrección adicional: entrega el enlace con el token nuevo.
-function buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang }) {
+function buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang, env }) {
   const es = lang !== 'en';
   const t = es
     ? {
@@ -2627,10 +2886,10 @@ function buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang }) {
     <p style="color: #888; font-size: 13px;">${t.note}</p>
     <p style="color: #666; font-size: 12px; margin-bottom: 4px;">${t.label}</p>
     <p style="margin-top: 0;"><a href="${pageUrl}" style="color: #00a0b5; word-break: break-all;">${pageUrl}</a></p>
-  `);
+  `, env);
 }
 
-function buildCorrectionPurchaseText({ formUrl, pageUrl, lang }) {
+function buildCorrectionPurchaseText({ formUrl, pageUrl, lang, env }) {
   const es = lang !== 'en';
   return (es
     ? [
@@ -2643,7 +2902,7 @@ function buildCorrectionPurchaseText({ formUrl, pageUrl, lang }) {
         '',
         `Tu página: ${pageUrl}`,
         '',
-        'HMU Link — hmulink.com'
+        emailFooterText(env)
       ]
     : [
         'Thanks for your purchase!',
@@ -2655,6 +2914,6 @@ function buildCorrectionPurchaseText({ formUrl, pageUrl, lang }) {
         '',
         `Your page: ${pageUrl}`,
         '',
-        'HMU Link — hmulink.com'
+        emailFooterText(env)
       ]).join('\n');
 }

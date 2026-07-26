@@ -36,6 +36,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import unicodedata
@@ -45,11 +46,12 @@ import urllib.request
 from pathlib import Path
 
 from merge_intake import answered_keys, load_previous_client, merge_client, sanitize_intake
+from vertical_config import DOMAIN, GENERATOR_FOR_TEMPLATE, TEMPLATE
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CLIENTS_DIR = REPO_ROOT / "data" / "clients"
 LINKS_DIR = REPO_ROOT / "public" / "links"
-CLIENT_BASE_URL = "https://www.hmulink.com/links"
+CLIENT_BASE_URL = f"{DOMAIN}/links"
 
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$")
 BULLET_RE = re.compile(r"^[\s\-\*•·–—>]+")
@@ -69,6 +71,23 @@ MAX_IMAGE_BYTES = 8 * 1024 * 1024  # 8 MB
 # (los FILE_UPLOAD del intake viven ahí). Cualquier otro host se ignora.
 ALLOWED_IMAGE_HOSTS_SUFFIX = (".tally.so",)
 
+# Base pública desde donde el prospector (Cory) publica el catálogo ya armado de
+# cada vista previa: `<base>/<slug>/payload.json` y sus fotos en
+# `<base>/<slug>/img/…`. Es el transporte "opción A" (decisión de Vero,
+# 2026-07-25). Vacía = esta vertical no tiene prospector alimentándola.
+#
+# Además de la ruta, es el ALLOWLIST: solo se descarga lo que cuelga
+# literalmente de esta base. El slug viaja desde el worker (que lo sacó del
+# client_reference_id de Stripe) y el `photo_base_url` viene DENTRO del JSON
+# descargado, así que sin este cerco un payload manipulado podría hacer que el
+# workflow buscara imágenes en cualquier host.
+PROSPECT_PAYLOAD_BASE = os.environ.get("PROSPECT_PAYLOAD_BASE_URL", "").strip().rstrip("/")
+# Las fotos del catálogo bajadas de Cory se dejan aquí y NO se commitean: el
+# generador las copia a public/links/<slug>/img/, que es lo que sí se publica.
+# Dejar además la copia de trabajo en git duplicaría el peso de cada catálogo.
+PHOTO_STAGING_DIR = REPO_ROOT / ".catalog-photos"
+CATALOG_SLUG_RE = re.compile(r"^[a-z0-9-]{3,80}-[0-9a-f]{6}$")
+
 
 def _allowed_image_url(url: str) -> bool:
     try:
@@ -77,6 +96,8 @@ def _allowed_image_url(url: str) -> bool:
         return False
     if parsed.scheme != "https" or not parsed.hostname:
         return False
+    if PROSPECT_PAYLOAD_BASE and url.startswith(PROSPECT_PAYLOAD_BASE + "/"):
+        return True
     host = parsed.hostname.lower()
     return host == "tally.so" or host.endswith(ALLOWED_IMAGE_HOSTS_SUFFIX)
 
@@ -850,6 +871,241 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
             tgt["featured_package"]["description"] = translated["featured_description"][:300]
 
 
+# --------------------------------------------------------------------------- #
+# CATÁLOGO (plantilla `catalog`) — F6 bloque 2
+#
+# Un catálogo no se arma como un menú de servicios, y su intake llega por dos
+# caminos distintos (ver verticals/catalog/tally_form.yaml):
+#
+#   PRELLENADO — el negocio compró su vista previa. Sus ~20 productos con fotos
+#   NO viajan en el formulario: viven en Cory y se bajan aquí por slug. El
+#   formulario solo aporta lo que el cliente decidió (botón de venta, nombre,
+#   idioma) y eso MANDA sobre lo que trae el prospecto.
+#
+#   ORGÁNICO — llegó por la tienda y capturó lo suyo: una línea por producto y
+#   sus fotos subidas a Tally.
+#
+# Todo lo de aquí abajo FALLA CERRADO. Es la misma regla que trajo el commit
+# 6028b92: aquí ya hay dinero cobrado, así que publicar en silencio un catálogo
+# vacío, o con los productos de otro negocio, es peor que no publicar nada —
+# nadie se entera hasta que el cliente reclama. Un fallo dispara la alerta de
+# embudo muerto del workflow, que sí llega a Vero.
+# --------------------------------------------------------------------------- #
+
+def fetch_prospect_catalog(slug: str) -> dict:
+    """Baja el `payload.json` que Cory publicó junto a la vista previa."""
+    if not PROSPECT_PAYLOAD_BASE:
+        fail("PROSPECT_PAYLOAD_BASE_URL no está configurada y este intake viene de "
+             "una vista previa: no hay de dónde traer los productos")
+    url = f"{PROSPECT_PAYLOAD_BASE}/{slug}/payload.json"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "catalog-generator/1.0"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read(2 * 1024 * 1024).decode("utf-8"))
+    except (urllib.error.URLError, OSError, ValueError) as e:
+        fail(f"no pude leer el catálogo del prospecto ({e}): {url}")
+    if not isinstance(data, dict) or not isinstance(data.get("products"), list):
+        fail(f"el catálogo del prospecto no trae products: {url}")
+    return data
+
+
+def stage_catalog_photos(products: list[dict], photo_base_url: str, slug: str) -> Path:
+    """Descarga las fotos del catálogo a una carpeta local y devuelve su ruta.
+
+    El generador ya sabe copiar fotos locales a la página (`photo_source_dir` +
+    `image` relativo). Bajarlas en vez de dejar la URL de Cory es deliberado: si
+    la página del cliente enlazara las fotos del prospector, su catálogo dejaría
+    de tener fotos el día que esa vista previa expire o se borre — y el cliente
+    ya pagó por una página que es suya.
+
+    Una foto que no se pueda bajar deja el producto sin imagen (tarjeta con
+    placeholder), nunca tumba la construcción: mejor un catálogo con 19 fotos
+    que ningún catálogo.
+    """
+    base = str(photo_base_url or "").rstrip("/")
+    dest = PHOTO_STAGING_DIR / slug
+    if dest.exists():
+        shutil.rmtree(dest)
+    for p in products:
+        name = str(p.get("image", "") or "").strip()
+        if not name:
+            continue
+        got = download_image(f"{base}/{name}", dest, Path(name).stem)
+        p["image"] = got or ""
+        if not got:
+            print(f"WARN: producto sin foto tras el intento de descarga: {name}", file=sys.stderr)
+    return dest
+
+
+def parse_catalog_products(products_text: str, image_files: list[str], lang: str) -> list[dict]:
+    """Camino ORGÁNICO: una línea por producto -> productos del catálogo.
+
+    Formato pedido en el formulario: `Categoría — Nombre — Descripción — $precio`.
+    Se tolera de menos (solo el nombre) porque un cliente que ya pagó no puede
+    quedarse sin página por no haber usado las rayas: lo que falte se rellena con
+    un valor honesto, nunca inventado. El precio se detecta con el mismo
+    reconocedor de service-menu; sin precio, el producto sale con "Preguntar
+    precio", que en este nicho es la NORMA y no un hueco (0 de 88 productos
+    reales traían precio).
+
+    Las fotos se asignan por ORDEN: la n-ésima foto subida es la del n-ésimo
+    producto. Es la única correspondencia que el formulario puede expresar.
+    """
+    default_cat = "Productos" if lang == "es" else "Products"
+    out: list[dict] = []
+    for raw in (products_text or "").splitlines():
+        line = clean_line(raw)
+        if not line:
+            continue
+        rest, price_label = split_price_label(line)
+        segments = [s for s in (seg.strip() for seg in DASH_SPLIT_RE.split(rest)) if s]
+        if not segments:
+            continue
+        if len(segments) == 1:
+            category, name, description = default_cat, segments[0], ""
+        elif len(segments) == 2:
+            category, name, description = segments[0], segments[1], ""
+        else:
+            category, name, description = segments[0], segments[1], " — ".join(segments[2:])
+        product = {
+            "category": category[:80],
+            "name_es": name[:120],
+            "name_en": name[:120],
+            "ask_price": not price_label,
+            "image": "",
+        }
+        if description:
+            product["description_es"] = description[:300]
+            product["description_en"] = description[:300]
+        if price_label:
+            product["price_label"] = price_label[:60]
+        out.append(product)
+        if len(out) >= 20:
+            break
+    for product, filename in zip(out, image_files):
+        product["image"] = filename
+    return out
+
+
+def translate_catalog(products: list[dict], short_description: str,
+                      source_lang: str, target_lang: str) -> str:
+    """Traduce nombres/descripciones de producto al otro idioma, IN PLACE.
+
+    La página es bilingüe siempre (el generador exige name_es y name_en), así
+    que sin esto la mitad de los visitantes ven el catálogo en el idioma que no
+    hablan. Si no hay llave de OpenAI o la respuesta no cuadra, cada campo se
+    queda con el texto original — misma política que service-menu: una
+    traducción fallida nunca bloquea la publicación. Devuelve la descripción
+    corta traducida (o la original)."""
+    fields = {
+        "short_description": short_description,
+        "product_names": [p["name_es"] for p in products],
+        "product_descriptions": [p.get("description_es", "") for p in products],
+    }
+    translated = translate_block(source_lang, target_lang, fields)
+    if not translated:
+        return short_description
+
+    names = translated.get("product_names")
+    if isinstance(names, list) and len(names) == len(products):
+        for product, name in zip(products, names):
+            if isinstance(name, str) and name.strip():
+                product["name_en" if target_lang == "en" else "name_es"] = name[:120]
+    descriptions = translated.get("product_descriptions")
+    if isinstance(descriptions, list) and len(descriptions) == len(products):
+        for product, description in zip(products, descriptions):
+            if isinstance(description, str) and description.strip():
+                product["description_en" if target_lang == "en" else "description_es"] = description[:300]
+    out = translated.get("short_description")
+    return out[:300] if isinstance(out, str) and out.strip() else short_description
+
+
+def build_catalog_client(payload: dict, slug: str) -> tuple[dict, Path | None]:
+    """Intake de catálogo -> `catalog_payload_public` v1 + carpeta de fotos."""
+    prospect_slug = str(payload.get("prospect_slug", "") or "").strip()
+    if prospect_slug and not CATALOG_SLUG_RE.match(prospect_slug):
+        fail(f"prospect_slug con forma inválida: {prospect_slug!r}")
+
+    products_text = str(payload.get("products_text", "") or "").strip()
+    default_language = payload.get("default_language")
+    if default_language not in ("es", "en"):
+        default_language = "es"
+    other_language = "en" if default_language == "es" else "es"
+
+    prospect = fetch_prospect_catalog(prospect_slug) if prospect_slug else {}
+    photo_dir: Path | None = None
+
+    if prospect:
+        products = [dict(p) for p in prospect["products"]]
+        photo_dir = stage_catalog_photos(products, prospect.get("photo_base_url", ""), slug)
+    elif products_text:
+        # Las fotos del camino orgánico viven en Tally; se bajan igual que el
+        # logo, y con el mismo cerco de host.
+        photo_dir = PHOTO_STAGING_DIR / slug
+        if photo_dir.exists():
+            shutil.rmtree(photo_dir)
+        files = []
+        for i, url in enumerate(payload.get("product_image_urls") or []):
+            got = download_image(str(url or ""), photo_dir, f"producto-{i + 1}")
+            if got:
+                files.append(got)
+        products = parse_catalog_products(products_text, files, default_language)
+    else:
+        fail("el intake no trae productos ni vista previa de la que tomarlos — "
+             "revisión manual antes de publicar")
+
+    if not products:
+        fail("no pude leer ni un producto del intake — revisión manual")
+
+    # Precedencia: lo que el cliente contestó MANDA sobre lo que trae su vista
+    # previa. Es su última palabra, y es lo único por lo que se le preguntó.
+    business_name = str(payload.get("business_name", "")).strip() or str(
+        prospect.get("business_name", "")).strip()
+    # El estilo es la excepción: en el camino prellenado no se le pregunta (ya se
+    # lo asignó la fábrica por nicho y color), así que el worker manda su
+    # fallback marcado con style_unmapped. Ese marcador es justo la señal de "no
+    # eligió": entonces gana el de la vista previa, que es el que ya vio.
+    brand_style = payload.get("brand_style")
+    if payload.get("style_unmapped") and prospect.get("brand_style"):
+        brand_style = prospect["brand_style"]
+
+    short_description = str(payload.get("short_description", "")).strip()
+    if not short_description:
+        block = (prospect.get("content") or {}).get(default_language) or {}
+        short_description = str(block.get("short_description", "")).strip()
+
+    address = str(payload.get("address", "")).strip() or str(prospect.get("address", "")).strip()
+
+    other_description = translate_catalog(
+        products, short_description, default_language, other_language)
+
+    logo_file = download_image(payload.get("logo_url", ""), LINKS_DIR / slug / "assets", "logo")
+
+    client = {
+        "public_slug": slug,
+        "default_language": default_language,
+        "brand_style": brand_style,
+        "business_name": business_name[:120],
+        "sale_button": payload.get("sale_button") or {},
+        "address": address[:200],
+        "logo_url": f"{CLIENT_BASE_URL}/{slug}/assets/{logo_file}" if logo_file else None,
+        "content": {
+            default_language: {"short_description": short_description[:300]},
+            other_language: {"short_description": other_description[:300]},
+        },
+        "products": products,
+    }
+    # rating/rating_count son de Google y ya salían en la vista previa que el
+    # negocio compró; se conservan para que su página no pierda la prueba social
+    # que vio. Solo si vienen del prospecto: el formulario no los pregunta.
+    for field in ("rating", "rating_count"):
+        if prospect.get(field) is not None:
+            client[field] = prospect[field]
+    if photo_dir is not None:
+        client["photo_source_dir"] = str(photo_dir)
+    return client, photo_dir
+
+
 def previous_client(slug: str) -> dict:
     """El `client.json` ya publicado de este slug, o `{}` si es un alta nueva."""
     return load_previous_client(CLIENTS_DIR / f"{slug}.client.json")
@@ -892,6 +1148,11 @@ def main() -> int:
         fail("public_payload missing business_name")
 
     previous = previous_client(slug)
+
+    if TEMPLATE == "catalog":
+        client, _ = build_catalog_client(payload, slug)
+        client = merge_with_existing(client, previous, payload, cleared)
+        return publish(client, slug, order_id)
 
     default_language = payload.get("default_language")
     if default_language not in ("es", "en"):
@@ -1051,13 +1312,47 @@ def main() -> int:
     ):
         fail("no public contact or public link - manual review required")
 
+    return publish(client, slug, order_id)
+
+
+# El tramo final es el mismo para las dos plantillas: escribir el JSON del
+# cliente, correr SU generador, comprobar que salió la página y que el order_id
+# no se filtró al HTML público. Vive aparte porque la rama de catálogo lo
+# necesita igual — y porque duplicarlo sería duplicar justo la guarda que evita
+# publicar un identificador de compra en un repo público.
+def publish(client: dict, slug: str, order_id: str) -> int:
     CLIENTS_DIR.mkdir(parents=True, exist_ok=True)
     client_path = CLIENTS_DIR / f"{slug}.client.json"
     client_path.write_text(json.dumps(client, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"client JSON written: {client_path.relative_to(REPO_ROOT)}")
 
+    # El generador sale de la PLANTILLA de la vertical, no está fijo.
+    #
+    # Hasta el 2026-07-25 esta línea llamaba `generate_service_menu.py` a secas.
+    # Con las 5 verticales de service-menu eso funcionaba de casualidad, y el
+    # camino post-pago del catálogo no se veía roto hasta intentar producir el
+    # repo: un cliente del catálogo pagaba y recibía una página de menú de
+    # servicios. `GENERATOR_FOR_TEMPLATE` ya existía en `vertical_config` como
+    # fuente única; solo faltaba usarla aquí.
+    #
+    # FALLA CERRADO a propósito. En `build_prospect.py` una plantilla
+    # desconocida degrada a service-menu con un aviso, porque ahí lo peor que
+    # pasa es una vista previa fea que nadie compró. Aquí YA PAGÓ un cliente:
+    # generarle en silencio el tipo de página equivocado es peor que no
+    # generarle nada, porque nadie se entera hasta que reclama.
+    generator_name = GENERATOR_FOR_TEMPLATE.get(TEMPLATE)
+    if not generator_name:
+        fail(
+            f"no generator registered for template {TEMPLATE!r} "
+            f"(known: {', '.join(sorted(GENERATOR_FOR_TEMPLATE))}) — "
+            "refusing to build a paid page with the wrong generator"
+        )
+    generator_path = REPO_ROOT / "generator" / f"{generator_name}.py"
+    if not generator_path.exists():
+        fail(f"generator missing on disk: {generator_path}")
+
     result = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "generator" / "generate_service_menu.py"), "--client", str(client_path)],
+        [sys.executable, str(generator_path), "--client", str(client_path)],
         cwd=REPO_ROOT,
     )
     if result.returncode != 0:

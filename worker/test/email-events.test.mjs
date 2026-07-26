@@ -14,10 +14,19 @@ const par = await crypto.subtle.generateKey(
 const pubB64 = b64(await crypto.subtle.exportKey('spki', par.publicKey))
 
 async function firmar(ts, body) {
-  const sig = await crypto.subtle.sign(
-    { name: 'ECDSA', hash: 'SHA-256' }, par.privateKey, enc.encode(ts + body),
-  )
-  return b64(sig)
+  // Firma en DER, como SendGrid REAL (firma con OpenSSL). Este arnés firmaba
+  // con crypto.subtle.sign, que produce P1363 crudo — un formato que SendGrid
+  // no manda — así que el test se puso rojo justo cuando el worker quedó
+  // CORRECTO (2026-07-25: se agregó la conversión DER→P1363 y se comprobó en
+  // vivo con el Test Integration de SendGrid, 3 alertas reales entregadas).
+  // Moraleja del arnés: firmar como firma el proveedor, no como es cómodo.
+  const { createSign, createPrivateKey } = await import('node:crypto')
+  const pkcs8 = await crypto.subtle.exportKey('pkcs8', par.privateKey)
+  const key = createPrivateKey({ key: Buffer.from(pkcs8), format: 'der', type: 'pkcs8' })
+  const s = createSign('SHA256')
+  s.update(ts + body)
+  s.end()
+  return s.sign(key).toString('base64') // DER, como SendGrid
 }
 
 // --- env simulado: KV en memoria, correo interceptado ---

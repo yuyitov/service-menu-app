@@ -1983,7 +1983,7 @@ function buildHmuPublicPayload(normalized, orderId, env) {
   const a = normalized.answers;
 
   const styleRaw = answerAny(a, ['pick_your_style', 'elige_tu_estilo']);
-  const styleName = styleRaw.split(/[—–-]/)[0] || '';
+  const styleName = styleRaw.split(/[—–]/)[0] || '';
   let brandStyle = slugify(styleName);
   let styleUnmapped = false;
   if (!VALID_BRAND_STYLES.includes(brandStyle)) {

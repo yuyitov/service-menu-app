@@ -38,6 +38,41 @@ id      = "0743b2af26cd47fb88d4fef62e90a118"
 
 # ─── Environment Variables (no-secret) ────────────────────────────────────────
 [vars]
+# ── Identidad de la vertical (gate de migración a la fábrica, 2026-07-26) ─────
+# El worker de HMU pasó a ser el del MOTOR, que ya no trae "HMU" escrito en el
+# código: lo lee de estas vars. Cada valor de abajo es EXACTAMENTE el default
+# que el motor usa cuando la var no está (ver engine/worker/product-config.mjs),
+# así que declararlas no cambia una coma de comportamiento — solo deja de
+# depender de un default y hace que las alertas digan "HMU Link" en vez de
+# "El producto". NO cambiar PRODUCT_ID: prefija TODAS las KV keys de las
+# órdenes vivas (hmu_order:*, hmu_correction:*, …) y la metadata con la que
+# Stripe marca las compras de corrección; otro valor deja ciegas las órdenes
+# que ya existen.
+PRODUCT_ID           = "hmu"
+# Identidad de ESTE worker: responde en GET /health y va como User-Agent al
+# despachar GitHub Actions. Mismo valor que el `name =` de arriba.
+WORKER_NAME          = "service-menu-worker"
+# Marca usada en asuntos/cuerpos/footers de los correos y en las alertas.
+BRAND_NAME           = "HMU Link"
+BRAND_TAGLINE        = "Service Menus for Small Businesses"
+# Plantilla base que renderiza esta vertical (service-menu | catalog).
+TEMPLATE             = "service-menu"
+# Estilos válidos con los que el worker acepta el intake. Mismo orden y mismos
+# 12 de styles.catalog en vertical.yaml, que es la fuente de verdad.
+VALID_BRAND_STYLES   = "black-gold,soft-blush,charcoal-clean,warm-sand,aqua-clean,sage-calm,electric-slate,terracotta-warm,sunny-paws,midnight-ink,clarity-editorial,horizon-teal"
+# Modificación por FORMULARIO PRELLENADO: APAGADA en HMU, a propósito.
+# Verificado contra la API de Tally el 2026-07-26: los dos formularios vivos de
+# HMU (yPkN5X EN / MeyDpk ES) traen 12 hidden fields —order_id + los 6 de
+# prefill de prospecto de la Fase 2.4 + source/whatsapp/instagram/facebook/
+# tiktok— pero NO traen client_slug, correction_token ni customer_email, y sus
+# 44 preguntas visibles no tienen `name` estable ni "default answer" cableado.
+# Sin eso el prefill no puede funcionar: el enlace de modificación seguiría
+# siendo la página /correct/ de texto libre. Se deja apagada y el correo lo dice
+# así (modificationCopy en worker.js sigue este mismo interruptor). Prenderla
+# exige antes cablear los dos formularios como los de PawContact (25 hidden
+# fields + `name` en las 24 preguntas).
+MODIFICATION_FORM_PREFILL = ""
+
 # ID(s) del Payment Link de HMU Link (plink_...). Acepta varios separados por
 # coma — p.ej. el link USD ($39) y el MXN ($699) — para que todas las compras de
 # HMU se procesen, ignorando ventas de otros productos de la cuenta (ej. MyGuest).

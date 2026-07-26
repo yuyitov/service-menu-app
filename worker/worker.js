@@ -96,7 +96,18 @@ let _workerEnv = null;
 // el worker sirve DOS plantillas (F6 bloque 2): la rama que elige es lo que
 // decide si un cliente que pagó recibe su catálogo o una página de menú de
 // servicios, y eso tiene que poder probarse sin desplegar ni tocar KV.
-export { normalizeTallyPayload, buildPublicPayload, missingFromIntake };
+// checkIntakeCompleteness/marca se exportan porque la alerta de intake pagado
+// incompleto es un fallo SILENCIOSO: si deja de mandarse, nada visible se rompe
+// (el 422 se lo come Tally) y el cliente que pagó se queda sin página. Tiene que
+// poder probarse que se manda, que NO se manda cuando el intake está completo, y
+// que un reintento del webhook no duplica el correo.
+// modificationCopy se exporta porque es una PROMESA al cliente: si el texto y
+// el interruptor MODIFICATION_FORM_PREFILL se desincronizan, el correo describe
+// una experiencia que la vertical no entrega (regresión R1 del gate de HMU).
+export {
+  normalizeTallyPayload, buildPublicPayload, missingFromIntake,
+  checkIntakeCompleteness, marca, modificationCopy
+};
 
 export default {
   async fetch(request, env, ctx) {
@@ -566,25 +577,14 @@ async function handleTallyWebhook(request, env) {
     publicPayload.prospect_slug = String(existingOrder.prospect_slug || '').trim();
   }
 
-  if (!publicPayload.business_name) {
-    await env.SERVICE_MENU_KV.put(
-      kvKey(env, 'incomplete_intake', incomingOrderId, normalized.submission_id),
-      JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, missing: 'business_name', attempted_at: now }),
-      { expirationTtl: 2592000 }
-    ).catch(() => {});
-    return jsonResponse({ ok: false, status: 'incomplete_intake', missing: 'business_name' }, 422);
-  }
-
-  // Qué es un intake "completo" depende de la plantilla: una tarjeta de
-  // contacto necesita un canal, un catálogo necesita su botón de venta y sus
-  // productos (ver missingFromIntake).
-  const missing = missingFromIntake(publicPayload, env);
+  // Qué es un intake "completo" depende de la plantilla (ver missingFromIntake).
+  // Si falta algo: rastro en KV, CORREO de alerta, y 422.
+  const missing = await checkIntakeCompleteness(env, publicPayload, {
+    orderId: incomingOrderId,
+    submissionId: normalized.submission_id,
+    now
+  });
   if (missing) {
-    await env.SERVICE_MENU_KV.put(
-      kvKey(env, 'incomplete_intake', incomingOrderId, normalized.submission_id),
-      JSON.stringify({ order_id: incomingOrderId, submission_id: normalized.submission_id, missing, attempted_at: now }),
-      { expirationTtl: 2592000 }
-    ).catch(() => {});
     return jsonResponse({ ok: false, status: 'incomplete_intake', missing }, 422);
   }
 
@@ -1523,10 +1523,17 @@ function escapeHtml(value) {
 // UTILITY FUNCTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Nombre legible del producto para los correos de alerta. Sale de PRODUCT_ID
- * para que un vertical exportado NO herede el nombre de HMU en sus avisos. */
+/** Nombre legible del producto para los correos de alerta. Se prefiere
+ * BRAND_NAME —que es literalmente la var documentada como «marca usada en
+ * asuntos/cuerpos/footers de los correos»— y solo si falta se capitaliza
+ * PRODUCT_ID. Con PRODUCT_ID a secas la alerta decía «Hmu»/«Pawcontact»:
+ * legible, pero no es como se llama ninguno de los dos productos. Sin ninguna
+ * de las dos vars queda «El producto», que es la señal de que a esa vertical
+ * le falta declarar su identidad. */
 function marca(env) {
-  const id = String(env.PRODUCT_ID || 'el producto').trim();
+  const brand = String((env && env.BRAND_NAME) || '').trim();
+  if (brand) return brand;
+  const id = String((env && env.PRODUCT_ID) || 'el producto').trim();
   return id.charAt(0).toUpperCase() + id.slice(1);
 }
 
@@ -1573,6 +1580,84 @@ async function alertOnce(env, dedupKey, ttlSeconds, subject, lines) {
   } catch (err) {
     console.error('alertOnce failed:', safeError(err));
   }
+}
+
+// Qué le falta al intake, en español legible para el correo de alerta. La clave
+// es el mismo string que viaja en el 422 `incomplete_intake` (missingFromIntake).
+// Un `missing` desconocido cae a la clave cruda: la alerta se manda igual —
+// nunca se pierde por un caso que este mapa no previó.
+const INCOMPLETE_INTAKE_REASONS = {
+  business_name: {
+    es: 'falta el nombre del negocio',
+    detalle: 'Llegó un formulario de intake sin business_name (campo obligatorio).'
+  },
+  public_contact: {
+    es: 'sin contacto público',
+    detalle: 'Llegó un formulario de intake sin ningún medio de contacto público\n(WhatsApp / teléfono / email / reservas / web).'
+  },
+  sale_button: {
+    es: 'sin botón de venta',
+    detalle: 'Llegó un formulario de intake sin el botón de venta del catálogo\n(WhatsApp / SMS / teléfono): las tarjetas de producto no llevarían a ningún lado.'
+  },
+  products: {
+    es: 'sin productos',
+    detalle: 'Llegó un formulario de intake sin fuente de productos (ni la vista previa\ndel prospector ni la lista escrita por el cliente).'
+  }
+};
+
+/**
+ * ¿El intake trae lo mínimo para publicar? Devuelve '' si sí, o el nombre de lo
+ * que falta — y en ese caso deja el rastro en KV y MANDA CORREO.
+ *
+ * El correo es lo que se había perdido. Sin él, el 422 se lo come Tally, el
+ * cliente ya pagó, su página nunca se genera y nadie se entera: el fallo
+ * silencioso exacto que el bloque A3 existe para evitar. Estaba en el worker de
+ * HMU desde A3 y desapareció al extraer el motor; se repone aquí, así que lo
+ * heredan las CINCO verticales y no solo HMU.
+ *
+ * Nunca lanza: alertOnce se traga sus propios errores y el put de KV va con
+ * .catch(). El 422 sale igual aunque la alerta falle.
+ */
+async function checkIntakeCompleteness(env, publicPayload, { orderId, submissionId, now }) {
+  // El nombre del negocio lo exigen las dos plantillas; el resto del mínimo
+  // cambia por plantilla (un canal de contacto en service-menu; botón de venta
+  // + productos en el catálogo).
+  const missing = publicPayload.business_name
+    ? missingFromIntake(publicPayload, env)
+    : 'business_name';
+  if (!missing) return '';
+  await recordIncompleteIntake(env, { missing, orderId, submissionId, now });
+  return missing;
+}
+
+// Rastro en KV + la alerta, deduplicada por submission_id durante 7 días (mismo
+// criterio que traía el worker de HMU): Tally reintenta el webhook, y un intake
+// incompleto no deja de serlo — un correo por envío, no uno por reintento.
+async function recordIncompleteIntake(env, { missing, orderId, submissionId, now }) {
+  await env.SERVICE_MENU_KV.put(
+    kvKey(env, 'incomplete_intake', orderId, submissionId),
+    JSON.stringify({ order_id: orderId, submission_id: submissionId, missing, attempted_at: now }),
+    { expirationTtl: 2592000 }
+  ).catch(() => {});
+
+  const reason = INCOMPLETE_INTAKE_REASONS[missing];
+  const resumen = reason ? reason.es : `falta ${missing}`;
+  const detalle = reason
+    ? reason.detalle
+    : `Llegó un formulario de intake sin ${missing} (campo obligatorio).`;
+
+  await alertOnce(env, `incomplete_intake:${submissionId}`, 604800,
+    `⚠️ ${marca(env)}: intake incompleto — ${resumen}`, [
+      ...detalle.split('\n'),
+      'La página NO se generó y el cliente no recibió nada.',
+      '',
+      `order_id: ${orderId}`,
+      `submission_id: ${submissionId}`,
+      `falta: ${missing}`,
+      '',
+      'Acción: contactar al cliente para completar el dato, o revisar el mapeo',
+      'del formulario de Tally si el campo sí venía.'
+    ]);
 }
 
 // POST /alert-generation-failed — lo llama el step `if: failure()` del workflow
@@ -2554,6 +2639,47 @@ function buildPostPaymentText({ formUrlEN, formUrlES, lang, env }) {
 // referencia como `cid:<esto>` y SendGrid resuelve el adjunto.
 const DELIVERY_QR_CID = 'delivery-qr';
 
+/**
+ * Cómo se le describe al cliente su modificación incluida. Depende del MISMO
+ * interruptor que decide a dónde apunta el enlace (modificationFormPrefillEnabled):
+ *
+ *   - encendido  → el enlace abre SU formulario de Tally ya prellenado, así que
+ *                  el correo puede prometer "verás tu información actual".
+ *   - apagado    → el enlace abre la página /correct/, donde el cliente escribe
+ *                  en texto libre qué quiere cambiar.
+ *
+ * Antes el texto prometía SIEMPRE el formulario prellenado. Con el interruptor
+ * apagado —que es el caso de toda vertical que no haya cableado sus dos
+ * formularios de Tally— eso le promete a cada cliente nuevo algo que no recibe.
+ * Es la regresión R1 del gate de HMU (2026-07-26): sus dos formularios vivos no
+ * traen los hidden fields client_slug/correction_token ni un `name` estable por
+ * pregunta, así que el prefill no puede funcionar ahí; lo que se corrige es el
+ * copy, no el interruptor.
+ */
+function modificationCopy(env, es) {
+  const prefill = modificationFormPrefillEnabled(env);
+  if (es) {
+    return prefill
+      ? {
+          open: 'verás tu información actual y editas solo lo que quieras cambiar',
+          openHere: 'Ábrela aquí y edita solo lo que quieras cambiar:'
+        }
+      : {
+          open: 'nos escribes ahí qué quieres cambiar y nosotros lo aplicamos',
+          openHere: 'Ábrela aquí y escríbenos qué quieres cambiar:'
+        };
+  }
+  return prefill
+    ? {
+        open: 'you will see your current information and edit only what you want to change',
+        openHere: 'Open it here and edit only what you want to change:'
+      }
+    : {
+        open: 'you tell us there what you want changed and we apply it',
+        openHere: 'Open it here and tell us what you want changed:'
+      };
+}
+
 // La corrección gratuita se pide con el botón (flujo automatizado /correct/)
 // o respondiendo al correo (reply_to va al buzón real) — ambas vías valen.
 function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, hasQr, env }) {
@@ -2594,7 +2720,7 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, hasQr, env }) 
         correctionTitle: free === 1
           ? '✏️ Incluido: 1 modificación gratis'
           : `✏️ Incluido: ${free} modificaciones gratis`,
-        correctionBody: `Si necesitas cambiar tu información (horarios, servicios, precios, etc.), tu compra incluye ${free === 1 ? 'una modificación' : `${free} modificaciones`} sin costo. Ábrela con este botón: verás tu información actual y editas solo lo que quieras cambiar.`,
+        correctionBody: `Si necesitas cambiar tu información (horarios, servicios, precios, etc.), tu compra incluye ${free === 1 ? 'una modificación' : `${free} modificaciones`} sin costo. Ábrela con este botón: ${modificationCopy(env, true).open}.`,
         correctionBtn: 'Usar mi modificación incluida',
         correctionAlt: 'También puedes simplemente responder a este correo con los cambios que quieras. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.'
       }
@@ -2613,7 +2739,7 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, hasQr, env }) 
         correctionTitle: free === 1
           ? '✏️ Included: 1 free modification'
           : `✏️ Included: ${free} free modifications`,
-        correctionBody: `If you need to change your info (hours, services, prices, etc.), your purchase includes ${free === 1 ? 'one free modification' : `${free} free modifications`}. Open it with this button: you will see your current information and edit only what you want to change.`,
+        correctionBody: `If you need to change your info (hours, services, prices, etc.), your purchase includes ${free === 1 ? 'one free modification' : `${free} free modifications`}. Open it with this button: ${modificationCopy(env, false).open}.`,
         correctionBtn: 'Use my included modification',
         correctionAlt: 'You can also simply reply to this email with the changes you want. To change photos or your logo, reply to this email with the files attached.'
       };
@@ -2678,7 +2804,7 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
       : '- Descarga el código QR desde tu página para compartir fácilmente',
       '- Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.',
       '',
-      `Incluido: ${free === 1 ? 'una modificación' : `${free} modificaciones`} sin costo. Ábrela aquí y edita solo lo que quieras cambiar:`,
+      `Incluido: ${free === 1 ? 'una modificación' : `${free} modificaciones`} sin costo. ${modificationCopy(env, true).openHere}`,
       correctionUrl,
       'También puedes responder a este correo con los cambios (fotos o logo: adjúntalos en tu respuesta).',
       '',
@@ -2699,7 +2825,7 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
       : '- Download the QR code from your page to share it easily',
     '- Share the link in your Instagram bio, WhatsApp, business cards, etc.',
     '',
-    `Included: ${free === 1 ? 'one free modification' : `${free} free modifications`}. Open it here and edit only what you want to change:`,
+    `Included: ${free === 1 ? 'one free modification' : `${free} free modifications`}. ${modificationCopy(env, false).openHere}`,
     correctionUrl,
     'You can also reply to this email with the changes (photos or logo: attach the files in your reply).',
     '',
@@ -2743,7 +2869,7 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl,
         buyBtn: 'Comprar corrección adicional',
         alt: 'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.',
         nextTitle: '✏️ Todavía te queda una modificación incluida',
-        nextBody: 'Cuando la necesites, ábrela con este enlace: verás tu información actual y editas solo lo que quieras cambiar.',
+        nextBody: `Cuando la necesites, ábrela con este enlace: ${modificationCopy(env, true).open}.`,
         nextBtn: 'Usar mi modificación incluida'
       }
     : {
@@ -2754,7 +2880,7 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl,
         buyBtn: 'Buy an extra correction',
         alt: 'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.',
         nextTitle: '✏️ You still have one included modification',
-        nextBody: 'Whenever you need it, open this link: you will see your current information and edit only what you want to change.',
+        nextBody: `Whenever you need it, open this link: ${modificationCopy(env, false).open}.`,
         nextBtn: 'Use my included modification'
       };
   // Si al cliente le quedan modificaciones incluidas se le ofrece ESA, no la de
@@ -2794,7 +2920,7 @@ function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, 
         `Revisa tu página (puede tardar unos minutos en reflejarse): ${pageUrl}`,
         '',
         ...(nextCorrectionUrl
-          ? [`Todavía te queda una modificación incluida. Ábrela aquí y edita solo lo que quieras cambiar: ${nextCorrectionUrl}`, '']
+          ? [`Todavía te queda una modificación incluida. ${modificationCopy(env, true).openHere} ${nextCorrectionUrl}`, '']
           : buyUrl ? [`¿Necesitas otro cambio? Compra una corrección adicional por ${priceLabel}: ${buyUrl}`, ''] : []),
         'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.',
         '',
@@ -2806,7 +2932,7 @@ function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, 
         `Check your page (it may take a few minutes to refresh): ${pageUrl}`,
         '',
         ...(nextCorrectionUrl
-          ? [`You still have one included modification. Open it here and edit only what you want to change: ${nextCorrectionUrl}`, '']
+          ? [`You still have one included modification. ${modificationCopy(env, false).openHere} ${nextCorrectionUrl}`, '']
           : buyUrl ? [`Need another change? Buy an extra correction for ${priceLabel}: ${buyUrl}`, ''] : []),
         'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.',
         '',

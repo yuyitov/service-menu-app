@@ -64,7 +64,48 @@ import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFoot
 // verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
 // una vertical con otras preguntas edita SUS alias sin tocar este worker.
-import FIELD_ALIASES from './tally-field-aliases.json' with { type: 'json' };
+import RAW_FIELD_ALIASES from './tally-field-aliases.json' with { type: 'json' };
+
+/**
+ * Los alias de cada campo, MAS su propio nombre canonico al final.
+ *
+ * El JSON mapea cada campo del payload a los TITULOS normalizados de la
+ * pregunta que lo alimenta (`services_text` -> 'list_your_services_with_prices').
+ * Eso funciona cuando Tally manda el titulo, que es lo que pasa con formularios
+ * hechos A MANO — como los de HMU.
+ *
+ * Pero un formulario creado por `scripts/create_tally_forms.py` declara un
+ * `name:` ESTABLE por pregunta (justamente para que el prefill no dependa del
+ * wording), y entonces Tally manda ese nombre y NO el titulo. Resultado: los
+ * alias no casaban con nada y el campo se perdia EN SILENCIO.
+ *
+ * Se descubrio el 2026-07-26 en la primera prueba final de Vero: una compra
+ * real de $1 con un negocio real (Puppy Patch). Ella lleno el formulario
+ * completo, sus respuestas llegaron intactas al KV... y de 17 campos el worker
+ * solo leyo 6 — y esos 6 por CASUALIDAD, porque su lista de alias ya incluia
+ * el nombre. Los otros 11 (servicios, whatsapp, telefono, direccion, horarios,
+ * FAQ...) se tiraron, y la generacion murio con "intake has no parseable
+ * services". Un cliente que pagara habria recibido una pagina mutilada.
+ *
+ * La ironia que hay que recordar: HMU se salvaba porque su formulario esta
+ * hecho a mano y sin `name`. El bug pegaba justo en los productos cuyo
+ * formulario se genero BIEN.
+ *
+ * El nombre canonico se agrega AL FINAL a proposito: los titulos conservan la
+ * prioridad, asi que ningun formulario que hoy funciona cambia de conducta —
+ * el nombre solo entra cuando el titulo no encontro nada.
+ */
+// Ojo con las claves `_comment*`: el JSON lleva notas en texto plano, no listas.
+// Sin este guard, `[...alias, campo]` desarma la cadena LETRA POR LETRA y el
+// mapa queda con basura. Lo cazo el test de este mismo arreglo — por eso el
+// guard es `Array.isArray` y no un `startsWith('_')`: protege de cualquier
+// valor que no sea lista, se llame como se llame.
+const FIELD_ALIASES = Object.fromEntries(
+  Object.entries(RAW_FIELD_ALIASES).map(([campo, alias]) => [
+    campo,
+    !Array.isArray(alias) || alias.includes(campo) ? alias : [...alias, campo],
+  ])
+);
 
 // Precio de la corrección adicional — DEBE coincidir con la sección 3 de los
 // Términos publicados (public/terms/ y public/es/terminos/): $6 USD / $59 MXN.

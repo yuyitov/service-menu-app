@@ -1,0 +1,760 @@
+{
+  "_comment": "Inventario de los DOS formularios Tally VIVOS de HMU Link (EN y ES). Solo ids, tipos, titulos y el texto de las opciones: cero respuestas, cero datos de clientes. Lo genera worker/test/tomar_snapshot.mjs desde la API de Tally. NO sale de tally_form.yaml del repo: ese archivo es un BORRADOR que nunca creo estos formularios y su propio encabezado lo dice. Medir contra el yaml da falsos positivos.",
+  "snapshot_date": "2026-07-26",
+  "forms": [
+    {
+      "lang": "en",
+      "form_id": "yPkN5X",
+      "form_name": "HMU Link Intake — English",
+      "hidden_fields": [
+        "order_id",
+        "business_name",
+        "phone",
+        "address",
+        "hours",
+        "maps_url",
+        "reviews_url",
+        "source",
+        "whatsapp",
+        "instagram",
+        "facebook",
+        "tiktok"
+      ],
+      "questions": [
+        {
+          "id": "zZ4pkZ",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Which language should your HMU Link show first?",
+          "options": [
+            "English first",
+            "Spanish first"
+          ]
+        },
+        {
+          "id": "5Lo6Jv",
+          "type": "INPUT_TEXT",
+          "title": "Business name"
+        },
+        {
+          "id": "dlXLOD",
+          "type": "DROPDOWN",
+          "title": "What type of business is it?",
+          "options": [
+            "Spa / Wellness",
+            "Salon / Hair",
+            "Barbershop",
+            "Nails / Lashes / Brows",
+            "Massage / Facials / Beauty",
+            "Fitness / Yoga / Pilates",
+            "Restaurant / Café / Food",
+            "Pet grooming",
+            "Tattoo / Piercing",
+            "Tours / Experiences",
+            "Workshops / Classes",
+            "Coach / Consultant / Professional services",
+            "Therapist / Wellness professional",
+            "Home services",
+            "Other local service business"
+          ]
+        },
+        {
+          "id": "YrXE1z",
+          "type": "TEXTAREA",
+          "title": "Describe your business in 1–2 sentences"
+        },
+        {
+          "id": "D59rjX",
+          "type": "FILE_UPLOAD",
+          "title": "Upload your logo"
+        },
+        {
+          "id": "lLXoxV",
+          "type": "FILE_UPLOAD",
+          "title": "Upload a main photo"
+        },
+        {
+          "id": "RR1XAv",
+          "type": "INPUT_EMAIL",
+          "title": "Contact email for your HMU Link preview"
+        },
+        {
+          "id": "ooYrq5",
+          "type": "INPUT_TEXT",
+          "title": "Your name"
+        },
+        {
+          "id": "GLaNZQ",
+          "type": "INPUT_PHONE_NUMBER",
+          "title": "Phone or WhatsApp if we have questions about your HMU Link"
+        },
+        {
+          "id": "OLKp6k",
+          "type": "INPUT_PHONE_NUMBER",
+          "title": "Public phone number for calls"
+        },
+        {
+          "id": "VVXRKN",
+          "type": "INPUT_PHONE_NUMBER",
+          "title": "Public WhatsApp number for clients"
+        },
+        {
+          "id": "PlLM7P",
+          "type": "INPUT_EMAIL",
+          "title": "Public email"
+        },
+        {
+          "id": "ELej2A",
+          "type": "MULTIPLE_CHOICE",
+          "title": "How many public locations should appear on your HMU Link?",
+          "options": [
+            "1 location",
+            "2 locations",
+            "3 locations",
+            "More than 3",
+            "No physical location (online or at-home services)"
+          ]
+        },
+        {
+          "id": "rVRNep",
+          "type": "INPUT_TEXT",
+          "title": "Where do you offer your services?"
+        },
+        {
+          "id": "4LRWMd",
+          "type": "INPUT_TEXT",
+          "title": "Location 1 — name"
+        },
+        {
+          "id": "jLXdjY",
+          "type": "INPUT_TEXT",
+          "title": "Location 1 — public address"
+        },
+        {
+          "id": "2Lzqpg",
+          "type": "INPUT_LINK",
+          "title": "Location 1 — Google Maps link"
+        },
+        {
+          "id": "x2EkAE",
+          "type": "INPUT_TEXT",
+          "title": "Location 1 — notes"
+        },
+        {
+          "id": "RR1XAQ",
+          "type": "INPUT_TEXT",
+          "title": "Location 2 — name"
+        },
+        {
+          "id": "ooYrqN",
+          "type": "INPUT_TEXT",
+          "title": "Location 2 — public address"
+        },
+        {
+          "id": "GLaNZO",
+          "type": "INPUT_LINK",
+          "title": "Location 2 — Google Maps link"
+        },
+        {
+          "id": "OLKp6M",
+          "type": "TEXTAREA",
+          "title": "Location 2 — phone, WhatsApp, or hours if different"
+        },
+        {
+          "id": "VVXRK6",
+          "type": "INPUT_TEXT",
+          "title": "Location 3 — name"
+        },
+        {
+          "id": "PlLM7x",
+          "type": "INPUT_TEXT",
+          "title": "Location 3 — public address"
+        },
+        {
+          "id": "ELej22",
+          "type": "INPUT_LINK",
+          "title": "Location 3 — Google Maps link"
+        },
+        {
+          "id": "rVRNeX",
+          "type": "TEXTAREA",
+          "title": "Location 3 — phone, WhatsApp, or hours if different"
+        },
+        {
+          "id": "4LRWM5",
+          "type": "TEXTAREA",
+          "title": "Additional locations"
+        },
+        {
+          "id": "jLXdj1",
+          "type": "TEXTAREA",
+          "title": "What are your business hours?"
+        },
+        {
+          "id": "2LzqpM",
+          "type": "INPUT_TEXT",
+          "title": "How do you group your services?"
+        },
+        {
+          "id": "x2EkAk",
+          "type": "TEXTAREA",
+          "title": "List your services with prices"
+        },
+        {
+          "id": "ZlX4x5",
+          "type": "MULTIPLE_CHOICE",
+          "title": "How should prices appear on your public page?",
+          "options": [
+            "Show all prices",
+            "Mixed — some exact, some “from…” or “ask us”",
+            "Don't show prices — services only"
+          ]
+        },
+        {
+          "id": "NLvKzp",
+          "type": "TEXTAREA",
+          "title": "Featured package, promo, or signature offer"
+        },
+        {
+          "id": "qOXxy5",
+          "type": "INPUT_TEXT",
+          "title": "Instagram"
+        },
+        {
+          "id": "QdpgG1",
+          "type": "INPUT_TEXT",
+          "title": "Facebook"
+        },
+        {
+          "id": "9OPLeX",
+          "type": "INPUT_TEXT",
+          "title": "TikTok"
+        },
+        {
+          "id": "eL81bQ",
+          "type": "INPUT_LINK",
+          "title": "Website"
+        },
+        {
+          "id": "WPXG4R",
+          "type": "INPUT_LINK",
+          "title": "External booking link"
+        },
+        {
+          "id": "a0XbW2",
+          "type": "INPUT_LINK",
+          "title": "Google Reviews link"
+        },
+        {
+          "id": "6RGbqN",
+          "type": "INPUT_TEXT",
+          "title": "Other public link"
+        },
+        {
+          "id": "bLXBa7",
+          "type": "DROPDOWN",
+          "title": "Which one should be the main button?",
+          "options": [
+            "WhatsApp",
+            "Phone call",
+            "Instagram",
+            "Google Maps / directions",
+            "External booking link",
+            "Website",
+            "Email",
+            "Other public link"
+          ]
+        },
+        {
+          "id": "AxNokl",
+          "type": "FILE_UPLOAD",
+          "title": "More photos"
+        },
+        {
+          "id": "BZqOv1",
+          "type": "TEXTAREA",
+          "title": "Brand notes"
+        },
+        {
+          "id": "k5XDLZ",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Pick your style",
+          "options": [
+            "Black & Gold — elegant and luxurious",
+            "Soft Blush — soft and feminine",
+            "Charcoal Clean — clean and modern",
+            "Warm Sand — warm and welcoming",
+            "Aqua Clean — fresh and light",
+            "Sage Calm — calm and natural",
+            "Electric Slate — bold and energetic",
+            "Terracotta Warm — cozy and inviting",
+            "Sunny Paws — cheerful and playful",
+            "Midnight Ink — dark and artistic",
+            "Clarity Editorial — professional and polished",
+            "Horizon Teal — fresh and adventurous"
+          ]
+        },
+        {
+          "id": "v4V7R4",
+          "type": "TEXTAREA",
+          "title": "Policies your clients should see"
+        },
+        {
+          "id": "KLA7XD",
+          "type": "TEXTAREA",
+          "title": "FAQ for your page"
+        },
+        {
+          "id": "LXBA8J",
+          "type": "MULTIPLE_CHOICE",
+          "title": "How do clients get service?",
+          "options": [
+            "By appointment only",
+            "Walk-ins welcome",
+            "Both — appointments and walk-ins"
+          ]
+        },
+        {
+          "id": "pGXjgP",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Do you take reservations?",
+          "options": [
+            "Yes — by phone or WhatsApp",
+            "Yes — through a booking link",
+            "No — walk-in only"
+          ]
+        },
+        {
+          "id": "1MzZjb",
+          "type": "TEXTAREA",
+          "title": "Delivery or pickup links"
+        },
+        {
+          "id": "MLlk08",
+          "type": "TEXTAREA",
+          "title": "Class schedule"
+        },
+        {
+          "id": "JLbayX",
+          "type": "TEXTAREA",
+          "title": "Tour or experience details"
+        },
+        {
+          "id": "gLXyBJ",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Do you work with clients online, in person, or both?",
+          "options": [
+            "Online",
+            "In person",
+            "Both"
+          ]
+        },
+        {
+          "id": "yxrKOd",
+          "type": "INPUT_TEXT",
+          "title": "What areas do you cover?"
+        },
+        {
+          "id": "XEdVjz",
+          "type": "INPUT_TEXT",
+          "title": "Anything clients must know before bringing their pet?"
+        },
+        {
+          "id": "zZ4pVg",
+          "type": "CHECKBOXES",
+          "title": "Please confirm all of the following",
+          "options": [
+            "I own or have permission to use the logo, photos, and text I'm submitting, and I authorize HMU Link to publish them on my public page.",
+            "I authorize HMU Link to translate my content and lightly edit it for the English and Spanish versions of my page.",
+            "I understand my HMU Link is a public web page: anything in the sections marked 📢 public may be visible to anyone."
+          ]
+        },
+        {
+          "id": "qW47xY",
+          "type": "CHECKBOXES",
+          "title": "yPkN5X",
+          "title_editor": "Before submitting, please review the  Terms &amp; Conditions  and  Privacy Policy",
+          "options": [
+            "I have read and agree to the Terms & Conditions and Privacy Policy"
+          ]
+        }
+      ]
+    },
+    {
+      "lang": "es",
+      "form_id": "MeyDpk",
+      "form_name": "HMU Link Intake — Español",
+      "hidden_fields": [
+        "order_id",
+        "business_name",
+        "phone",
+        "address",
+        "hours",
+        "maps_url",
+        "reviews_url",
+        "source",
+        "whatsapp",
+        "instagram",
+        "facebook",
+        "tiktok"
+      ],
+      "questions": [
+        {
+          "id": "ooYr4b",
+          "type": "MULTIPLE_CHOICE",
+          "title": "¿En qué idioma debe aparecer primero tu HMU Link?",
+          "options": [
+            "Español primero",
+            "Inglés primero"
+          ]
+        },
+        {
+          "id": "GLaN2e",
+          "type": "INPUT_TEXT",
+          "title": "Nombre del negocio"
+        },
+        {
+          "id": "OLKpWa",
+          "type": "DROPDOWN",
+          "title": "¿Qué tipo de negocio es?",
+          "options": [
+            "Spa / Wellness",
+            "Salón de belleza / Cabello",
+            "Barbería",
+            "Uñas / Pestañas / Cejas",
+            "Masajes / Faciales / Estética",
+            "Fitness / Yoga / Pilates",
+            "Restaurante / Café / Comida",
+            "Estética para mascotas",
+            "Tatuajes / Piercing",
+            "Tours / Experiencias",
+            "Talleres / Clases",
+            "Coach / Consultor(a) / Servicios profesionales",
+            "Terapeuta / Profesional del bienestar",
+            "Servicios a domicilio",
+            "Otro negocio local de servicios"
+          ]
+        },
+        {
+          "id": "VVXRkj",
+          "type": "TEXTAREA",
+          "title": "Describe tu negocio en 1–2 frases"
+        },
+        {
+          "id": "PlLMa1",
+          "type": "FILE_UPLOAD",
+          "title": "Sube tu logo"
+        },
+        {
+          "id": "ELej4l",
+          "type": "FILE_UPLOAD",
+          "title": "Sube una foto principal"
+        },
+        {
+          "id": "rVRNxo",
+          "type": "INPUT_EMAIL",
+          "title": "Correo de contacto para la vista previa de tu HMU Link"
+        },
+        {
+          "id": "4LRWgr",
+          "type": "INPUT_TEXT",
+          "title": "Tu nombre"
+        },
+        {
+          "id": "jLXdOQ",
+          "type": "INPUT_PHONE_NUMBER",
+          "title": "Teléfono o WhatsApp por si tenemos preguntas sobre tu HMU Link"
+        },
+        {
+          "id": "2LzqMe",
+          "type": "INPUT_PHONE_NUMBER",
+          "title": "Teléfono público para llamadas"
+        },
+        {
+          "id": "x2Eked",
+          "type": "INPUT_PHONE_NUMBER",
+          "title": "WhatsApp público para tus clientes"
+        },
+        {
+          "id": "ZlX4pV",
+          "type": "INPUT_EMAIL",
+          "title": "Correo público"
+        },
+        {
+          "id": "NLvKe0",
+          "type": "MULTIPLE_CHOICE",
+          "title": "¿Cuántas ubicaciones públicas deben aparecer en tu HMU Link?",
+          "options": [
+            "1 ubicación",
+            "2 ubicaciones",
+            "3 ubicaciones",
+            "Más de 3",
+            "Sin ubicación física (en línea o a domicilio)"
+          ]
+        },
+        {
+          "id": "qOXx2O",
+          "type": "INPUT_TEXT",
+          "title": "¿Dónde ofreces tus servicios?"
+        },
+        {
+          "id": "Qdpg6Y",
+          "type": "INPUT_TEXT",
+          "title": "Ubicación 1 — nombre"
+        },
+        {
+          "id": "9OPLzE",
+          "type": "INPUT_TEXT",
+          "title": "Ubicación 1 — dirección pública"
+        },
+        {
+          "id": "eL81dx",
+          "type": "INPUT_LINK",
+          "title": "Ubicación 1 — enlace de Google Maps"
+        },
+        {
+          "id": "WPXGve",
+          "type": "INPUT_TEXT",
+          "title": "Ubicación 1 — notas"
+        },
+        {
+          "id": "a0Xb8Z",
+          "type": "INPUT_TEXT",
+          "title": "Ubicación 2 — nombre"
+        },
+        {
+          "id": "6RGbXA",
+          "type": "INPUT_TEXT",
+          "title": "Ubicación 2 — dirección pública"
+        },
+        {
+          "id": "7oOB8a",
+          "type": "INPUT_LINK",
+          "title": "Ubicación 2 — enlace de Google Maps"
+        },
+        {
+          "id": "bLXB06",
+          "type": "TEXTAREA",
+          "title": "Ubicación 2 — teléfono, WhatsApp u horarios si son diferentes"
+        },
+        {
+          "id": "AxNoVy",
+          "type": "INPUT_TEXT",
+          "title": "Ubicación 3 — nombre"
+        },
+        {
+          "id": "BZqOPe",
+          "type": "INPUT_TEXT",
+          "title": "Ubicación 3 — dirección pública"
+        },
+        {
+          "id": "k5XDVr",
+          "type": "INPUT_LINK",
+          "title": "Ubicación 3 — enlace de Google Maps"
+        },
+        {
+          "id": "v4V7Qg",
+          "type": "TEXTAREA",
+          "title": "Ubicación 3 — teléfono, WhatsApp u horarios si son diferentes"
+        },
+        {
+          "id": "KLA7qg",
+          "type": "TEXTAREA",
+          "title": "Ubicaciones adicionales"
+        },
+        {
+          "id": "LXBAQy",
+          "type": "TEXTAREA",
+          "title": "¿Cuáles son tus horarios de atención?"
+        },
+        {
+          "id": "pGXjl1",
+          "type": "INPUT_TEXT",
+          "title": "¿Cómo agrupas tus servicios?"
+        },
+        {
+          "id": "1MzZ1g",
+          "type": "TEXTAREA",
+          "title": "Lista tus servicios con precios"
+        },
+        {
+          "id": "MLlk9l",
+          "type": "MULTIPLE_CHOICE",
+          "title": "¿Cómo deben aparecer los precios en tu página pública?",
+          "options": [
+            "Mostrar todos los precios",
+            "Mixto — algunos exactos, otros “desde…” o “consultar”",
+            "No mostrar precios — solo servicios"
+          ]
+        },
+        {
+          "id": "JLbaNr",
+          "type": "TEXTAREA",
+          "title": "Paquete destacado, promoción u oferta especial"
+        },
+        {
+          "id": "gLXyRP",
+          "type": "INPUT_TEXT",
+          "title": "Instagram"
+        },
+        {
+          "id": "yxrKW8",
+          "type": "INPUT_TEXT",
+          "title": "Facebook"
+        },
+        {
+          "id": "XEdVKP",
+          "type": "INPUT_TEXT",
+          "title": "TikTok"
+        },
+        {
+          "id": "8GVv0l",
+          "type": "INPUT_LINK",
+          "title": "Sitio web"
+        },
+        {
+          "id": "0Lz2p9",
+          "type": "INPUT_LINK",
+          "title": "Enlace externo de reservas"
+        },
+        {
+          "id": "zZ4pak",
+          "type": "INPUT_LINK",
+          "title": "Enlace de Google Reviews"
+        },
+        {
+          "id": "5Lo6yN",
+          "type": "INPUT_TEXT",
+          "title": "Otro enlace público"
+        },
+        {
+          "id": "YrXELN",
+          "type": "DROPDOWN",
+          "title": "¿Cuál debe ser el botón principal?",
+          "options": [
+            "WhatsApp",
+            "Llamada telefónica",
+            "Instagram",
+            "Google Maps / cómo llegar",
+            "Enlace externo de reservas",
+            "Sitio web",
+            "Correo",
+            "Otro enlace público"
+          ]
+        },
+        {
+          "id": "D59rll",
+          "type": "FILE_UPLOAD",
+          "title": "Más fotos"
+        },
+        {
+          "id": "lLXoPo",
+          "type": "TEXTAREA",
+          "title": "Notas de marca"
+        },
+        {
+          "id": "RR1XXK",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Elige tu estilo",
+          "options": [
+            "Black & Gold — elegante y lujoso",
+            "Soft Blush — suave y femenino",
+            "Charcoal Clean — limpio y moderno",
+            "Warm Sand — cálido y acogedor",
+            "Aqua Clean — fresco y ligero",
+            "Sage Calm — tranquilo y natural",
+            "Electric Slate — audaz y enérgico",
+            "Terracotta Warm — cálido y artesanal",
+            "Sunny Paws — alegre y juguetón",
+            "Midnight Ink — oscuro y artístico",
+            "Clarity Editorial — profesional y confiable",
+            "Horizon Teal — fresco y aventurero"
+          ]
+        },
+        {
+          "id": "ooYrrb",
+          "type": "TEXTAREA",
+          "title": "Políticas que tus clientes deben ver"
+        },
+        {
+          "id": "GLaNNe",
+          "type": "TEXTAREA",
+          "title": "Preguntas frecuentes para tu página"
+        },
+        {
+          "id": "OLKppa",
+          "type": "MULTIPLE_CHOICE",
+          "title": "¿Cómo atiendes a tus clientes?",
+          "options": [
+            "Solo con cita",
+            "Sin cita, por orden de llegada",
+            "Ambas — con cita y sin cita"
+          ]
+        },
+        {
+          "id": "VVXRRj",
+          "type": "MULTIPLE_CHOICE",
+          "title": "¿Aceptan reservaciones?",
+          "options": [
+            "Sí — por teléfono o WhatsApp",
+            "Sí — con un enlace de reservas",
+            "No — solo por orden de llegada"
+          ]
+        },
+        {
+          "id": "PlLMM1",
+          "type": "TEXTAREA",
+          "title": "Enlaces de entrega a domicilio o para llevar"
+        },
+        {
+          "id": "ELejjl",
+          "type": "TEXTAREA",
+          "title": "Horario de clases"
+        },
+        {
+          "id": "rVRNNo",
+          "type": "TEXTAREA",
+          "title": "Detalles de tus tours o experiencias"
+        },
+        {
+          "id": "4LRWWr",
+          "type": "MULTIPLE_CHOICE",
+          "title": "¿Trabajas con clientes en línea, en persona o ambas?",
+          "options": [
+            "En línea",
+            "En persona",
+            "Ambas"
+          ]
+        },
+        {
+          "id": "jLXddQ",
+          "type": "INPUT_TEXT",
+          "title": "¿Qué zonas cubres?"
+        },
+        {
+          "id": "2Lzqqe",
+          "type": "INPUT_TEXT",
+          "title": "¿Algo que los clientes deban saber antes de traer a su mascota?"
+        },
+        {
+          "id": "ooYrrO",
+          "type": "CHECKBOXES",
+          "title": "Por favor confirma todo lo siguiente",
+          "options": [
+            "Soy dueño/a o tengo permiso de usar el logo, las fotos y los textos que estoy enviando, y autorizo a HMU Link a publicarlos en mi página pública.",
+            "Autorizo a HMU Link a traducir mi contenido y editarlo ligeramente para las versiones en español e inglés de mi página.",
+            "Entiendo que mi HMU Link es una página web pública: todo lo de las secciones marcadas 📢 público puede ser visible para cualquier persona."
+          ]
+        },
+        {
+          "id": "6v8zbP",
+          "type": "CHECKBOXES",
+          "title": "MeyDpk",
+          "title_editor": "Antes de enviar, revisa los  Términos y Condiciones  y el  Aviso de Privacidad",
+          "options": [
+            "He leído y acepto los Términos y Condiciones y el Aviso de Privacidad"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -46,7 +46,12 @@ import urllib.request
 from pathlib import Path
 
 from merge_intake import answered_keys, load_previous_client, merge_client, sanitize_intake
-from vertical_config import DOMAIN, GENERATOR_FOR_TEMPLATE, TEMPLATE
+# El botón que el negocio eligió: la tabla de alias es DATO compartido con el
+# worker, no una copia local (ver primary_cta.py — tres copias divergidas).
+from primary_cta import normalize_primary_cta
+from vertical_config import (
+    CATALOGS, DOMAIN, GENERATOR_FOR_TEMPLATE, INTAKE, LEGAL, SCHEMA, TEMPLATE,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CLIENTS_DIR = REPO_ROOT / "data" / "clients"
@@ -60,6 +65,32 @@ TRAIL_SEP_RE = re.compile(r"[\s\-–—·:|,]+$")
 # surrounded by whitespace (the shape intakes use). Requiring the spaces keeps
 # ranges like "10–12" or hyphenated names from being split apart.
 DASH_SPLIT_RE = re.compile(r"\s+[–—]\s+")
+# El mismo separador aceptando además el GUION NORMAL, que es lo que de hecho
+# escribe la gente: en el teclado de un celular no hay raya larga.
+HYPHEN_SPLIT_RE = re.compile(r"\s+[-–—]\s+")
+
+
+def split_fields(text: str, maxsplit: int = 0) -> list[str]:
+    """Parte una línea de intake en sus campos, por el separador que ELLA usa.
+
+    El formulario enseña "Categoría — Nombre — Descripción — $precio" con raya
+    larga. Pero el teclado de un celular no tiene raya larga: da guion normal, y
+    con el guion la línea entera se iba de nombre — el cliente perdía su
+    categoría (y con ella los filtros de su página) y su descripción. Medido con
+    el código real el 2026-07-26.
+
+    Aceptar el guion SIEMPRE sería destructivo, porque el guion es también el
+    signo del RANGO: "$200 - $400", "9 a.m. - 5 p.m.". Así que la elección es
+    POR LÍNEA y no global: si la línea trae la raya que el formulario enseña,
+    ESA es su separador y el guion se queda como texto. El guion solo separa en
+    las líneas que no traen raya, o sea donde no hay nada con lo que confundirlo.
+
+    La consecuencia que importa: ninguna línea que hoy funciona cambia de
+    resultado (ModaLink usa raya larga en sus 25 separadores), y la misma línea
+    escrita con guion produce la MISMA página que escrita con raya.
+    """
+    rx = DASH_SPLIT_RE if DASH_SPLIT_RE.search(text) else HYPHEN_SPLIT_RE
+    return rx.split(text, maxsplit)
 
 IMAGE_EXT_BY_CONTENT_TYPE = {
     "image/jpeg": ".jpg",
@@ -182,6 +213,210 @@ def download_gallery_images(payload: dict, dest_dir: Path) -> list[str]:
     return files
 
 
+# Horario que se publica cuando una sucursal no trajo el suyo. Es el mismo
+# literal bilingüe que el motor ya usaba para `opening_hours_text`.
+HOURS_FALLBACK = "Consultar horarios / Ask us for hours"
+# Tope de fotos del mini-lookbook (el mismo del formulario y del generador).
+MAX_LOOKBOOK_PHOTOS = 4
+
+
+# --------------------------------------------------------------------------- #
+# CAMPOS DE VERTICAL (`intake.fields` del vertical.yaml)
+#
+# El worker extrae estos campos como TEXTO tal cual lo contestó el negocio (no
+# conoce los catálogos cerrados del giro, y duplicárselos habría sido una
+# segunda fuente de verdad). Aquí se convierten en lo que el generador espera,
+# leyendo la config de la vertical. Una vertical sin `intake.fields` no ejecuta
+# nada de esto: HMU y PawContact construyen su cliente exactamente igual que
+# antes.
+# --------------------------------------------------------------------------- #
+
+# Las formas en que alguien contesta que sí. Whole-string, no subcadena: "no"
+# contiene... nada de esto, pero "sin costo" sí contendría "si".
+YES_ANSWERS = frozenset({"si", "yes", "true", "1"})
+
+
+def yes_no(value) -> bool:
+    """Casilla/opción Sí-No -> booleano. Cualquier otra cosa es False."""
+    if isinstance(value, bool):
+        return value
+    return plain_latin(value).strip() in YES_ANSWERS
+
+
+def _number_or_none(value):
+    """El número tal cual lo escribió el negocio, o None si no contestó.
+
+    No se convierte a int a propósito: "8" y "8 años" se imprimen igual de bien
+    y forzar el tipo dejaría fuera al segundo.
+    """
+    text = str(value or "").strip()
+    return text or None
+
+
+def catalog_key(name: str, value) -> str | None:
+    """La opción que el negocio eligió en el formulario -> su clave cerrada.
+
+    Se compara por subcadena sin acentos ni mayúsculas contra
+    `catalogs.<name>.intake_match`, en el orden declarado — el orden importa
+    ("Cita o walk-in" contiene también "walk-in"). Un catálogo sin
+    `intake_match` es uno cuya opción YA es la clave (los estados del
+    directorio): entonces se exige coincidencia exacta contra `values`.
+    """
+    cfg = CATALOGS.get(name) or {}
+    text = plain_latin(value)
+    if text.strip():
+        for key, patterns in (cfg.get("intake_match") or {}).items():
+            if any(plain_latin(p) in text for p in patterns):
+                return key
+        raw = str(value or "").strip()
+        if raw in (cfg.get("values") or []):
+            return raw
+    return cfg.get("fallback")
+
+
+def catalog_keys(name: str, value) -> list[str]:
+    """Igual, para un catálogo `kind: list` (casillas múltiples de Tally).
+
+    El worker las entrega ya unidas por coma, así que se busca cada clave
+    dentro del texto completo y se devuelven en el orden del catálogo — un
+    orden estable, para que dos intakes iguales no produzcan dos JSON distintos.
+    """
+    cfg = CATALOGS.get(name) or {}
+    text = plain_latin(value)
+    match = cfg.get("intake_match") or {}
+    if match:
+        return [key for key, patterns in match.items()
+                if any(plain_latin(p) in text for p in patterns)]
+    valores = cfg.get("values") or []
+    elegidos = {part.strip() for part in str(value or "").split(",")}
+    return [v for v in valores if v in elegidos]
+
+
+def build_intake_fields(payload: dict) -> tuple[dict, dict]:
+    """(campos del cliente, los que ADEMÁS viajan dentro de content.<lang>).
+
+    `per_language: true` existe porque un texto compartido entre los dos idiomas
+    sale sin traducir en la mitad de las páginas: los tiempos de entrega y la
+    política de anticipo de ModaLink se publicaban en español en su página en
+    inglés (§7.11 de su auditoría). Duplicarlos por idioma es lo que deja que
+    `apply_translation` los traduzca.
+    """
+    fields = INTAKE.get("fields") or {}
+    out: dict = {}
+    per_language: dict = {}
+    for name, cfg in fields.items():
+        kind = cfg.get("kind")
+        raw = payload.get(name)
+        if kind == "yes_no":
+            value = yes_no(raw)
+        elif kind == "number":
+            value = _number_or_none(raw)
+        elif kind == "catalog":
+            es_lista = (CATALOGS.get(name) or {}).get("kind") == "list"
+            value = catalog_keys(name, raw) if es_lista else catalog_key(name, raw)
+        elif kind == "social":
+            value = social_url(raw, cfg["base"])
+        else:
+            value = str(raw or "").strip()
+            if cfg.get("max"):
+                value = value[: cfg["max"]]
+        out[name] = value
+
+    # `requires`: un campo que depende de otro se apaga si ese otro no quedó.
+    # Es el caso del directorio: sin un estado válido no hay forma de agrupar ni
+    # de filtrar la ficha, así que marcar la casilla no basta.
+    for name, cfg in fields.items():
+        dep = str(cfg.get("requires", "") or "").strip()
+        if dep and not out.get(dep):
+            out[name] = False if cfg.get("kind") == "yes_no" else None
+
+    for name, cfg in fields.items():
+        if cfg.get("per_language") and out.get(name):
+            per_language[name] = out[name]
+    return out, per_language
+
+
+def build_location_hours(payload: dict, total: int) -> list[str]:
+    """Un horario por sucursal, alineado por índice (`schema.hours_source`).
+
+    Que la longitud coincida con la de `locations` no es cosmético: el
+    generador imprime `location_hours[i]` dentro del bloque de la sucursal `i`,
+    así que un hueco publicaría el horario de una tienda en la otra. Por eso se
+    rellena con el texto de respaldo en vez de acortarse.
+    """
+    return [
+        str(payload.get(f"location_{i + 1}_hours", "") or "").strip() or HOURS_FALLBACK
+        for i in range(total)
+    ]
+
+
+def download_lookbook(payload: dict, dest_dir: Path) -> list[str]:
+    """Las fotos del mini-lookbook (`schema.gallery_source: lookbook_urls`).
+
+    Una foto que no se pueda bajar simplemente no viaja — nunca bloquea la
+    generación, misma política que el logo y la foto principal.
+    """
+    urls = payload.get("lookbook_urls")
+    urls = urls if isinstance(urls, list) else []
+    out = []
+    for i, url in enumerate(urls[:MAX_LOOKBOOK_PHOTOS]):
+        filename = download_image(str(url or ""), dest_dir, f"lookbook-{i + 1}")
+        if filename:
+            out.append(filename)
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# LINTER DE COPY (`legal.copy_linter` del vertical.yaml)
+#
+# WARN-ONLY: nunca bloquea la generación. Cuenta las frases rojas del giro y el
+# número viaja al correo de entrega (GITHUB_OUTPUT linter_flags -> el workflow
+# -> /notify), que le sugiere al negocio revisar su texto con la modificación
+# que ya tiene incluida.
+#
+# Viene de ModaLink (su D8): en moda, que el propio negocio escriba "réplica de"
+# o "inspirado en [marca]" en su página es una autoinculpación. Una vertical que
+# no declara la lista no lintea nada y no escribe `linter_flags`, así que el
+# workflow de HMU/PawContact no cambia de comportamiento.
+# --------------------------------------------------------------------------- #
+
+def lint_text(text: str, lang: str) -> list[str]:
+    """Las frases rojas presentes en un texto (sin acentos, sin mayúsculas)."""
+    frases = (LEGAL.get("copy_linter") or {}).get(lang) or []
+    if not text or not frases:
+        return []
+    plano = plain_latin(text)
+    return [frase for frase in frases if plain_latin(frase) in plano]
+
+
+def lint_content_block(block: dict, lang: str) -> list[str]:
+    """Lintea lo que el negocio ESCRIBIÓ: descripción, servicios, destacado,
+    políticas. No los textos que pone el motor."""
+    hits = lint_text(block.get("short_description", ""), lang)
+    for svc in block.get("services") or []:
+        if isinstance(svc, dict):
+            hits.extend(lint_text(svc.get("name", ""), lang))
+            hits.extend(lint_text(svc.get("description", ""), lang))
+    featured = block.get("featured_package")
+    if isinstance(featured, dict):
+        hits.extend(lint_text(featured.get("name", ""), lang))
+        hits.extend(lint_text(featured.get("description", ""), lang))
+    for policy in block.get("policies") or []:
+        hits.extend(lint_text(policy, lang))
+    return hits
+
+
+def lint_client(client: dict) -> list[str]:
+    """Los dos idiomas, DESPUÉS de traducir — la traducción también se revisa."""
+    content = client.get("content") or {}
+    hits: list[str] = []
+    for lang in ("es", "en"):
+        block = content.get(lang)
+        if isinstance(block, dict):
+            hits.extend(lint_content_block(block, lang))
+    return hits
+
+
 def build_locations(payload: dict) -> list[dict]:
     """Assemble the full locations list (1-3) from intake fields.
 
@@ -225,16 +460,52 @@ def clean_line(line: str) -> str:
     return TRAIL_SEP_RE.sub("", BULLET_RE.sub("", line.strip())).strip()
 
 
+# La moneda ESCRITA, sin símbolo: "680 MXN", "45 pesos". Son formas normales de
+# poner un precio en México, y el reconocedor exigía el "$" — así que el precio
+# no se reconocía, la tarjeta salía con "Preguntar precio" Y ADEMÁS el precio
+# quedaba impreso dentro de la descripción, contradiciéndose (medido 2026-07-26).
+_MONEDA = r"mxn|usd|cad|eur|pesos?|d[oó]lares?|dollars?|euros?"
+_CIFRA = r"[\d][\d\s,.\u00a0]*"
+# Un RANGO es UN precio, no dos campos. Va PRIMERO en la alternancia, y el orden
+# es la mitad del arreglo: si ganara `_CON_SIMBOLO`, "$200 - $400" casaría solo
+# "$200" y el "- $400" se quedaría de basura en el nombre. Se exigen las DOS
+# mitades con la misma forma de precio (las dos con "$", o la pareja cerrada con
+# moneda escrita) para no comerse el número de un nombre: en "Paquete 2 — $500"
+# el "2" no es el piso de un rango, y ahí el precio sigue siendo "$500".
+#
+# Este es además el guion que SÍ llega al separador de campos. Los horarios NO
+# llegan nunca (se copian tal cual, más abajo); los rangos sí, y reconocerlos
+# aquí es lo que deja al separador libre de aceptar el guion normal.
+_RANGO = (r"\$" + _CIFRA + r"\s*[-–—]\s*\$" + _CIFRA + r"(?:" + _MONEDA + r")?\b\s*$"
+          r"|" + _CIFRA + r"\s*[-–—]\s*" + _CIFRA + r"(?:" + _MONEDA + r")\b\s*$")
+# La moneda escrita, ANCLADA AL FINAL a propósito. El formulario enseña el
+# precio al final de la línea, y sin el ancla un "incluye shampoo de 200 pesos
+# de valor" se convertiría en el precio del servicio. Con "$" el reconocedor ya
+# era greedy así; esto NO extiende esa greediness a la moneda escrita.
+_MONEDA_ESCRITA = _CIFRA + r"(?:" + _MONEDA + r")\b\s*$"
+# Lo que el reconocedor ya aceptaba, intacto: ni una línea que hoy funciona
+# cambia de precio.
+_CON_SIMBOLO = (r"\$[\d][\d\s,.\u00a0]*(?:mxn|usd|cad|eur)?(?:\s*(?:/|por|per)\s*[\w\s]+)?"
+                r"|(?:desde|from|starting at|starts at)\s+\$?[\d][\d\s,.\u00a0]*(?:mxn|usd|cad|eur)?")
+_SIN_CIFRA = r"(?:consultar|cotizar|ask us|inquire|quote|varies)"
 PRICE_HINT_RE = re.compile(
-    r"(?i)(?:"
-    r"\$[\d][\d\s,.\u00a0]*(?:mxn|usd|cad|eur)?(?:\s*(?:/|por|per)\s*[\w\s]+)?"
-    r"|(?:desde|from|starting at|starts at)\s+\$?[\d][\d\s,.\u00a0]*(?:mxn|usd|cad|eur)?"
-    r"|(?:consultar|cotizar|ask us|inquire|quote|varies)"
-    r")"
-)
+    "(?i)(?:" + _RANGO + "|" + _CON_SIMBOLO + "|" + _MONEDA_ESCRITA + "|" + _SIN_CIFRA + ")")
 
 
-def split_price_label(line: str) -> tuple[str, str | None]:
+# Hasta dónde puede llegar una etiqueta de precio antes de que deje de parecer
+# un precio. El tope es una defensa contra convertir una frase entera en precio,
+# no parte del reconocedor; por eso se pasa como argumento y no vive dentro.
+MAX_PRICE_LABEL = 60
+# El DESTACADO admite más, y no por gusto: uno de los cuatro destacados
+# publicados (Black Line Tattoo) lleva "$1,200 MXN. Disponible únicamente los
+# viernes con cita previa." — 62 caracteres. Con el tope de los servicios ese
+# precio DESAPARECERÍA de una página que está vendiendo (medido 2026-07-27,
+# reconstruyendo su línea desde su client.json publicado). 120 es el mismo tope
+# que la tarjeta ya le aplica a su nombre.
+MAX_FEATURED_PRICE_LABEL = 120
+
+
+def split_price_label(line: str, max_price_len: int = MAX_PRICE_LABEL) -> tuple[str, str | None]:
     """Split one service line into visible name and optional price label."""
     match = None
     for candidate in PRICE_HINT_RE.finditer(line):
@@ -243,7 +514,7 @@ def split_price_label(line: str) -> tuple[str, str | None]:
         return line, None
     name = TRAIL_SEP_RE.sub("", line[:match.start()]).strip()
     price = line[match.start():].strip(" -:|")
-    if name and price and len(price) <= 60:
+    if name and price and len(price) <= max_price_len:
         return name, price
     return line, None
 
@@ -285,7 +556,7 @@ def split_category_name_description(text: str, known: dict[str, str]) -> tuple[s
     dash into a name and an optional description. A line with no dash keeps the
     whole line as the name and no description (legacy behavior for plain lines).
     """
-    segments = [seg.strip() for seg in DASH_SPLIT_RE.split(text) if seg.strip()]
+    segments = [seg.strip() for seg in split_fields(text) if seg.strip()]
     if not segments:
         return None, text.strip(), ""
     category = None
@@ -392,16 +663,15 @@ def parse_featured(featured_text: str) -> dict | None:
     if not lines:
         return None
     first = lines[0]
-    name, price_label = first, None
-    idx = first.rfind("$")
-    if idx > 0:
-        candidate = TRAIL_SEP_RE.sub("", first[:idx]).strip()
-        if candidate:
-            name, price_label = candidate, first[idx:].strip()
+    # EL MISMO reconocedor de precio que los servicios, no uno propio. Tenía el
+    # suyo —partir por el ÚLTIMO "$"— y por eso los arreglos del precio no le
+    # llegaban: "185 USD" no era precio (se quedaba de descripción) y el rango
+    # "$200 - $400" se partía en un precio "$400" y una descripción "$200".
+    name, price_label = split_price_label(first, MAX_FEATURED_PRICE_LABEL)
     # A "Name — Description" first line splits at the first dash into a short
     # name and an inline description; any following lines extend it.
     inline_description = ""
-    parts = DASH_SPLIT_RE.split(name, maxsplit=1)
+    parts = split_fields(name, maxsplit=1)
     if len(parts) == 2 and parts[0].strip():
         name, inline_description = parts[0].strip(), parts[1].strip()
     description = " ".join(part for part in [inline_description, *lines[1:]] if part)
@@ -512,57 +782,6 @@ def url_or_none(value: str) -> str | None:
     return v
 
 
-def normalize_primary_cta(value: str) -> str | None:
-    v = (value or "").strip().lower()
-    if not v:
-        return None
-    normalized = re.sub(r"[^a-z0-9]+", "_", plain_latin(v)).strip("_")
-    aliases = {
-        "wa": "whatsapp",
-        "wpp": "whatsapp",
-        "whats": "whatsapp",
-        "whatsapp": "whatsapp",
-        "telefono": "phone",
-        "phone": "phone",
-        "phone_call": "phone",
-        "call": "phone",
-        "llamar": "phone",
-        "llamada_telefonica": "phone",
-        "booking": "booking",
-        "book": "booking",
-        "reservation": "booking",
-        "reservas": "booking",
-        "reservar": "booking",
-        "external_booking_link": "booking",
-        "enlace_externo_de_reservas": "booking",
-        "website": "website",
-        "web": "website",
-        "sitio_web": "website",
-        "site": "website",
-        "tiktok": "tiktok",
-        "tik_tok": "tiktok",
-        "tt": "tiktok",
-        "email": "email",
-        "mail": "email",
-        "correo": "email",
-        "other": "other",
-        "otro": "other",
-        "other_public_link": "other",
-        "otro_enlace_publico": "other",
-        "external_link": "other",
-        "enlace_externo": "other",
-        "maps": "maps",
-        "map": "maps",
-        "google_maps": "maps",
-        "directions": "maps",
-        "google_maps_directions": "maps",
-        "google_maps_como_llegar": "maps",
-        "como_llegar": "maps",
-        "mapa": "maps",
-    }
-    return aliases.get(normalized)
-
-
 def social_url(value: str, base: str, handle_prefix: str = "") -> str | None:
     """Accepts a full URL, a domain path (instagram.com/x) or a bare handle
     (@unveilmexico / unveilmexico) and returns a valid profile URL."""
@@ -608,6 +827,14 @@ def normalize_business_type(value: str) -> str | None:
         if score > best_score:
             best_category, best_score = category, score
     return best_category or "general"
+
+
+def _per_language_field_names() -> tuple[str, ...]:
+    """Campos de vertical que viven DENTRO de content.<lang> (`per_language`)."""
+    return tuple(
+        name for name, cfg in (INTAKE.get("fields") or {}).items()
+        if cfg.get("per_language")
+    )
 
 
 LANG_NAMES = {"es": "Spanish", "en": "English"}
@@ -780,7 +1007,9 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
     src = content[source_lang]
     fields = {
         "short_description": src["short_description"],
-        "opening_hours_text": src["opening_hours_text"],
+        # `.get`: una vertical con horario POR SUCURSAL no trae el campo único
+        # (ver `schema.hours_source`); sus horarios se traducen abajo, en lista.
+        "opening_hours_text": src.get("opening_hours_text", ""),
         "service_area_text": src.get("service_area_text", ""),
         "client_care_text": src.get("client_care_text", ""),
         "reservations_text": src.get("reservations_text", ""),
@@ -797,12 +1026,31 @@ def apply_translation(content: dict, source_lang: str, target_lang: str) -> None
     if "featured_package" in src:
         fields["featured_name"] = src["featured_package"]["name"]
         fields["featured_description"] = src["featured_package"].get("description", "")
+    # Horario por sucursal y textos de vertical marcados `per_language`. Solo
+    # viajan si el bloque los trae, así que para HMU/PawContact el prompt es
+    # exactamente el mismo de antes.
+    if isinstance(src.get("location_hours"), list):
+        fields["location_hours"] = src["location_hours"]
+    for name in _per_language_field_names():
+        if src.get(name):
+            fields[name] = src[name]
 
     translated = translate_block(source_lang, target_lang, fields)
     if not translated:
         return
 
     tgt = content[target_lang]
+    hours = translated.get("location_hours")
+    if (
+        isinstance(hours, list)
+        and isinstance(tgt.get("location_hours"), list)
+        and len(hours) == len(tgt["location_hours"])
+        and all(isinstance(h, str) for h in hours)
+    ):
+        tgt["location_hours"] = [h[:200] for h in hours]
+    for name in _per_language_field_names():
+        if name in tgt and isinstance(translated.get(name), str) and translated[name].strip():
+            tgt[name] = translated[name][:200]
     if isinstance(translated.get("short_description"), str) and translated["short_description"].strip():
         tgt["short_description"] = translated["short_description"][:300]
     if isinstance(translated.get("opening_hours_text"), str) and translated["opening_hours_text"].strip():
@@ -958,7 +1206,7 @@ def parse_catalog_products(products_text: str, image_files: list[str], lang: str
         if not line:
             continue
         rest, price_label = split_price_label(line)
-        segments = [s for s in (seg.strip() for seg in DASH_SPLIT_RE.split(rest)) if s]
+        segments = [s for s in (seg.strip() for seg in split_fields(rest)) if s]
         if not segments:
             continue
         if len(segments) == 1:
@@ -1187,6 +1435,23 @@ def main() -> int:
     pet_notes = str(payload.get("pet_notes_text", "")).strip()
     address = str(payload.get("address", "")).strip()
 
+    # Lo que ESTA vertical agrega al esquema (`intake.fields`). Vacío para toda
+    # vertical que no abra la sección, o sea para todas menos ModaLink hoy.
+    vertical_fields, per_language_fields = build_intake_fields(payload)
+
+    locations = build_locations(payload)
+    # Sin sucursales NO se publica una página nueva en una vertical que exige al
+    # menos una (`schema.locations_min`). Al REGENERAR, venir en blanco es justo
+    # lo que la fusión atiende, así que la guarda se la deja a ella.
+    if SCHEMA.get("locations_min") and not locations and not previous:
+        fail("no valid locations in intake — manual review required")
+    # `hours_source` decide DÓNDE viven los horarios: el `opening_hours_text`
+    # único de siempre, o uno por sucursal dentro de content.<lang>. En el
+    # segundo caso el campo único no se emite — el generador ya no lo exige y
+    # dejarlo vacío imprimiría una fila de horarios en blanco.
+    per_location_hours = SCHEMA.get("hours_source") == "location_hours"
+    location_hours = build_location_hours(payload, len(locations)) if per_location_hours else []
+
     def content_block(lang: str) -> dict:
         # Each language gets its own copies of the mutable structures: later,
         # apply_translation() overwrites content[target_lang] in place and
@@ -1194,7 +1459,12 @@ def main() -> int:
         block = {
             "short_description": short_description[:300],
             "address": address[:200],
-            "opening_hours_text": hours[:200],
+            # Se escribe EN ESTE LUGAR (y no al final) para que el JSON de una
+            # vertical con horario único salga con las claves en el mismo orden
+            # que antes: `json.dumps` respeta el orden de inserción y el
+            # client.json de HMU/PawContact no tiene por qué moverse.
+            **({"location_hours": list(location_hours)} if per_location_hours
+               else {"opening_hours_text": hours[:200]}),
             "service_area_text": service_area[:200],
             "client_care_text": client_care[:200],
             "reservations_text": reservations[:200],
@@ -1207,15 +1477,27 @@ def main() -> int:
             "policies": list(policies),
             "faq": [dict(item) for item in faq],
         }
+        block.update(per_language_fields)
         if featured:
             block["featured_package"] = dict(featured)
         return block
 
     assets_dir = LINKS_DIR / slug / "assets"
     logo_file = download_image(payload.get("logo_url", ""), assets_dir, "logo")
-    gallery_files = download_gallery_images(payload, assets_dir)
+    # De dónde salen las fotos de la banda del héroe lo decide la vertical
+    # (`schema.gallery_source`). Con `lookbook_urls` la foto principal y el
+    # mini-lookbook son dos cosas distintas y se publican con sus propios
+    # nombres (hero / lookbook-N), que es como ya están las páginas vivas.
+    lookbook_gallery = SCHEMA.get("gallery_source") == "lookbook_urls"
+    if lookbook_gallery:
+        hero_file = download_image(payload.get("image_url", ""), assets_dir, "hero")
+        lookbook_files = download_lookbook(payload, assets_dir)
+        gallery_files = []
+    else:
+        hero_file = None
+        lookbook_files = []
+        gallery_files = download_gallery_images(payload, assets_dir)
 
-    locations = build_locations(payload)
     # Pass an empty default so unlabeled links keep an empty label; each page
     # then renders the localized group label via s["delivery_pickup_label"]
     # (Entrega / recoger — Delivery / pickup) instead of a frozen English one.
@@ -1234,12 +1516,13 @@ def main() -> int:
         "business_name": str(payload.get("business_name", "")).strip()[:120],
         "logo_url": f"{CLIENT_BASE_URL}/{slug}/assets/{logo_file}" if logo_file else None,
         "primary_image_url": (
-            f"{CLIENT_BASE_URL}/{slug}/assets/{gallery_files[0]}" if gallery_files else None
+            f"{CLIENT_BASE_URL}/{slug}/assets/{hero_file or (gallery_files[0] if gallery_files else '')}"
+            if (hero_file or gallery_files) else None
         ),
-        "gallery_images": [
-            {"url": f"{CLIENT_BASE_URL}/{slug}/assets/{filename}"}
-            for filename in gallery_files
-        ],
+        **({"lookbook_urls": [f"{CLIENT_BASE_URL}/{slug}/assets/{f}" for f in lookbook_files]}
+           if lookbook_gallery
+           else {"gallery_images": [{"url": f"{CLIENT_BASE_URL}/{slug}/assets/{filename}"}
+                                    for filename in gallery_files]}),
         "whatsapp": str(payload.get("whatsapp", "")).strip() or None,
         "phone": str(payload.get("phone", "")).strip() or None,
         "public_email": str(payload.get("public_email", "")).strip() or None,
@@ -1258,6 +1541,15 @@ def main() -> int:
     }
     if locations:
         client["locations"] = locations
+    # Lo del giro (specialty, formas de pago, directorio…) se aplica ENCIMA. Un
+    # nombre que el motor ya escribe se rechaza aquí y no en la config: esta
+    # comparación es contra el cliente REAL que se acaba de construir, así que
+    # no puede quedarse corta el día que el motor aprenda un campo nuevo —
+    # `RESERVED_CLIENT_FIELDS` es el aviso temprano, esto es la guarda.
+    chocan = sorted(set(vertical_fields) & set(client))
+    if chocan:
+        fail(f"intake.fields de esta vertical redefine campos del motor: {chocan}")
+    client.update(vertical_fields)
 
     # The intake is usually authored in default_language, but not always: a
     # customer can fill the English form and still pick Spanish as the default
@@ -1312,7 +1604,15 @@ def main() -> int:
     ):
         fail("no public contact or public link - manual review required")
 
-    return publish(client, slug, order_id)
+    # Linter de copy (warn-only), después de traducir para que el texto
+    # traducido también se revise. Se loguean las frases literales, nunca el
+    # payload. El conteo viaja al correo de entrega vía GITHUB_OUTPUT.
+    hits = lint_client(client)
+    if hits:
+        print(f"WARN: copy linter flagged {len(hits)} phrase(s): {sorted(set(hits))}",
+              file=sys.stderr)
+
+    return publish(client, slug, order_id, linter_flags=hits)
 
 
 # El tramo final es el mismo para las dos plantillas: escribir el JSON del
@@ -1320,7 +1620,8 @@ def main() -> int:
 # no se filtró al HTML público. Vive aparte porque la rama de catálogo lo
 # necesita igual — y porque duplicarlo sería duplicar justo la guarda que evita
 # publicar un identificador de compra en un repo público.
-def publish(client: dict, slug: str, order_id: str) -> int:
+def publish(client: dict, slug: str, order_id: str,
+            linter_flags: list | None = None) -> int:
     CLIENTS_DIR.mkdir(parents=True, exist_ok=True)
     client_path = CLIENTS_DIR / f"{slug}.client.json"
     client_path.write_text(json.dumps(client, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -1374,6 +1675,10 @@ def publish(client: dict, slug: str, order_id: str) -> int:
     if github_output:
         with open(github_output, "a", encoding="utf-8") as f:
             f.write(f"slug={slug}\n")
+            # Solo si esta vertical declara `legal.copy_linter`: sin la lista,
+            # el workflow de HMU/PawContact no ve una salida nueva.
+            if LEGAL.get("copy_linter"):
+                f.write(f"linter_flags={len(linter_flags or [])}\n")
 
     print(f"page generated: public/links/{slug}/")
     return 0

@@ -53,9 +53,14 @@ try:
 except ImportError:  # pragma: no cover - clear guidance if dependency missing
     segno = None
 
+import directory
 from blocks import block_enabled, fill_tokens
+# El botón que el negocio eligió: la tabla de alias es DATO compartido con el
+# worker, no una copia local (ver primary_cta.py — tres copias divergidas).
+from primary_cta import normalize_primary_cta
 from vertical_config import (
-    BLOCKS, BRAND_NAME, DOMAIN, LEGAL, STRINGS, STYLES_CATALOG,
+    BLOCKS, BRAND_NAME, CATALOGS, DIRECTORY, DOMAIN, LEGAL, SCHEMA,
+    STRINGS, STYLES_CATALOG, TEMPLATE_COMMENT_OVERRIDES,
 )
 
 # Repo layout (this file lives in <repo>/generator/) — standalone export,
@@ -116,64 +121,6 @@ def safe_href(value):
     if not raw.lower().startswith(_ALLOWED_SCHEMES):
         return None
     return html.escape(raw, quote=True)
-
-
-def normalize_primary_cta(value):
-    """Return a supported preferred CTA kind, if the payload provides one."""
-    v = str(value or "").strip().lower()
-    if not v:
-        return None
-    normalized = re.sub(r"[^a-z0-9]+", "_", v).strip("_")
-    aliases = {
-        "wa": "whatsapp",
-        "wpp": "whatsapp",
-        "whats": "whatsapp",
-        "whatsapp": "whatsapp",
-        "telefono": "phone",
-        "phone": "phone",
-        "phone_call": "phone",
-        "call": "phone",
-        "llamar": "phone",
-        "llamada_telefonica": "phone",
-        "booking": "booking",
-        "book": "booking",
-        "reservation": "booking",
-        "reservas": "booking",
-        "reservar": "booking",
-        "external_booking_link": "booking",
-        "enlace_externo_de_reservas": "booking",
-        "website": "website",
-        "web": "website",
-        "sitio_web": "website",
-        "site": "website",
-        "tiktok": "tiktok",
-        "tik_tok": "tiktok",
-        "tt": "tiktok",
-        "instagram": "instagram",
-        "ig": "instagram",
-        "insta": "instagram",
-        "facebook": "facebook",
-        "fb": "facebook",
-        "face": "facebook",
-        "email": "email",
-        "mail": "email",
-        "correo": "email",
-        "other": "other",
-        "otro": "other",
-        "other_public_link": "other",
-        "otro_enlace_publico": "other",
-        "external_link": "other",
-        "enlace_externo": "other",
-        "maps": "maps",
-        "map": "maps",
-        "google_maps": "maps",
-        "directions": "maps",
-        "google_maps_directions": "maps",
-        "google_maps_como_llegar": "maps",
-        "como_llegar": "maps",
-        "mapa": "maps",
-    }
-    return aliases.get(normalized)
 
 
 def whatsapp_href(value):
@@ -319,6 +266,125 @@ def _validate_lookbook(payload: dict) -> None:
 CLIENT_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$")
 
 
+def catalog_label(name: str, key, lang: str) -> str:
+    """Etiqueta bilingue de un valor de catalogo (vertical.yaml -> `catalogs:`).
+
+    Devuelve "" si la vertical no declara ese catalogo o no tiene etiqueta para
+    ese valor — imprimir el valor crudo (`servicios_produccion`) seria peor que
+    no imprimir nada.
+    """
+    labels = (CATALOGS.get(name) or {}).get("labels") or {}
+    return str((labels.get(lang) or {}).get(key, "") or "")
+
+
+def _validate_catalog_fields(payload: dict) -> None:
+    """Valida los campos del payload contra los `catalogs:` de la vertical.
+
+    Una vertical sin `catalogs:` no ejecuta nada de esto, asi que HMU y
+    PawContact validan exactamente igual que antes.
+    """
+    for name, cfg in CATALOGS.items():
+        values = cfg.get("values") or []
+        kind = cfg.get("kind", "one")
+        required = bool(cfg.get("required"))
+        required_when = cfg.get("required_when")
+        if required_when and not payload.get(required_when):
+            # El campo solo es obligatorio si el otro campo esta encendido
+            # (p. ej. directory_state solo importa si directory_opt_in es true).
+            # Apagado: ni se exige ni se valida.
+            continue
+        raw = payload.get(name)
+        if kind == "list":
+            items = raw or []
+            if not isinstance(items, list) or any(item not in values for item in items):
+                raise ValidationError(
+                    f"Cliente: {name} debe ser una lista subconjunto de {tuple(values)}."
+                )
+            continue
+        value = str(raw or "").strip() if not isinstance(raw, bool) else raw
+        if not value and not (required or required_when):
+            continue
+        if value not in values:
+            raise ValidationError(
+                f"Cliente: {name} invalido: {raw!r}. Debe ser uno de {tuple(values)}."
+            )
+
+
+def _validate_required_true(payload: dict) -> None:
+    """Declaraciones obligatorias de la vertical (`schema.require_true`).
+
+    Son casillas de cumplimiento que el negocio firma en el intake y que NO son
+    opcionales: sin ellas no se genera la pagina. ModaLink usa
+    `photo_rights_confirmed` (la marca declara que las fotos son suyas).
+    """
+    for field in SCHEMA.get("require_true") or []:
+        if payload.get(field) is not True:
+            raise ValidationError(
+                f"Cliente: {field} debe ser true (declaracion obligatoria de la vertical)."
+            )
+
+
+def _validate_locations(payload: dict, content: dict) -> None:
+    """Cuenta de ubicaciones y horario por sucursal (`schema.locations_*`).
+
+    Con `hours_source: location_hours` cada idioma trae una lista con UN horario
+    por ubicacion. Que la longitud tenga que coincidir no es cosmetico: si no
+    coincide, los horarios se imprimirian corridos y una sucursal publicaria el
+    horario de la otra.
+    """
+    lo = SCHEMA.get("locations_min") or 0
+    hi = SCHEMA.get("locations_max") or 0
+    locations = payload.get("locations")
+    if lo or hi:
+        if not isinstance(locations, list) or len(locations) < lo or (hi and len(locations) > hi):
+            rango = f"{lo} a {hi}" if hi else f"al menos {lo}"
+            raise ValidationError(
+                f"Cliente: locations debe ser una lista de {rango} ubicaciones."
+            )
+        for i, loc in enumerate(locations):
+            if not isinstance(loc, dict) or not str(loc.get("address", "") or "").strip():
+                raise ValidationError(f"Cliente: locations[{i}] requiere al menos 'address'.")
+
+    if SCHEMA.get("hours_source") != "location_hours":
+        return
+    total = len(locations) if isinstance(locations, list) else 0
+    for lang in CLIENT_LANGS:
+        hours = (content.get(lang) or {}).get("location_hours")
+        if not isinstance(hours, list) or len(hours) != total:
+            raise ValidationError(
+                f"Cliente: content.{lang}.location_hours debe tener exactamente "
+                f"{total} elementos (uno por ubicacion)."
+            )
+
+
+# Lo minimo que necesita render_view para producir una pagina coherente desde un
+# payload PLANO de una demo monolingue (ver build_demo_monolingual).
+FLAT_DEMO_REQUIRED = ("public_slug", "business_name", "short_description", "brand_style")
+
+
+def validate_client_flat(payload: dict) -> None:
+    """Valida una demo monolingue: payload plano, sin objeto `content`.
+
+    Mas laxa que validate_client a proposito. Una demo es una vista previa
+    armada con datos publicos de un prospecto, no lo que un cliente entrego: no
+    la deben frenar ni las declaraciones obligatorias de la vertical, ni sus
+    catalogos cerrados, ni la regla de ubicaciones. Lo que si se exige es lo que
+    sin ello daria una pagina rota.
+    """
+    missing = [f for f in FLAT_DEMO_REQUIRED if not str(payload.get(f, "") or "").strip()]
+    if missing:
+        raise ValidationError("Demo: faltan campos requeridos: " + ", ".join(missing))
+    if payload.get("brand_style") not in BRAND_STYLES:
+        raise ValidationError(f"Demo: brand_style invalido: {payload.get('brand_style')!r}.")
+    services = payload.get("services")
+    if not isinstance(services, list) or not services:
+        raise ValidationError("Demo: services debe ser una lista con al menos un servicio.")
+    for i, svc in enumerate(services):
+        if not isinstance(svc, dict) or not str(svc.get("name", "")).strip():
+            raise ValidationError(f"Demo: services[{i}] requiere al menos 'name'.")
+    _validate_lookbook(payload)
+
+
 def validate_client(payload: dict) -> None:
     """Validate a bilingual real-client payload (client_payload_public v1)."""
     slug = str(payload.get("public_slug", "")).strip()
@@ -355,7 +421,15 @@ def validate_client(payload: dict) -> None:
         block = content.get(lang)
         if not isinstance(block, dict):
             raise ValidationError(f"Cliente: falta content.{lang}.")
-        for field in ("short_description", "opening_hours_text"):
+        # `hours_source` (vertical.yaml -> schema:) decide DONDE viven los
+        # horarios. Por defecto siguen siendo un `opening_hours_text` unico por
+        # idioma — lo que HMU y PawContact publican. Una vertical con horario
+        # por sucursal declara "location_hours" y entonces ese campo unico deja
+        # de ser obligatorio: lo exige _validate_locations, uno por ubicacion.
+        required_fields = ["short_description"]
+        if SCHEMA.get("hours_source") == "opening_hours_text":
+            required_fields.append("opening_hours_text")
+        for field in required_fields:
             if not str(block.get(field, "")).strip():
                 raise ValidationError(f"Cliente: falta content.{lang}.{field}.")
         services = block.get("services")
@@ -369,6 +443,9 @@ def validate_client(payload: dict) -> None:
                     f"Cliente: content.{lang}.services[{i}] requiere al menos 'name'."
                 )
     _validate_lookbook(payload)
+    _validate_catalog_fields(payload)
+    _validate_required_true(payload)
+    _validate_locations(payload, content)
     validate_language_quality(payload)
 
 
@@ -432,9 +509,27 @@ def build_hero_title(payload: dict) -> str:
     return f'<h1 id="ht" class="hero__title{long_cls}" aria-label="{name}">{"".join(lines)}</h1>'
 
 
+def _kicker_source_address(payload: dict) -> str:
+    """La direccion de la que sale el kicker del heroe.
+
+    Primero la direccion plana, que es la que HMU y PawContact traen siempre
+    (`content.<lang>.address`); si no hay, la de la primera ubicacion. El orden
+    importa: al reves, un cliente con las dos —posible en HMU— cambiaria de
+    kicker. Una vertical que solo captura ubicaciones (ModaLink no tiene campo
+    de direccion plana) cae sola en el segundo camino.
+    """
+    addr = str(payload.get("address", "") or "").strip()
+    if addr:
+        return addr
+    locations = payload.get("locations")
+    if isinstance(locations, list) and locations and isinstance(locations[0], dict):
+        return str(locations[0].get("address", "") or "").strip()
+    return ""
+
+
 def build_hero_kicker(payload: dict) -> str:
     """Letterspaced kicker over the H1: city · neighborhood from the address."""
-    addr = str(payload.get("address", "") or "").strip()
+    addr = _kicker_source_address(payload)
     if not addr:
         return ""
     parts = []
@@ -527,6 +622,11 @@ def _all_locations(payload: dict) -> list:
             "google_maps_url": loc.get("google_maps_url"),
             "notes": str(loc.get("notes", "") or "").strip(),
         }
+        # El horario de ESTA sucursal solo viaja si la ubicacion lo trae. La
+        # clave se copia tal cual (presente-pero-vacia sigue siendo presente):
+        # es la senal que lee _has_per_location_hours.
+        if "hours_text" in loc:
+            item["hours_text"] = str(loc.get("hours_text", "") or "").strip()
         if item["name"] or item["address"] or safe_href(item["google_maps_url"]):
             locations.append(item)
 
@@ -610,6 +710,10 @@ def _secondary_links(payload: dict, s: dict, primary_kind) -> list:
         ("instagram", "Instagram"),
         ("facebook", "Facebook"),
         ("tiktok", "TikTok"),
+        # Pinterest venia de ModaLink y es puro data-gating: ningun payload de
+        # HMU ni de PawContact tiene el campo, asi que sumarlo no mueve un byte
+        # de los suyos y el motor gana una red social mas para todos.
+        ("pinterest", "Pinterest"),
     ):
         if key == primary_kind:
             continue
@@ -658,20 +762,32 @@ def build_dock(payload: dict, s: dict) -> str:
 
 
 def _gallery_images(payload: dict) -> list[str]:
+    """Fotos de la banda/carrusel del heroe.
+
+    De donde salen lo decide la vertical (`schema.gallery_source`): por defecto
+    `gallery_images` (hasta 6, lo que HMU y PawContact publican). Una vertical
+    puede mandar ahi sus `lookbook_urls` en vez de renderizarlas como seccion
+    aparte — es lo que hace ModaLink, que apaga `blocks.lookbook` y manda esas
+    fotos al carrusel. El tope entonces es el del lookbook (4) mas la principal.
+    """
+    if SCHEMA.get("gallery_source") == "lookbook_urls":
+        source_key, cap = "lookbook_urls", MAX_LOOKBOOK_PHOTOS
+    else:
+        source_key, cap = "gallery_images", 6
     images = []
-    raw = payload.get("gallery_images")
+    raw = payload.get(source_key)
     if isinstance(raw, list):
         for item in raw:
             url = item.get("url") if isinstance(item, dict) else item
             href = safe_href(url)
             if href and href not in images:
                 images.append(href)
-            if len(images) >= 6:
+            if len(images) >= cap:
                 break
     primary = safe_href(payload.get("primary_image_url"))
     if primary and primary not in images:
         images.insert(0, primary)
-    return images[:6]
+    return images[: cap + 1 if source_key == "lookbook_urls" else cap]
 
 
 def build_hero_image(payload: dict, s: dict) -> str:
@@ -787,6 +903,11 @@ def build_services(payload: dict, s: dict) -> str:
     services = payload.get("services") or []
     declared = payload.get("service_categories") or []
     hide_prices = payload.get("price_display") == "hide"
+    # La leyenda "Consultar"/"Ask us" de un servicio SIN precio es una decision
+    # de copy de la casa, no del negocio: por eso se apaga por vertical
+    # (`blocks.price_ask_legend`) y no por payload. Encendida (el default) el
+    # comportamiento es identico al de siempre.
+    ask_legend = _block_enabled(payload, "price_ask_legend")
 
     # Preserve declared category order, then append any leftover categories.
     order = list(declared)
@@ -806,7 +927,7 @@ def build_services(payload: dict, s: dict) -> str:
         # "Consultar"/"Ask us" (se ve intencional). Política "ocultar" → nada.
         if price:
             price_text = esc(price)
-        elif not hide_prices:
+        elif not hide_prices and ask_legend:
             price_text = esc(s["price_ask"])
         else:
             price_text = ""
@@ -881,8 +1002,45 @@ def _address_map_link(maps_url, s: dict) -> str:
     )
 
 
+def _location_block(loc: dict, s: dict, with_name: bool) -> str:
+    """Una ubicacion con su horario propio: direccion + horario + notas + mapa.
+
+    Solo se usa cuando el payload trae horario POR SUCURSAL (ver
+    `_address_row_body`): es la forma que necesita una vertical con
+    `hours_source: location_hours`.
+    """
+    addr = str(loc.get("address", "") or "").strip()
+    link = _address_map_link(loc.get("google_maps_url"), s)
+    if not (addr or link):
+        return ""
+    name = str(loc.get("name", "") or "").strip()
+    name_html = f'<h4 class="address__name">{esc(name)}</h4>' if (with_name and name) else ""
+    hours = str(loc.get("hours_text", "") or "").strip()
+    hours_html = f"<p>{esc(hours)}</p>" if hours else ""
+    notes = str(loc.get("notes", "") or "").strip()
+    notes_html = f'<p class="address__notes">{esc(notes)}</p>' if notes else ""
+    main = esc(addr) if addr else link
+    tail = "<br>" + link if addr and link else ""
+    return f'<div class="address__item">{name_html}<p>{main}{tail}</p>{hours_html}{notes_html}</div>'
+
+
 def _address_row_body(payload: dict, s: dict) -> str:
-    """Inner HTML for the address info-row ('' if the payload has no address)."""
+    """Inner HTML for the address info-row ('' if the payload has no address).
+
+    La forma la decide la VERTICAL, no el payload: una vertical con
+    `hours_source: location_hours` imprime SIEMPRE un bloque por sucursal (con
+    su horario dentro), tambien en una demo de una sola direccion — si
+    dependiera del payload, la misma vertical publicaria dos maquetados
+    distintos segun el dato, que es justo lo que la comparacion byte a byte
+    encontro.
+    """
+    if SCHEMA.get("hours_source") == "location_hours":
+        locations = _all_locations(payload)
+        if not locations:
+            return ""
+        with_name = len(locations) > 1
+        return "".join(_location_block(loc, s, with_name) for loc in locations)
+
     locations = _all_locations(payload)
     if len(locations) > 1:
         items = []
@@ -912,10 +1070,122 @@ def _address_row_body(payload: dict, s: dict) -> str:
     return f"<p>{link}</p>"
 
 
-def build_info(payload: dict, s: dict) -> str:
+# CSS que separa parrafos apilados dentro de una misma fila de info. Se emite
+# junto con las filas que APILAN parrafos (las de abajo) y solo con ellas —
+# mismo criterio que LOOKBOOK_CSS: el bloque y su CSS van juntos o no va
+# ninguno. Sin esto, una vertical sin filas apiladas cargaria una regla muerta y
+# los bytes de HMU/PawContact cambiarian.
+INFO_STACK_CSS = "\n.info-row p+p{margin-top:8px}"
+
+
+def _brand_row(payload: dict, s: dict, lang: str) -> str:
+    """"Sobre la marca": especialidad + anios de experiencia + formacion.
+
+    Data-gated: sin `specialty`/`years_experience`/`training_text` no imprime
+    nada. Ninguno de los tres puede salir del intake del motor (verificado
+    campo por campo contra build_client_from_intake.py y worker.js), asi que
+    para HMU y PawContact esta fila no existe.
+    """
+    specialty = payload.get("specialty")
+    specialty_other = str(payload.get("specialty_other", "") or "").strip()
+    label = catalog_label("specialty", specialty, lang)
+    if specialty_other and not label:
+        # El valor "otra" del catalogo no tiene etiqueta propia: la escribe el
+        # negocio en su campo libre.
+        label = specialty_other
+    lines = []
+    if label:
+        lines.append(f"<p>{esc(label)}</p>")
+    years = payload.get("years_experience")
+    if years:
+        lines.append(f'<p>{esc(years)} {s["years_experience"]}</p>')
+    training = str(payload.get("training_text", "") or "").strip()
+    if training:
+        lines.append(f"<p>{esc(training)}</p>")
+    if not lines:
+        return ""
+    return (
+        f'<div class="info-row" data-reveal><h3>{s["brand_title"]}</h3>'
+        f'{"".join(lines)}</div>'
+    )
+
+
+def _practice_rows(payload: dict, s: dict) -> list:
+    """"Como trabajamos" + tiempos de entrega + politica de anticipo.
+
+    Las tres son data-gated por sus propios campos (`appointment_mode`,
+    `home_service`, `delivery_time_text`, `deposit_policy_text`).
+    """
+    rows = []
+    mode = str(payload.get("appointment_mode", "") or "").strip()
+    work_lines = []
+    if mode and f"appointment_{mode}" in s:
+        work_lines.append(f'<p>{s[f"appointment_{mode}"]}</p>')
+    if payload.get("home_service"):
+        work_lines.append(f'<p>{s["home_service_label"]}</p>')
+    if work_lines:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["how_we_work_title"]}</h3>'
+            f'{"".join(work_lines)}</div>'
+        )
+
+    delivery = str(payload.get("delivery_time_text", "") or "").strip()
+    if delivery:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["delivery_time_title"]}</h3>'
+            f'<p>{esc(delivery)}</p></div>'
+        )
+
+    deposit = str(payload.get("deposit_policy_text", "") or "").strip()
+    if deposit:
+        rows.append(
+            f'<div class="info-row" data-reveal><h3>{s["deposit_policy_title"]}</h3>'
+            f'<p>{esc(deposit)}</p></div>'
+        )
+    return rows
+
+
+def _payment_row(payload: dict, s: dict, lang: str) -> str:
+    """"Formas de pago" (+ factura disponible). Data-gated por
+    `payment_methods`/`invoicing`; las etiquetas salen del catalogo de la
+    vertical (vertical.yaml -> catalogs.payment_methods.labels)."""
+    methods = payload.get("payment_methods") or []
+    labels = [catalog_label("payment_methods", m, lang) or str(m) for m in methods if m]
+    lines = []
+    if labels:
+        lines.append(f'<p>{esc(", ".join(labels))}</p>')
+    if payload.get("invoicing"):
+        lines.append(f'<p>{s["invoicing_yes"]}</p>')
+    if not lines:
+        return ""
+    return (
+        f'<div class="info-row" data-reveal><h3>{s["payment_title"]}</h3>'
+        f'{"".join(lines)}</div>'
+    )
+
+
+def _has_stacked_info_rows(payload: dict, s: dict, lang: str) -> bool:
+    """True si esta pagina lleva alguna de las filas que apilan parrafos.
+
+    Es lo que decide si se emite INFO_STACK_CSS. Se pregunta por las filas ya
+    construidas y no por los campos sueltos para que la regla no pueda quedar
+    desalineada del render.
+    """
+    return bool(
+        _brand_row(payload, s, lang)
+        or _practice_rows(payload, s)
+        or _payment_row(payload, s, lang)
+    )
+
+
+def build_info(payload: dict, s: dict, lang: str) -> str:
     """"Find us" section (alt theme): hours, address, policies and extra links
     as hairline info rows — this is where the background fusion happens."""
     rows = []
+
+    brand_row = _brand_row(payload, s, lang)
+    if brand_row:
+        rows.append(brand_row)
 
     hours = str(payload.get("opening_hours_text", "") or "").strip()
     if hours:
@@ -927,6 +1197,8 @@ def build_info(payload: dict, s: dict) -> str:
             f'<div class="info-row" data-reveal><h3>{s["hours_title"]}</h3>'
             f'<p>{hours_html}</p></div>'
         )
+
+    rows.extend(_practice_rows(payload, s))
 
     service_area = str(payload.get("service_area_text", "") or "").strip()
     if service_area:
@@ -980,6 +1252,10 @@ def build_info(payload: dict, s: dict) -> str:
             f'{address_body}</div>'
         )
 
+    payment_row = _payment_row(payload, s, lang)
+    if payment_row:
+        rows.append(payment_row)
+
     policies = payload.get("policies") or []
     items = [f"<li>{esc(p)}</li>" for p in policies if str(p).strip()]
     if items:
@@ -1012,8 +1288,25 @@ def build_info(payload: dict, s: dict) -> str:
     )
 
 
+# CSS de la seccion de preguntas frecuentes. Sale de base.html al motor por la
+# misma razon que LOOKBOOK_CSS: una vertical que apaga `blocks.faq` no debe
+# cargar CSS de una seccion que nunca imprime. Con el bloque encendido (el
+# default) se emite SIEMPRE, igual que antes, asi que HMU y PawContact no mueven
+# un byte — sus demos no tienen FAQ y aun asi llevan este CSS hoy.
+FAQ_CSS = (
+    "\n\n/* ---------- preguntas frecuentes ---------- */"
+    "\n.faq-list{margin-top:22px;border-top:1px solid var(--hair)}"
+    "\n.faq-item{padding:22px 0;border-bottom:1px solid var(--hair)}"
+    "\n.faq-item h3{font-family:var(--sans);font-size:15.5px;font-weight:500;"
+    "letter-spacing:.02em;margin:0 0 8px}"
+    "\n.faq-item p{margin:0;color:var(--soft);font-size:15.5px}"
+)
+
+
 def build_faq(payload: dict, s: dict) -> str:
     """Simple FAQ section for conversion-critical practical questions."""
+    if not _block_enabled(payload, "faq"):
+        return ""
     faq = payload.get("faq") or []
     items = []
     for item in faq:
@@ -1087,7 +1380,86 @@ def make_qr_png(public_url: str) -> bytes:
     return buff.getvalue()
 
 
-def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
+# --------------------------------------------------------------------------- #
+# vCard — bloque `vcard` (linkFactory/14)
+# --------------------------------------------------------------------------- #
+VCARD_ASSET_NAME = "contact.vcf"
+
+
+def vcard_escape(value) -> str:
+    """Escapa un valor de texto para una propiedad de vCard 3.0 (RFC 2426).
+
+    Backslash primero (o re-escaparia los demas escapes), luego `;` y `,`
+    (separadores estructurales) y los saltos de linea como `\\n` literal.
+    """
+    text = str(value or "")
+    text = text.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,")
+    return text.replace("\r\n", "\\n").replace("\r", "\\n").replace("\n", "\\n")
+
+
+def make_vcard(view: dict, page_url: str) -> str:
+    """El contact.vcf del negocio: SOLO datos que su pagina ya publica.
+
+    Campo por campo es el patron VIVO de My Guest (`vcardText` en su
+    master.html: N/FN/ORG con el nombre, TEL tipo CELL, EMAIL, ADR con la
+    direccion completa en el slot de calle, URL) — formas que iPhone y Android
+    ya aceptaron en produccion. Diferencias a proposito:
+
+    - Aqui el .vcf se ARMA EN BUILD y se sirve como archivo estatico, no con
+      JS en el navegador: en My Guest el telefono del anfitrion es privado
+      (lo inyecta su worker con token); aqui todos los datos son publicos.
+    - El link de la pagina SI viaja en el vCard. En My Guest se excluye porque
+      su link lleva token; el nuestro es publico, y es EL punto del boton
+      (insight de Vero: el cliente recurrente olvida el enlace — guardado el
+      contacto, el enlace viaja adentro).
+
+    Telefono: `phone`, o `whatsapp` como respaldo — los dos son numeros y lo
+    que importa es el caller-id. CRLF por RFC; el llamador escribe el archivo
+    con `newline=""` para que Windows no lo duplique.
+    """
+    name = str(view.get("business_name", "") or "").strip()
+    lines = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        f"N:;{vcard_escape(name)};;;",
+        f"FN:{vcard_escape(name)}",
+        f"ORG:{vcard_escape(name)}",
+    ]
+    tel = tel_href(view.get("phone")) or tel_href(view.get("whatsapp"))
+    if tel:
+        lines.append(f"TEL;TYPE=CELL,VOICE:{vcard_escape(tel[len('tel:'):])}")
+    mail = str(view.get("public_email", "") or "").strip()
+    if mail and "@" in mail and " " not in mail:
+        lines.append(f"EMAIL;TYPE=INTERNET:{vcard_escape(mail)}")
+    addr = _kicker_source_address(view)
+    if addr:
+        lines.append(f"ADR;TYPE=WORK:;;{vcard_escape(addr)};;;;")
+    page = str(page_url or "").strip()
+    if page:
+        lines.append(f"URL:{vcard_escape(page)}")
+    website = str(view.get("website", "") or "").strip()
+    if website.lower().startswith(("http://", "https://")) and website.rstrip("/") != page.rstrip("/"):
+        lines.append(f"URL:{vcard_escape(website)}")
+    lines.append("END:VCARD")
+    return "\r\n".join(lines) + "\r\n"
+
+
+def build_vcard_action(s: dict, vcf_src: str) -> str:
+    """La fila de accion del boton "Guardar en contactos".
+
+    Un `<a download>` al archivo estatico: cero JS. GitHub Pages sirve `.vcf`
+    como text/vcard, con lo que iPhone abre la tarjeta de contacto directo y
+    Android la descarga a Contactos. Reusa `.share__actions` y `.btn` tal
+    cual: sin CSS nuevo no hay bytes nuevos para quien no activa el bloque.
+    """
+    return (
+        f'<div class="share__actions"><a class="btn btn--ghost btn--sm" '
+        f'href="{esc(vcf_src)}" download>{s["vcard_button"]}</a></div>'
+    )
+
+
+def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME,
+                vcard_html: str = "") -> str:
     """"Share" section: QR image + visible link, centered, base theme.
 
     The QR references the static asset written next to the page (qr.svg) or at
@@ -1117,7 +1489,7 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
         f'<p class="lead" data-reveal>{s["share_lead"]}</p>'
         f'<div class="qrbox" data-reveal><img src="{esc(qr_src)}" '
         f'alt="{alt}" width="180" height="180"></div>'
-        f'{link_line}{share_button}'
+        f'{link_line}{share_button}{vcard_html}'
         "</div></section>"
     )
 
@@ -1129,6 +1501,14 @@ def build_share(public_url: str, s: dict, qr_src: str = QR_ASSET_NAME) -> str:
 # Inline styles keep a vertical with `disclaimers: []` byte-identical to before.
 DISCLAIMER_WRAP_STYLE = "margin-top:12px;font-size:.76rem;line-height:1.55;opacity:.85"
 DISCLAIMER_ITEM_STYLE = "margin:0 0 4px"
+
+# CSS del formato alterno `footer-span` (ver build_footer). Se emite SOLO con
+# ese formato: con el formato `inline` los estilos van en el atributo y esta
+# regla seria CSS muerto que moveria los bytes de HMU y PawContact.
+FOOTER_DISCLAIMER_CSS = (
+    "\n.footer .disclaimer{display:block;margin:14px auto 0;max-width:46ch;"
+    "font-size:11.5px;opacity:.8}"
+)
 
 
 def build_footer(
@@ -1156,7 +1536,13 @@ def build_footer(
         )
     notes = ""
     texts = [str(item).strip() for item in disclaimers if str(item).strip()]
-    if texts:
+    if texts and LEGAL.get("disclaimers_style") == "footer-span":
+        # Formato `footer-span`: un <span class="disclaimer"> por aviso, con su
+        # regla de CSS en la plantilla (ver FOOTER_DISCLAIMER_CSS). Es lo que
+        # ModaLink lleva publicado desde antes de compartir el motor; cambiarlo
+        # reescribiria paginas vivas, asi que el formato es una opcion.
+        notes = "".join(f'<span class="disclaimer">{esc(item)}</span>' for item in texts)
+    elif texts:
         items = "".join(
             f'<p class="footer__disclaimer" style="{DISCLAIMER_ITEM_STYLE}">{esc(item)}</p>'
             for item in texts
@@ -1175,6 +1561,19 @@ def build_footer(
 # --------------------------------------------------------------------------- #
 DEMO_HEAD_META = '<meta name="robots" content="noindex">'
 
+# Los 3 comentarios de cabecera de la plantilla. Son tokens con DEFAULT LITERAL
+# —no se derivan de `brand_name` ni de la cuenta de estilos— justamente para que
+# ninguna vertical pueda moverlos sin decirlo: derivarlos habria cambiado los
+# bytes de PawContact el dia que se agrego. Una vertical los sobreescribe con
+# `template_comments:` en su vertical.yaml.
+TEMPLATE_COMMENT_DEFAULTS = {
+    "brand_line": 'HMU Link — plantilla "editorial motion" (tier WOW)',
+    "styles_line": "Estructura compartida por los 12 estilos cerrados",
+    "palette_line": "uno de los 12 estilos cerrados",
+    "figure_line": "si el negocio tiene fotos",
+}
+TEMPLATE_COMMENTS = {**TEMPLATE_COMMENT_DEFAULTS, **(TEMPLATE_COMMENT_OVERRIDES or {})}
+
 
 def render_view(
     view: dict,
@@ -1185,8 +1584,14 @@ def render_view(
     footer_text: str,
     share_url: str,
     qr_src: str = QR_ASSET_NAME,
+    vcard_src: str = "",
 ) -> str:
-    """Render one page (any language) from a flat single-language view dict."""
+    """Render one page (any language) from a flat single-language view dict.
+
+    `vcard_src` es la ruta relativa al contact.vcf del cliente (misma mecanica
+    que `qr_src`). El boton solo se imprime con el bloque `vcard` encendido Y
+    una ruta dada: el default vacio deja a todo llamador existente byte-identico.
+    """
     s = STRINGS[lang]
     brand = view["brand_style"]
     template_path = TEMPLATES_DIR / "base.html"
@@ -1199,12 +1604,28 @@ def render_view(
     style_css = style_path.read_text(encoding="utf-8")
     # Se calcula una sola vez: decide el bloque Y su CSS (ver LOOKBOOK_CSS).
     lookbook_html = build_lookbook(view, s)
+    # Mismo criterio para los otros tres pares bloque+CSS. `faq_on` mira el
+    # BLOQUE, no si esta pagina trae preguntas: con el bloque encendido el CSS
+    # y la linea del token se emiten siempre (es lo que HMU y PawContact ya
+    # publican, aunque ninguna de sus demos tenga FAQ).
+    faq_on = _block_enabled(view, "faq")
+    faq_html = build_faq(view, s)
+    stacked_rows = _has_stacked_info_rows(view, s, lang)
+    disclaimer_texts = tuple(item.get(lang, "") for item in LEGAL.get("disclaimers") or ())
+    footer_span = bool(
+        LEGAL.get("disclaimers_style") == "footer-span"
+        and any(str(t).strip() for t in disclaimer_texts)
+    )
 
     tokens = {
         "{{LANG}}": lang,
         "{{HEAD_META}}": head_meta,
         "{{STYLE_NAME}}": esc(brand),
         "{{STYLE_CSS}}": style_css,
+        "{{TPL_BRAND_LINE}}": TEMPLATE_COMMENTS["brand_line"],
+        "{{TPL_STYLES_LINE}}": TEMPLATE_COMMENTS["styles_line"],
+        "{{TPL_PALETTE_LINE}}": TEMPLATE_COMMENTS["palette_line"],
+        "{{TPL_FIGURE_LINE}}": TEMPLATE_COMMENTS["figure_line"],
         "{{PAGE_TITLE}}": esc(f'{view.get("business_name")} - {s["title_suffix"]}'),
         "{{SHORT_DESCRIPTION}}": esc(view.get("short_description")),
         "{{LANG_SWITCH_BLOCK}}": lang_switch_html,
@@ -1220,18 +1641,28 @@ def render_view(
         "{{MARQUEE_BLOCK}}": build_marquee(view),
         "{{SERVICES_BLOCK}}": build_services(view, s),
         "{{FEATURED_BLOCK}}": build_featured(view, s),
-        "{{INFO_BLOCK}}": build_info(view, s),
-        "{{FAQ_BLOCK}}": build_faq(view, s),
-        "{{SHARE_BLOCK}}": build_share(share_url, s, qr_src),
+        "{{INFO_BLOCK}}": build_info(view, s, lang),
+        "{{INFO_STACK_CSS}}": INFO_STACK_CSS if stacked_rows else "",
+        # La LINEA entera del FAQ, no solo su contenido: con el bloque apagado
+        # no queda ni el salto de linea. Con el encendido el resultado es
+        # exactamente el de antes ("\n" + lo que devuelva build_faq).
+        "{{FAQ_LINE}}": f"\n{faq_html}" if faq_on else "",
+        "{{FAQ_CSS}}": FAQ_CSS if faq_on else "",
+        "{{FOOTER_DISCLAIMER_CSS}}": FOOTER_DISCLAIMER_CSS if footer_span else "",
+        "{{SHARE_BLOCK}}": build_share(
+            share_url, s, qr_src,
+            build_vcard_action(s, vcard_src)
+            if vcard_src and _block_enabled(view, "vcard") else "",
+        ),
         "{{FOOTER_BLOCK}}": build_footer(
             view,
             footer_text,
             f"{DOMAIN}/privacy/" if lang == "en" else f"{DOMAIN}/es/privacidad/",
-            s["footer_privacy"],
+            s["footer_privacy"] if _block_enabled(view, "footer_privacy") else "",
             # `legal.disclaimers` in vertical.yaml, in this page's language. The
             # generator inserts them so they are not removable by hand-editing a
             # published page (house rule). Empty for verticals that declare none.
-            tuple(item.get(lang, "") for item in LEGAL.get("disclaimers") or ()),
+            disclaimer_texts,
         ),
         "{{DOCK_BLOCK}}": build_dock(view, s),
         "{{SCROLL_HINT}}": s["scroll_hint"],
@@ -1273,9 +1704,36 @@ def client_lang_view(payload: dict, lang: str) -> dict:
             "delivery_pickup_links",
             "portfolio_link",
             "locations",
+            "pinterest",
+            # Campos de vertical (hoy los del giro de moda). Viajan aqui como
+            # cualquier otro campo compartido: si el payload no los trae, la
+            # vista los ve en None y sus filas no se imprimen.
+            "specialty",
+            "specialty_other",
+            "years_experience",
+            "training_text",
+            "appointment_mode",
+            "home_service",
+            "delivery_time_text",
+            "deposit_policy_text",
+            "payment_methods",
+            "invoicing",
         )
     }
-    view.update(payload["content"][lang])
+    content_block = payload["content"][lang]
+    view.update(content_block)
+
+    # Horario por sucursal: se pega el horario de ESTE idioma a su ubicacion,
+    # para que el bloque de direccion lo imprima sin un token aparte. Solo pasa
+    # cuando el payload trae `location_hours` — una vertical con horario global
+    # no toca `locations` y su vista queda exactamente igual que antes.
+    if isinstance(content_block.get("location_hours"), list):
+        hours = content_block["location_hours"]
+        view["locations"] = [
+            {**loc, "hours_text": hours[i] if i < len(hours) else ""}
+            for i, loc in enumerate(payload.get("locations") or [])
+            if isinstance(loc, dict)
+        ]
     return view
 
 
@@ -1367,6 +1825,7 @@ def build_client(json_path: Path) -> Path:
         footer_text=STRINGS[default_lang]["footer_credit"],
         share_url=root_url,
         qr_src=QR_ASSET_NAME,
+        vcard_src=VCARD_ASSET_NAME,
     )
     alt_html = render_view(
         views[alt_lang],
@@ -1376,6 +1835,7 @@ def build_client(json_path: Path) -> Path:
         footer_text=STRINGS[alt_lang]["footer_credit"],
         share_url=root_url,
         qr_src=f"../{QR_ASSET_NAME}",
+        vcard_src=f"../{VCARD_ASSET_NAME}",
     )
 
     (root_dir / "index.html").write_text(default_html, encoding="utf-8")
@@ -1387,12 +1847,67 @@ def build_client(json_path: Path) -> Path:
     # en las demos rompería el golden, que compara el árbol byte a byte.
     (root_dir / QR_ASSET_NAME).write_text(make_qr_svg(root_url), encoding="utf-8")
     (root_dir / QR_PNG_ASSET_NAME).write_bytes(make_qr_png(root_url))
+    # Un contact.vcf por cliente, SOLO con el bloque `vcard` encendido: con el
+    # default ("none") ni el archivo ni el boton existen y el arbol queda
+    # byte-identico. Datos del idioma por defecto (la direccion viaja por
+    # idioma); `newline=""` para que Windows no convierta el CRLF del RFC.
+    if _block_enabled(payload, "vcard"):
+        with (root_dir / VCARD_ASSET_NAME).open("w", encoding="utf-8", newline="") as fh:
+            fh.write(make_vcard(views[default_lang], root_url))
     return root_dir / "index.html"
 
 
 # --------------------------------------------------------------------------- #
 # Demo rendering (bilingual)
 # --------------------------------------------------------------------------- #
+def _demo_public_url(payload: dict, slug: str) -> str:
+    """URL publica de una demo monolingue.
+
+    Respeta un `public_url` explicito en el payload: el prospector (Cory)
+    publica sus previews en su propio dominio, no bajo el de la vertical.
+    """
+    url = str(payload.get("public_url", "") or "").strip()
+    return url or f"{DEMO_BASE_URL}/{slug}"
+
+
+def build_demo_monolingual(json_path: Path) -> Path:
+    """Una demo de UN idioma, en un payload plano (sin objeto `content`).
+
+    Es el camino de Cory: sus previews se arman de datos publicos de un
+    prospecto, en el idioma en el que ese prospecto se anuncia, y no hay una
+    traduccion que ofrecer. Solo corre en verticales con
+    `schema.demo_mode: flexible` — con el default (`bilingual`) un payload sin
+    `content` sigue fallando ruidosamente, que es lo que debe pasar cuando a
+    una demo bilingue se le perdio un idioma.
+    """
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    validate_client_flat(payload)
+    slug = str(payload.get("public_slug", "")).strip() or json_path.stem
+    lang = payload.get("default_language") if payload.get("default_language") in CLIENT_LANGS else "es"
+    public_url = _demo_public_url(payload, slug)
+
+    html = render_view(
+        payload,
+        lang,
+        head_meta=DEMO_HEAD_META + "\n" + build_og_meta(payload, public_url, lang),
+        lang_switch_html="",
+        footer_text=STRINGS[lang]["footer_demo_credit"],
+        share_url=public_url,
+        vcard_src=VCARD_ASSET_NAME,
+    )
+    out_dir = OUTPUT_DIR / slug
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_file = out_dir / "index.html"
+    out_file.write_text(html, encoding="utf-8")
+    (out_dir / QR_ASSET_NAME).write_text(make_qr_svg(public_url), encoding="utf-8")
+    # La demo enseña el producto completo: con el bloque `vcard` encendido
+    # lleva su contact.vcf igual que un cliente (con el default no hay archivo).
+    if _block_enabled(payload, "vcard"):
+        with (out_dir / VCARD_ASSET_NAME).open("w", encoding="utf-8", newline="") as fh:
+            fh.write(make_vcard(payload, public_url))
+    return out_file
+
+
 def build_demo(json_path: Path) -> Path:
     """Generate both language pages + one QR for a bilingual demo payload.
 
@@ -1400,8 +1915,15 @@ def build_demo(json_path: Path) -> Path:
     `demos/<slug>/en/`. Every page carries a language switch and is `noindex`
     (demos are not meant to rank), so — unlike real clients — they get no
     canonical/hreflang. The footer reads "HMU Link - Demo".
+
+    Con `schema.demo_mode: flexible` un payload PLANO (sin `content`) se
+    desvia al camino monolingue de arriba. Se decide por la forma del payload y
+    no por un campo aparte: un payload sin `content` no tiene un segundo idioma
+    que renderizar, y decirlo dos veces es una oportunidad de que se contradigan.
     """
     payload = json.loads(json_path.read_text(encoding="utf-8"))
+    if SCHEMA.get("demo_mode") == "flexible" and not isinstance(payload.get("content"), dict):
+        return build_demo_monolingual(json_path)
     validate_client(payload)
 
     slug = str(payload["public_slug"]).strip()
@@ -1444,6 +1966,7 @@ def build_demo(json_path: Path) -> Path:
         footer_text=STRINGS[default_lang]["footer_demo_credit"],
         share_url=root_url,
         qr_src=QR_ASSET_NAME,
+        vcard_src=VCARD_ASSET_NAME,
     )
     alt_html = render_view(
         views[alt_lang],
@@ -1453,18 +1976,131 @@ def build_demo(json_path: Path) -> Path:
         footer_text=STRINGS[alt_lang]["footer_demo_credit"],
         share_url=root_url,
         qr_src=f"../{QR_ASSET_NAME}",
+        vcard_src=f"../{VCARD_ASSET_NAME}",
     )
 
     (root_dir / "index.html").write_text(default_html, encoding="utf-8")
     (alt_dir / "index.html").write_text(alt_html, encoding="utf-8")
     # One QR per demo, encoding the default-language (root) URL.
     (root_dir / QR_ASSET_NAME).write_text(make_qr_svg(root_url), encoding="utf-8")
+    # Mismo criterio que build_client: el contact.vcf solo existe con el
+    # bloque `vcard` encendido — el golden de HMU compara el arbol byte a byte.
+    if _block_enabled(payload, "vcard"):
+        with (root_dir / VCARD_ASSET_NAME).open("w", encoding="utf-8", newline="") as fh:
+            fh.write(make_vcard(views[default_lang], root_url))
     return root_dir / "index.html"
+
+
+# --------------------------------------------------------------------------- #
+# Directorio publico (subsistema opt-in — ver engine/generator/directory.py)
+# --------------------------------------------------------------------------- #
+def _directory_urls() -> dict:
+    return {lang: f"{DOMAIN}/{path.strip('/')}/" for lang, path in DIRECTORY["paths"].items()}
+
+
+def _directory_opted_in() -> list:
+    """Los clientes que PIDIERON aparecer, sin filtrar por validacion."""
+    opted = []
+    for path in _client_jsons():
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        if payload.get("directory_opt_in") is True:
+            opted.append((path, payload))
+    return opted
+
+
+def collect_directory_entries() -> list:
+    """Las fichas publicables, con el candado del directorio vacio.
+
+    Un cliente que pidio aparecer pero ya no pasa `validate_client` se descarta
+    —publicar una ficha con datos que el generador considera invalidos seria
+    peor—, pero si se descartan TODOS, esto falla en vez de publicar una pagina
+    vacia: un directorio que se vacia solo no es un directorio vacio, es una
+    regresion, y sin este candado se publicaria sin un solo error (era el fallo
+    silencioso que el inventario de la migracion pedia cerrar).
+    """
+    opted = _directory_opted_in()
+    entries, descartados = [], []
+    for path, payload in opted:
+        try:
+            validate_client(payload)
+        except ValidationError as exc:
+            descartados.append(f"{path.name}: {exc}")
+            continue
+        entries.append(payload)
+    if opted and not entries:
+        raise directory.DirectoryError(
+            "Directorio: hay "
+            f"{len(opted)} cliente(s) que pidieron aparecer y NINGUNO pasa la "
+            "validacion, asi que el directorio saldria vacio. Eso casi siempre "
+            "es una validacion nueva que dejo fuera a los clientes de siempre, "
+            "no un directorio que de verdad esta vacio. Motivos:\n  - "
+            + "\n  - ".join(descartados)
+        )
+    return entries
+
+
+def build_directory() -> list:
+    """Escribe una pagina de directorio por idioma. Devuelve las rutas escritas.
+
+    No hace nada —ni un archivo— si la vertical no declara `directory:`.
+    """
+    if not DIRECTORY.get("enabled"):
+        return []
+    entries = collect_directory_entries()
+    urls = _directory_urls()
+    pairs = tuple(DIRECTORY["hreflang"].items())
+    hreflang_html = directory.hreflang(urls, pairs, DIRECTORY["default_language"])
+    group = DIRECTORY["group_by"]
+    order = tuple((CATALOGS.get(group) or {}).get("values") or ())
+    written = []
+    for lang, rel in DIRECTORY["paths"].items():
+        out_dir = REPO_ROOT / "public" / Path(rel)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        html_out = directory.render_page(
+            entries,
+            lang,
+            strings=DIRECTORY["strings"][lang],
+            urls=urls,
+            hreflang_html=hreflang_html,
+            category_of=lambda p: str(p.get(group) or DIRECTORY["fallback_category"]),
+            category_label=lambda key, lg: catalog_label(group, key, lg),
+            category_order=order,
+            state_of=lambda p: p.get(DIRECTORY["filter_by"]),
+            tagline_of=lambda p, lg: p.get("content", {}).get(lg, {}).get("short_description", ""),
+            url_of=_directory_client_url,
+            disclaimer=next(
+                (item.get(lang, "") for item in LEGAL.get("disclaimers") or ()), ""
+            ),
+            esc=esc,
+            safe_href=safe_href,
+        )
+        out_file = out_dir / "index.html"
+        out_file.write_text(html_out, encoding="utf-8")
+        written.append(out_file)
+    return written
+
+
+def _directory_client_url(payload: dict, lang: str) -> str:
+    slug = str(payload["public_slug"]).strip()
+    root_url = f"{CLIENT_BASE_URL}/{slug}/"
+    return root_url if lang == payload.get("default_language") else f"{root_url}{lang}/"
 
 
 # --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
+
+
+def _publicar_directorio() -> None:
+    """Escribe el directorio y lo dice, o no hace nada si esta apagado."""
+    if not DIRECTORY.get("enabled"):
+        return
+    escritos = build_directory()
+    rutas = ", ".join(str(p.parent.relative_to(REPO_ROOT / "public")) for p in escritos)
+    print(f"Directorio regenerado: {rutas}")
 
 
 def _client_jsons() -> list[Path]:
@@ -1493,6 +2129,11 @@ def main(argv: list[str]) -> int:
 
     if not demo_paths and not client_paths:
         print("No se encontraron payloads JSON para generar.", file=sys.stderr)
+        # El directorio se escribe IGUAL: su estado vacio es una pagina
+        # legitima que invita a ser el primero, y una vertical con directorio
+        # encendido no puede quedarse sin publicarlo solo porque todavia no
+        # tiene clientes. No hace nada en una vertical que no lo declara.
+        _publicar_directorio()
         return 1
 
     failures = 0
@@ -1516,6 +2157,13 @@ def main(argv: list[str]) -> int:
 
     total = len(demo_paths) + len(client_paths)
     print(f"\nGeneradas {total - failures}/{total} paginas.")
+
+    # El directorio se rehace SIEMPRE desde TODOS los clientes con
+    # `directory_opt_in`, no solo los que vinieron por argv: igual que
+    # public/links/, es un artefacto derivado del estado completo de
+    # data/clients/. Generar la pagina de una clienta nueva sin rehacerlo la
+    # dejaria fuera del directorio en el que pidio aparecer, sin un solo error.
+    _publicar_directorio()
     return 1 if failures else 0
 
 

@@ -65,6 +65,7 @@ import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFoot
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
 // una vertical con otras preguntas edita SUS alias sin tocar este worker.
 import RAW_FIELD_ALIASES from './tally-field-aliases.json' with { type: 'json' };
+import RAW_PRIMARY_CTA_ALIASES from './primary-cta-aliases.json' with { type: 'json' };
 
 /**
  * Los alias de cada campo, MAS su propio nombre canonico al final.
@@ -107,6 +108,84 @@ const FIELD_ALIASES = Object.fromEntries(
   ])
 );
 
+/**
+ * Los alias de UN campo, tolerando que la vertical no lo pregunte.
+ *
+ * El mapa es config por vertical (export_vertical.py le copia a cada repo el
+ * suyo), y no todas preguntan lo mismo: ModaLink no tiene tipo de negocio, ni
+ * FAQ, ni horario unico. Antes se leia `FIELD_ALIASES.faq_text` directo, asi
+ * que un campo sin entrada llegaba a `answerAny(a, undefined)` y el worker
+ * REVENTABA con el intake de un cliente que ya pago. Sin alias declarados queda
+ * solo el nombre canonico —que es lo que la derivacion de arriba agrega igual—
+ * y el campo sale vacio, que es la respuesta correcta a "no lo pregunto".
+ */
+function fieldAliases(campo) {
+  const alias = FIELD_ALIASES[campo];
+  return Array.isArray(alias) ? alias : [campo];
+}
+
+/**
+ * Campos OPCIONALES del intake: el motor sabe COMO se extrae cada uno, y la
+ * vertical decide SI existe declarandolo en su `tally-field-aliases.json`.
+ *
+ * Es el principio de arquitectura de Vero (2026-07-26) aplicado al worker: lo
+ * distinto de un producto es una OPCION del motor, nunca una copia aparte. Aqui
+ * viven los campos del giro de la moda que ModaLink extraia en su propio
+ * worker; manana los de Dr Link se suman a la misma tabla.
+ *
+ * Dos cosas que hacen que esto NO toque a HMU ni a PawContact:
+ *
+ *  1. Se emiten solo si el mapa de la vertical trae el campo. El de HMU no trae
+ *     ninguno de estos, asi que su payload no gana ni una clave (hay prueba).
+ *  2. Todo viaja como TEXTO tal cual lo contesto el negocio. El worker no
+ *     conoce los catalogos cerrados del giro (`servicios_produccion`,
+ *     `cita_previa`, `cash|card|transfer`): quien traduce la etiqueta del
+ *     formulario a su clave es `build_client_from_intake.py`, que si lee el
+ *     `vertical.yaml`. Duplicar esas listas aqui habria sido una segunda fuente
+ *     de verdad que se desincroniza sola.
+ */
+const OPTIONAL_INTAKE_FIELDS = {
+  // Giro (moda hoy; el motor solo ve texto)
+  specialty: answerAny,
+  specialty_other: answerAny,
+  years_experience: answerAny,
+  training_text: answerAny,
+  delivery_time_text: answerAny,
+  deposit_policy_text: answerAny,
+  appointment_mode: answerAny,
+  home_service: answerAny,
+  payment_methods: answerAny,
+  invoicing: answerAny,
+  photo_rights_confirmed: answerAny,
+  // Directorio publico de la vertical
+  directory_state: answerAny,
+  directory_opt_in: answerAny,
+  // Una red social mas
+  pinterest: answerAny,
+  // Horario POR SUCURSAL: una respuesta por ubicacion, con la MISMA forma plana
+  // que el resto de las ubicaciones (`location_N_*`), para que build_locations()
+  // las alinee por indice sin inventar una estructura nueva en el payload.
+  location_1_hours: answerAny,
+  location_2_hours: answerAny,
+  location_3_hours: answerAny,
+  // Mini-lookbook (2 a 4 fotos)
+  lookbook_urls: (a, alias) => answerFileUrls(a, alias, MAX_LOOKBOOK_URLS),
+};
+
+// Tope de fotos del mini-lookbook. Es el mismo numero que el formulario acepta
+// y que `MAX_LOOKBOOK_PHOTOS` del generador publica.
+const MAX_LOOKBOOK_URLS = 4;
+
+// Los campos opcionales que ESTA vertical declaro, ya extraidos.
+function optionalIntakeFields(answers) {
+  const out = {};
+  for (const [campo, extraer] of Object.entries(OPTIONAL_INTAKE_FIELDS)) {
+    if (!Array.isArray(FIELD_ALIASES[campo])) continue;
+    out[campo] = extraer(answers, FIELD_ALIASES[campo]);
+  }
+  return out;
+}
+
 // Precio de la corrección adicional — DEBE coincidir con la sección 3 de los
 // Términos publicados (public/terms/ y public/es/terminos/): $6 USD / $59 MXN.
 // (Auditoría 2026-07: el código cobraba $3/$40, valores viejos anteriores a
@@ -147,7 +226,11 @@ let _workerEnv = null;
 // una experiencia que la vertical no entrega (regresión R1 del gate de HMU).
 export {
   normalizeTallyPayload, buildPublicPayload, missingFromIntake,
-  checkIntakeCompleteness, marca, modificationCopy
+  checkIntakeCompleteness, marca, modificationCopy,
+  // El correo de ENTREGA: lo que recibe el cliente que pagó. No estaba
+  // exportado, así que ni una prueba lo miraba — y es donde vivían las dos
+  // notas de Vero de la Fase 2 (el idioma por moneda y la imagen del correo).
+  buildDeliveryEmail, buildDeliveryText, DELIVERY_QR_CID
 };
 
 export default {
@@ -783,6 +866,11 @@ async function handleNotify(request, env) {
   // viene, viene mal formado o viene demasiado grande, el correo sale sin QR —
   // nunca bloquea la entrega, que es lo que el cliente pagó.
   const qrPngBase64 = sanitizeBase64Image(body?.qr_png_base64);
+  // Frases rojas que el linter de copy encontró (`legal.copy_linter` de la
+  // vertical -> GITHUB_OUTPUT linter_flags -> el workflow). Data-gated: una
+  // vertical sin lista no lo manda nunca y su correo no cambia. Warn-only: la
+  // página ya está publicada; el correo solo sugiere revisarla.
+  const linterFlags = Number(body?.linter_flags) || 0;
 
   // El workflow ya no conoce el order_id (no viaja en client_payload para no
   // aparecer en logs públicos de Actions); se resuelve desde la submission.
@@ -897,6 +985,7 @@ async function handleNotify(request, env) {
         lang: deliveryLang,
         correctionUrl,
         hasQr: Boolean(qrPngBase64),
+        hasLinterFlags: linterFlags > 0,
         env
       }),
       text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl, hasQr: Boolean(qrPngBase64), env }),
@@ -2257,58 +2346,20 @@ function slugify(text) {
     .replace(/-+$/g, '');
 }
 
+// El boton que el negocio eligio destacar. La tabla NO vive aqui: vive en
+// primary-cta-aliases.json, y la comparten este worker y el generador
+// (engine/generator/primary_cta.py). Estuvo copiada en las tres y divergio —
+// 3 de las 5 opciones del formulario de PawContact caian a WhatsApp en
+// silencio (auditoria 2026-07-26). Mismo guard `Array.isArray` que
+// FIELD_ALIASES: el JSON lleva notas `_comment*` que no son listas.
+const PRIMARY_CTA_ALIASES = Object.fromEntries(
+  Object.entries(RAW_PRIMARY_CTA_ALIASES).flatMap(([kind, aliases]) =>
+    Array.isArray(aliases) ? aliases.map((alias) => [alias, kind]) : []
+  )
+);
+
 function normalizePrimaryCta(value) {
-  const normalized = normalizeKey(value);
-  const aliases = {
-    wa: 'whatsapp',
-    wpp: 'whatsapp',
-    whats: 'whatsapp',
-    whatsapp: 'whatsapp',
-    telefono: 'phone',
-    phone: 'phone',
-    phone_call: 'phone',
-    call: 'phone',
-    llamar: 'phone',
-    llamada_telefonica: 'phone',
-    booking: 'booking',
-    book: 'booking',
-    reservation: 'booking',
-    reservas: 'booking',
-    reservar: 'booking',
-    external_booking_link: 'booking',
-    enlace_externo_de_reservas: 'booking',
-    website: 'website',
-    web: 'website',
-    sitio_web: 'website',
-    site: 'website',
-    tiktok: 'tiktok',
-    tik_tok: 'tiktok',
-    tt: 'tiktok',
-    instagram: 'instagram',
-    ig: 'instagram',
-    insta: 'instagram',
-    facebook: 'facebook',
-    fb: 'facebook',
-    face: 'facebook',
-    email: 'email',
-    mail: 'email',
-    correo: 'email',
-    other: 'other',
-    otro: 'other',
-    other_public_link: 'other',
-    otro_enlace_publico: 'other',
-    external_link: 'other',
-    enlace_externo: 'other',
-    maps: 'maps',
-    map: 'maps',
-    google_maps: 'maps',
-    directions: 'maps',
-    google_maps_directions: 'maps',
-    google_maps_como_llegar: 'maps',
-    como_llegar: 'maps',
-    mapa: 'maps'
-  };
-  return aliases[normalized] || '';
+  return PRIMARY_CTA_ALIASES[normalizeKey(value)] || '';
 }
 
 // Lo que TODA página necesita, sea del tipo que sea: estilo, idioma, nombre del
@@ -2328,7 +2379,7 @@ function intakeIdentity(normalized, orderId, env) {
   // fallbackBrandStyle y sus 4 opciones entregaban la MISMA página warm-sand.
   // Si alguna vertical vuelve a usar guion como separador,
   // `create_tally_forms.py --check-mapping` lo caza antes del deploy.
-  const styleRaw = answerAny(a, FIELD_ALIASES.pick_your_style);
+  const styleRaw = answerAny(a, fieldAliases('pick_your_style'));
   const styleName = styleRaw.split(/[—–]/)[0] || '';
   let brandStyle = slugify(styleName);
   let styleUnmapped = false;
@@ -2338,7 +2389,7 @@ function intakeIdentity(normalized, orderId, env) {
     brandStyle = fallbackBrandStyle(validStyles);
   }
 
-  // FIELD_ALIASES.default_language solo trae alias genéricos (sin marca); los
+  // fieldAliases('default_language') solo trae alias genéricos (sin marca); los
   // dos alias específicos de marca ("...your <BRAND> show first") se derivan de
   // BRAND_NAME en tiempo de ejecución (languageQuestionAliases, Fase 2.3/2.9 —
   // antes 'hmu_link' vivía hardcodeado en el JSON compartido con cada vertical).
@@ -2346,11 +2397,11 @@ function intakeIdentity(normalized, orderId, env) {
   // cliente > idioma del formulario que llenó (form_id vs TALLY_FORM_URL_ES/EN,
   // ver tallyFormLang) > 'en'. Antes el fallback comparaba contra 'MeyDpk' (el
   // form ES de HMU, hardcodeado), así que toda vertical exportada caía a inglés.
-  const langAliases = [...FIELD_ALIASES.default_language, ...languageQuestionAliases(env)];
+  const langAliases = [...fieldAliases('default_language'), ...languageQuestionAliases(env)];
   const langRaw = answerAny(a, langAliases);
   const defaultLanguage = resolveDefaultLanguage(langRaw, env, normalized.form_id);
 
-  const businessName = answerAny(a, FIELD_ALIASES.business_name);
+  const businessName = answerAny(a, fieldAliases('business_name'));
   const suffix = String(normalized.submission_id || orderId || '')
     .toLowerCase().replace(/[^a-z0-9]/g, '').slice(-7) || 'x0';
   const publicSlug = `${slugify(businessName) || 'hmu-page'}-${suffix}`;
@@ -2385,53 +2436,58 @@ function buildPublicPayload(normalized, orderId, env) {
     brand_style: brandStyle,
     style_unmapped: styleUnmapped,
     business_name: businessName,
-    business_type: answerAny(a, FIELD_ALIASES.business_type),
-    short_description: answerAny(a, FIELD_ALIASES.short_description),
-    whatsapp: answerAny(a, FIELD_ALIASES.whatsapp),
-    phone: answerAny(a, FIELD_ALIASES.phone),
-    public_email: answerAny(a, FIELD_ALIASES.public_email),
-    instagram: answerAny(a, FIELD_ALIASES.instagram),
-    facebook: answerAny(a, FIELD_ALIASES.facebook),
-    tiktok: answerAny(a, FIELD_ALIASES.tiktok),
-    website: answerAny(a, FIELD_ALIASES.website),
-    other_public_link: answerAny(a, FIELD_ALIASES.other_public_link),
-    delivery_pickup_links_text: answerAny(a, FIELD_ALIASES.delivery_pickup_links_text),
-    portfolio_link: answerAny(a, FIELD_ALIASES.portfolio_link),
-    booking_url: answerAny(a, FIELD_ALIASES.booking_url),
-    primary_cta: normalizePrimaryCta(answerAny(a, FIELD_ALIASES.primary_cta)),
-    google_maps_url: answerAny(a, FIELD_ALIASES.google_maps_url),
-    google_reviews_url: answerAny(a, FIELD_ALIASES.google_reviews_url),
-    address: answerAny(a, FIELD_ALIASES.address),
-    location_1_notes: answerAny(a, FIELD_ALIASES.location_1_notes),
-    service_area_text: answerAny(a, FIELD_ALIASES.service_area_text),
-    client_care_text: answerAny(a, FIELD_ALIASES.client_care_text),
-    reservations_text: answerAny(a, FIELD_ALIASES.reservations_text),
-    class_schedule_text: answerAny(a, FIELD_ALIASES.class_schedule_text)
+    business_type: answerAny(a, fieldAliases('business_type')),
+    short_description: answerAny(a, fieldAliases('short_description')),
+    whatsapp: answerAny(a, fieldAliases('whatsapp')),
+    phone: answerAny(a, fieldAliases('phone')),
+    public_email: answerAny(a, fieldAliases('public_email')),
+    instagram: answerAny(a, fieldAliases('instagram')),
+    facebook: answerAny(a, fieldAliases('facebook')),
+    tiktok: answerAny(a, fieldAliases('tiktok')),
+    website: answerAny(a, fieldAliases('website')),
+    other_public_link: answerAny(a, fieldAliases('other_public_link')),
+    delivery_pickup_links_text: answerAny(a, fieldAliases('delivery_pickup_links_text')),
+    portfolio_link: answerAny(a, fieldAliases('portfolio_link')),
+    booking_url: answerAny(a, fieldAliases('booking_url')),
+    primary_cta: normalizePrimaryCta(answerAny(a, fieldAliases('primary_cta'))),
+    google_maps_url: answerAny(a, fieldAliases('google_maps_url')),
+    google_reviews_url: answerAny(a, fieldAliases('google_reviews_url')),
+    address: answerAny(a, fieldAliases('address')),
+    location_1_notes: answerAny(a, fieldAliases('location_1_notes')),
+    service_area_text: answerAny(a, fieldAliases('service_area_text')),
+    client_care_text: answerAny(a, fieldAliases('client_care_text')),
+    reservations_text: answerAny(a, fieldAliases('reservations_text')),
+    class_schedule_text: answerAny(a, fieldAliases('class_schedule_text'))
       || answerContains(a, [['class', 'schedule'], ['class', 'timetable'], ['horario', 'clase']]),
-    tour_details_text: answerAny(a, FIELD_ALIASES.tour_details_text)
+    tour_details_text: answerAny(a, fieldAliases('tour_details_text'))
       || answerContains(a, [['tour'], ['experience', 'detail'], ['experiencia', 'detalle']]),
-    pet_notes_text: answerAny(a, FIELD_ALIASES.pet_notes_text)
+    pet_notes_text: answerAny(a, fieldAliases('pet_notes_text'))
       || answerContains(a, [['pet'], ['mascota']]),
-    opening_hours_text: answerAny(a, FIELD_ALIASES.opening_hours_text),
-    service_categories_text: answerAny(a, FIELD_ALIASES.service_categories_text),
-    price_display: answerAny(a, FIELD_ALIASES.price_display),
-    services_text: answerAny(a, FIELD_ALIASES.services_text),
-    faq_text: answerAny(a, FIELD_ALIASES.faq_text),
-    featured_text: answerAny(a, FIELD_ALIASES.featured_text),
-    policies_text: answerAny(a, FIELD_ALIASES.policies_text),
-    logo_url: answerFileUrl(a, FIELD_ALIASES.logo_url),
-    image_url: answerFileUrl(a, FIELD_ALIASES.image_url),
-    gallery_image_urls: answerFileUrls(a, FIELD_ALIASES.gallery_image_urls, 5),
-    location_1_name: answerAny(a, FIELD_ALIASES.location_1_name),
-    location_2_name: answerAny(a, FIELD_ALIASES.location_2_name),
-    location_2_address: answerAny(a, FIELD_ALIASES.location_2_address),
-    location_2_maps_url: answerAny(a, FIELD_ALIASES.location_2_maps_url),
-    location_2_notes: answerAny(a, FIELD_ALIASES.location_2_notes),
-    location_3_name: answerAny(a, FIELD_ALIASES.location_3_name),
-    location_3_address: answerAny(a, FIELD_ALIASES.location_3_address),
-    location_3_maps_url: answerAny(a, FIELD_ALIASES.location_3_maps_url),
-    location_3_notes: answerAny(a, FIELD_ALIASES.location_3_notes),
-    additional_locations_text: answerAny(a, FIELD_ALIASES.additional_locations_text)
+    opening_hours_text: answerAny(a, fieldAliases('opening_hours_text')),
+    service_categories_text: answerAny(a, fieldAliases('service_categories_text')),
+    price_display: answerAny(a, fieldAliases('price_display')),
+    services_text: answerAny(a, fieldAliases('services_text')),
+    faq_text: answerAny(a, fieldAliases('faq_text')),
+    featured_text: answerAny(a, fieldAliases('featured_text')),
+    policies_text: answerAny(a, fieldAliases('policies_text')),
+    logo_url: answerFileUrl(a, fieldAliases('logo_url')),
+    image_url: answerFileUrl(a, fieldAliases('image_url')),
+    gallery_image_urls: answerFileUrls(a, fieldAliases('gallery_image_urls'), 5),
+    location_1_name: answerAny(a, fieldAliases('location_1_name')),
+    location_2_name: answerAny(a, fieldAliases('location_2_name')),
+    location_2_address: answerAny(a, fieldAliases('location_2_address')),
+    location_2_maps_url: answerAny(a, fieldAliases('location_2_maps_url')),
+    location_2_notes: answerAny(a, fieldAliases('location_2_notes')),
+    location_3_name: answerAny(a, fieldAliases('location_3_name')),
+    location_3_address: answerAny(a, fieldAliases('location_3_address')),
+    location_3_maps_url: answerAny(a, fieldAliases('location_3_maps_url')),
+    location_3_notes: answerAny(a, fieldAliases('location_3_notes')),
+    additional_locations_text: answerAny(a, fieldAliases('additional_locations_text')),
+    // Lo que ESTA vertical declare de mas (ver OPTIONAL_INTAKE_FIELDS). La
+    // tabla es CERRADA y sus nombres no se cruzan con ninguno de arriba, asi
+    // que el spread no puede pisar un campo del motor por mucho que una
+    // vertical escriba lo que sea en su mapa de alias.
+    ...optionalIntakeFields(a)
   };
 }
 
@@ -2466,8 +2522,8 @@ function buildCatalogPublicPayload(normalized, orderId, env) {
   const { brandStyle, styleUnmapped, defaultLanguage, businessName, publicSlug } =
     intakeIdentity(normalized, orderId, env);
 
-  const saleKind = normalizeSaleKind(answerAny(a, FIELD_ALIASES.sale_button_kind));
-  const saleValue = normalizeSaleValue(answerAny(a, FIELD_ALIASES.sale_button_value));
+  const saleKind = normalizeSaleKind(answerAny(a, fieldAliases('sale_button_kind')));
+  const saleValue = normalizeSaleValue(answerAny(a, fieldAliases('sale_button_value')));
 
   return {
     template: 'catalog',
@@ -2476,18 +2532,18 @@ function buildCatalogPublicPayload(normalized, orderId, env) {
     brand_style: brandStyle,
     style_unmapped: styleUnmapped,
     business_name: businessName,
-    short_description: answerAny(a, FIELD_ALIASES.short_description),
-    address: answerAny(a, FIELD_ALIASES.address),
+    short_description: answerAny(a, fieldAliases('short_description')),
+    address: answerAny(a, fieldAliases('address')),
     // El generador exige sale_button.kind válido y un value que produzca enlace;
     // se manda lo que haya (aunque venga incompleto) para que el gate de intake
     // del call-site pueda decir exactamente qué faltó, en vez de que el
     // generador falle después con un payload que ya nadie puede inspeccionar.
     sale_button: { kind: saleKind, value: saleValue },
-    catalog_mode: answerAny(a, FIELD_ALIASES.catalog_mode),
-    products_text: answerAny(a, FIELD_ALIASES.products_text),
+    catalog_mode: answerAny(a, fieldAliases('catalog_mode')),
+    products_text: answerAny(a, fieldAliases('products_text')),
     // 20 = el tope de productos por catálogo que fijó F2.
-    product_image_urls: answerFileUrls(a, FIELD_ALIASES.product_image_urls, 20),
-    logo_url: answerFileUrl(a, FIELD_ALIASES.logo_url),
+    product_image_urls: answerFileUrls(a, fieldAliases('product_image_urls'), 20),
+    logo_url: answerFileUrl(a, fieldAliases('logo_url')),
     prospect_slug: ''
   };
 }
@@ -2723,26 +2779,53 @@ function modificationCopy(env, es) {
 
 // La corrección gratuita se pide con el botón (flujo automatizado /correct/)
 // o respondiendo al correo (reply_to va al buzón real) — ambas vías valen.
-function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, hasQr, env }) {
+function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, hasQr, hasLinterFlags, env }) {
   const es = lang !== 'en';
+  // Aviso del linter de copy (`legal.copy_linter`). Solo aparece si la vertical
+  // tiene lista Y el intake disparó alguna frase, así que el correo de una
+  // vertical sin lista no cambia ni un byte. No dice CUÁL frase a propósito: el
+  // correo va al cliente, y el objetivo es que revise su texto, no señalarlo.
+  const linterBlock = hasLinterFlags
+    ? `
+    <div style="margin: 26px 0; padding: 18px 20px; background: #fdeaea; border-left: 4px solid #c0392b; border-radius: 6px;">
+      <p style="margin: 0 0 8px 0; color: #211a17; font-weight: 700;">${es ? 'Revisa el texto de tu página' : 'Please review your page copy'}</p>
+      <p style="margin: 0; color: #6b5f58; font-size: 14px;">${es
+        ? 'Detectamos frases en tu información que podrían aludir a marcas de terceros (por ejemplo, «réplica de» o «inspirado en [marca]»). Tu página ya está publicada; te recomendamos revisarla y, si hace falta, usar tu modificación incluida.'
+        : 'We flagged some phrasing in your submission that may reference third-party brands (for example, "replica of" or "inspired by [brand]"). Your page is already published; please review it and, if needed, use your included modification.'}</p>
+    </div>`
+    : '';
   // Cuántas modificaciones gratis incluye la compra (FREE_CHANGES <-
   // legal.free_changes): el correo dice el MISMO número que los Términos.
   const free = freeChanges(env);
+  // El MISMO QR, publicado junto a la página del cliente. El correo lo adjunta
+  // inline (`cid:`) porque es lo que se ve sin hacer nada; este enlace es el
+  // camino que queda cuando la imagen NO se ve, que es la mitad que faltaba:
+  // un cliente de correo con las imágenes apagadas —el default de muchos—
+  // pinta un recuadro GRIS donde va el QR, y hasta hoy ese recuadro no decía
+  // qué era (alt="QR") ni llevaba a ninguna parte. Verificado 2026-07-27 por
+  // HTTP: `<página>/qr.png` responde 200 image/png en los clientes reales de
+  // PawContact y ModaLink.
+  const qrUrl = `${String(pageUrl || '').replace(/\/+$/, '')}/qr.png`;
   const qrCopy = es
     ? {
         title: '📲 Tu código QR',
-        body: 'Imprímelo o pégalo donde tus clientes puedan escanearlo. También va adjunto como imagen PNG en este correo.'
+        alt: 'Código QR de tu página',
+        body: 'Imprímelo o pégalo donde tus clientes puedan escanearlo. También va adjunto como imagen PNG en este correo.',
+        link: 'Descargar el QR (PNG)'
       }
     : {
         title: '📲 Your QR code',
-        body: 'Print it or put it anywhere your customers can scan it. It is also attached to this email as a PNG image.'
+        alt: 'QR code for your page',
+        body: 'Print it or put it anywhere your customers can scan it. It is also attached to this email as a PNG image.',
+        link: 'Download the QR (PNG)'
       };
   const qrBlock = hasQr
     ? `
     <div style="margin: 30px 0; text-align: center;">
       <p style="margin: 0 0 12px 0; color: #333; font-weight: 500;">${qrCopy.title}</p>
-      <img src="cid:${DELIVERY_QR_CID}" alt="QR" width="180" height="180" style="display: inline-block; border: 1px solid #eee; border-radius: 8px;">
+      <a href="${qrUrl}" style="text-decoration: none;"><img src="cid:${DELIVERY_QR_CID}" alt="${qrCopy.alt}" width="180" height="180" style="display: inline-block; border: 1px solid #eee; border-radius: 8px;"></a>
       <p style="margin: 12px 0 0 0; color: #888; font-size: 12px;">${qrCopy.body}</p>
+      <p style="margin: 6px 0 0 0; font-size: 12px;"><a href="${qrUrl}" style="color: #00a0b5;">${qrCopy.link}</a></p>
     </div>`
     : '';
   const t = es
@@ -2803,7 +2886,7 @@ function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, hasQr, env }) 
     </div>
 
     <p style="color: #999; font-size: 13px;">${t.note}</p>
-${qrBlock}
+${linterBlock}${qrBlock}
     <h3 style="color: #1a1a1a; margin-top: 30px;">${t.stepsTitle}</h3>
     <ul style="color: #666;">
       <li>${t.steps[0]}</li>
@@ -2830,6 +2913,10 @@ ${qrBlock}
 function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
   const es = lang !== 'en';
   const free = freeChanges(env);
+  // El mismo enlace de respaldo que el HTML (ver `qrUrl` en buildDeliveryEmail):
+  // esta versión la lee quien tiene el correo en texto plano, y sin el enlace
+  // "va adjunto" era todo lo que tenía.
+  const qrUrl = `${String(pageUrl || '').replace(/\/+$/, '')}/qr.png`;
   if (es) {
     return [
       '¡Tu página de servicios está lista!',
@@ -2841,7 +2928,7 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
       'Próximos pasos:',
       '- Abre tu página y verifica que todo se vea correcto',
       hasQr
-      ? '- Tu código QR va adjunto en este correo (PNG), listo para imprimir'
+      ? `- Tu código QR va adjunto en este correo (PNG), listo para imprimir. También lo puedes bajar aquí: ${qrUrl}`
       : '- Descarga el código QR desde tu página para compartir fácilmente',
       '- Comparte el link en tu bio de Instagram, WhatsApp, tarjetas de visita, etc.',
       '',
@@ -2862,7 +2949,7 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
     'Next steps:',
     '- Open your page and check that everything looks right',
     hasQr
-      ? '- Your QR code is attached to this email (PNG), ready to print'
+      ? `- Your QR code is attached to this email (PNG), ready to print. You can also download it here: ${qrUrl}`
       : '- Download the QR code from your page to share it easily',
     '- Share the link in your Instagram bio, WhatsApp, business cards, etc.',
     '',

@@ -45,6 +45,44 @@ ENGINE_BLOCKS = {
     "lookbook": {
         "enabled_for": "all",
     },
+    # Los 3 siguientes nacen de la migracion de ModaLink (2026-07-26). Los tres
+    # arrancan en "all" — o sea, el comportamiento que el motor YA tenia — asi
+    # que una vertical que no los declara no mueve un byte. ModaLink los apaga
+    # porque no aplican a su producto, que es exactamente el caso que el
+    # principio de arquitectura de Vero contempla: lo distinto es una OPCION.
+    #
+    # `faq`: la seccion de preguntas frecuentes. Apagarla quita tambien su CSS
+    # y la linea del token en la plantilla (ver FAQ_CSS en generate_service_menu
+    # y {{FAQ_LINE}} en templates/base.html) — si solo se quitara el bloque, la
+    # pagina quedaria con un salto de linea de sobra, que fue justo el error que
+    # el gate de HMU tuvo que corregir con el mini-lookbook.
+    "faq": {
+        "enabled_for": "all",
+    },
+    # `price_ask_legend`: la leyenda "Consultar"/"Ask us" que el motor imprime
+    # en un servicio SIN precio cuando la politica no es "ocultar". ModaLink no
+    # la imprime: deja el renglon sin columna de precio.
+    "price_ask_legend": {
+        "enabled_for": "all",
+    },
+    # `footer_privacy`: el enlace de Privacidad del pie. ModaLink no lo lleva en
+    # las paginas de cliente.
+    "footer_privacy": {
+        "enabled_for": "all",
+    },
+    # `vcard` (linkFactory/14, decision de Vero 2026-07-27): el boton "Guardar
+    # en contactos" — un contact.vcf generado en build con los datos PUBLICOS
+    # del negocio (nombre, telefono, web, direccion) y el link de su pagina
+    # adentro, que es el punto: nadie guarda el telefono de un servicio al que
+    # va cada 3 meses, y el enlace se olvida; el contacto guardado lleva los
+    # dos. A diferencia de los bloques de arriba, este AGREGA contenido nuevo,
+    # asi que su default es "none": ninguna vertical cambia un byte hasta que
+    # declare `blocks: {vcard: {enabled_for: ...}}` en su vertical.yaml (la
+    # activacion viaja con la ola del re-export, linkFactory/12). Referencia
+    # viva del patron: My Guest (su .vcf se arma igual, campo por campo).
+    "vcard": {
+        "enabled_for": "none",
+    },
 }
 
 _GENERAL = ("", "general")

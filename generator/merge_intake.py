@@ -206,6 +206,12 @@ LOCATION_KEYS = (
     "location_2_name", "location_2_address", "location_2_maps_url", "location_2_notes",
     "location_3_name", "location_3_address", "location_3_maps_url", "location_3_notes",
     "additional_locations_text",
+    # Horario POR SUCURSAL (verticales con `schema.hours_source: location_hours`,
+    # hoy ModaLink; también lo necesita Dr Link). Van en el grupo y no aparte
+    # justamente porque `content.<lang>.location_hours` se alinea por índice con
+    # `locations`: si las sucursales se rehicieran y los horarios se conservaran
+    # viejos, una tienda publicaría el horario de la otra.
+    "location_1_hours", "location_2_hours", "location_3_hours",
 )
 
 # Las categorías y los servicios se leen de las MISMAS dos respuestas

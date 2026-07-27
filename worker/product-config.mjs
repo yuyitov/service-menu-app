@@ -147,16 +147,35 @@ export function tallyFormLang(env, formId) {
   return null;
 }
 
+// Idioma principal de la vertical: el último recurso cuando no hay ni respuesta
+// de idioma ni un form_id reconocible. Sale de `intake.default_language` del
+// vertical.yaml (export_vertical.py lo vuelca a esta var). Sin la var → 'en',
+// que es el comportamiento histórico y el de HMU/PawContact hoy.
+//
+// Existe por ModaLink, la única vertical cuyos formularios NO preguntan el
+// idioma (tiene uno por idioma) y que además vende en México: con el 'en' fijo,
+// un intake cuyo form_id no se reconociera —una URL de Tally reemitida, una var
+// mal copiada— publicaría en inglés la página de una clienta que escribió todo
+// en español, y el generador la rechazaría por "the English page still looks
+// Spanish". Su worker propio ya se defendía de eso adivinando por cuál clave de
+// `business_name` venía contestada; esto es esa misma defensa, dicha en la
+// config en vez de adivinada en el código.
+export function defaultIntakeLanguage(env) {
+  const raw = String((env && env.DEFAULT_INTAKE_LANGUAGE) || '').trim().toLowerCase();
+  return raw === 'es' || raw === 'en' ? raw : 'en';
+}
+
 // Regla completa del idioma por defecto de la página del cliente (decisión de
 // Vero, 2026-07-17): (1) respuesta explícita del cliente a la pregunta de
 // idioma → esa manda; (2) sin respuesta, el idioma del formulario que llenó
-// (tallyFormLang); (3) último recurso → 'en'. Vive aquí (no en worker.js) para
-// testearse con node --test sin tocar KV/red, igual que el resto del módulo.
+// (tallyFormLang); (3) último recurso → el idioma principal de la vertical
+// (defaultIntakeLanguage, 'en' si no lo declara). Vive aquí (no en worker.js)
+// para testearse con node --test sin tocar KV/red, igual que el resto del módulo.
 export function resolveDefaultLanguage(langRaw, env, formId) {
   const raw = String(langRaw || '').toLowerCase();
   if (raw.includes('espa') || raw.includes('span')) return 'es';
   if (raw.includes('engl') || raw.includes('ingl')) return 'en';
-  return tallyFormLang(env, formId) || 'en';
+  return tallyFormLang(env, formId) || defaultIntakeLanguage(env);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -74,7 +74,27 @@ LEGAL_DEFAULTS = {
     "updated": "",
     "cfdi": True,
     "disclaimers": [],
+    "disclaimers_style": "inline",
+    "copy_linter": {},
 }
+
+# Espejo de engine/generator/vertical_config.py::SCHEMA_DEFAULTS. Aqui solo se
+# CONSTRUYEN los valores: quien valida la forma del yaml es la fabrica, antes de
+# exportar, asi que un export siempre sale de una config ya validada.
+SCHEMA_DEFAULTS = {
+    "hours_source": "opening_hours_text",
+    "gallery_source": "gallery_images",
+    "demo_mode": "bilingual",
+    "locations_min": 0,
+    "locations_max": 0,
+    "require_true": [],
+}
+
+
+def build_schema(raw: dict) -> dict:
+    schema = copy.deepcopy(SCHEMA_DEFAULTS)
+    schema.update({k: v for k, v in (raw.get("schema") or {}).items() if v is not None})
+    return schema
 
 
 def apex_domain(domain: str) -> str:
@@ -111,3 +131,22 @@ GENERATOR_FOR_TEMPLATE = {
 STRINGS = build_strings(BRAND_NAME, VERTICAL.get("strings_overrides"))
 BLOCKS = merge_blocks(VERTICAL.get("blocks"))
 LEGAL = build_legal(VERTICAL)
+CATALOGS = copy.deepcopy(VERTICAL.get("catalogs") or {})
+SCHEMA = build_schema(VERTICAL)
+# Espejo de INTAKE_DEFAULTS de la fabrica.
+INTAKE_DEFAULTS = {"default_language": "", "fields": {}}
+INTAKE = {**copy.deepcopy(INTAKE_DEFAULTS), **copy.deepcopy(VERTICAL.get("intake") or {})}
+TEMPLATE_COMMENT_OVERRIDES = copy.deepcopy(VERTICAL.get("template_comments") or {})
+# Directorio publico de la vertical (engine/generator/directory.py). Apagado si
+# el yaml no lo declara. Espejo de DIRECTORY_DEFAULTS de la fabrica.
+DIRECTORY_DEFAULTS = {
+    "enabled": False,
+    "paths": {},
+    "hreflang": {},
+    "default_language": "es",
+    "group_by": "",
+    "filter_by": "",
+    "fallback_category": "",
+    "strings": {},
+}
+DIRECTORY = {**copy.deepcopy(DIRECTORY_DEFAULTS), **copy.deepcopy(VERTICAL.get("directory") or {})}

@@ -253,6 +253,21 @@ def _number_or_none(value):
     return text or None
 
 
+def csv_list(value) -> list[str]:
+    """Texto de Tally separado por comas (o lista) -> valores no vacios."""
+    raw = value if isinstance(value, list) else str(value or "").split(",")
+    return [str(item).strip() for item in raw if str(item).strip()]
+
+
+def strict_http_url(value) -> str | None:
+    """URL publica http(s) completa; no corrige esquemas ni dominios raros."""
+    text = str(value or "").strip()
+    if not text.lower().startswith(("http://", "https://")):
+        return None
+    parsed = urllib.parse.urlparse(text)
+    return text if parsed.scheme in ("http", "https") and parsed.netloc else None
+
+
 def catalog_key(name: str, value) -> str | None:
     """La opción que el negocio eligió en el formulario -> su clave cerrada.
 
@@ -316,6 +331,10 @@ def build_intake_fields(payload: dict) -> tuple[dict, dict]:
             value = catalog_keys(name, raw) if es_lista else catalog_key(name, raw)
         elif kind == "social":
             value = social_url(raw, cfg["base"])
+        elif kind == "csv_list":
+            value = csv_list(raw)
+        elif kind == "url":
+            value = strict_http_url(raw)
         else:
             value = str(raw or "").strip()
             if cfg.get("max"):

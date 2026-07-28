@@ -902,7 +902,6 @@ def build_services(payload: dict, s: dict) -> str:
     """Editorial price list: italic serif category titles + dotted-leader rows."""
     services = payload.get("services") or []
     declared = payload.get("service_categories") or []
-    hide_prices = payload.get("price_display") == "hide"
     # La leyenda "Consultar"/"Ask us" de un servicio SIN precio es una decision
     # de copy de la casa, no del negocio: por eso se apaga por vertical
     # (`blocks.price_ask_legend`) y no por payload. Encendida (el default) el
@@ -919,15 +918,15 @@ def build_services(payload: dict, s: dict) -> str:
     def render_service(svc: dict) -> str:
         name = esc(svc.get("name"))
         desc = svc.get("description")
-        price = None if hide_prices else svc.get("price_label")
+        price = svc.get("price_label")
         left = f'<span class="mrow__name">{name}</span>'
         if desc:
             left += f'<span class="mrow__desc">{esc(desc)}</span>'
-        # Con precio → se muestra. Sin precio y política "mostrar" → leyenda
-        # "Consultar"/"Ask us" (se ve intencional). Política "ocultar" → nada.
+        # Con precio se muestra. Sin precio, la leyenda "Consultar"/"Ask us"
+        # depende solo de la opción de la vertical.
         if price:
             price_text = esc(price)
-        elif not hide_prices and ask_legend:
+        elif ask_legend:
             price_text = esc(s["price_ask"])
         else:
             price_text = ""
@@ -978,7 +977,7 @@ def build_featured(payload: dict, s: dict) -> str:
         return ""
     name = esc(pkg.get("name"))
     desc = esc(pkg.get("description"))
-    price = None if payload.get("price_display") == "hide" else pkg.get("price_label")
+    price = pkg.get("price_label")
     price_html = f'<div class="ritual__price">{esc(price)}</div>' if price else ""
     # Sin descripción (o igual al nombre) no se repite el texto.
     desc_html = f'<p class="ritual__desc">{desc}</p>' if desc and desc != name else ""

@@ -81,11 +81,18 @@ jobs:
           fi
           echo "OK: sin referencias a MyGuest."
 
-      - name: Verify generated output is committed (no drift)
+      - name: Verify client QR PNGs encode their expected public URL
+        run: python generator/verify_qr_assets.py
+
+      - name: Verify generated output is committed (except platform-compressed QR PNGs)
         run: |
-          if ! git diff --exit-code ; then
+          # Segno's indexed PNG pixels are deterministic, but their compressed
+          # byte stream differs between supported Windows and Linux zlib builds.
+          # The preceding verifier checks every QR module against the expected
+          # public URL; keep byte-for-byte drift protection for all other output.
+          if ! git diff --exit-code -- . ':(exclude,glob)public/links/*/qr.png'; then
             echo "El generador produjo cambios en archivos tracked que no estan commiteados."
-            echo "Regenera localmente y commitea el output (index.html / qr.svg)."
+            echo "Regenera localmente y commitea el output (excepto el stream comprimido de qr.png)."
             exit 1
           fi
           echo "OK: el output regenerado coincide con lo commiteado."

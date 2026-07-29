@@ -312,7 +312,6 @@ CONTENT_FIELD_SOURCES: dict[str, tuple[str, ...]] = {
     "class_schedule_text": ("class_schedule_text",),
     "tour_details_text": ("tour_details_text",),
     "pet_notes_text": ("pet_notes_text",),
-    "price_display": ("price_display",),
     "service_categories": SERVICE_KEYS,
     "services": SERVICE_KEYS,
     "policies": ("policies_text",),
@@ -323,6 +322,11 @@ CONTENT_FIELD_SOURCES: dict[str, tuple[str, ...]] = {
     "appointment_policy_text": ("appointment_policy_text",),
     "emergency_policy_text": ("emergency_policy_text",),
 }
+
+# Campos que existieron en clientes/formularios viejos pero que una decisión de
+# producto retiró. Se toleran al leer un client.json histórico, pero nunca se
+# conservan ni vuelven a escribirse durante una modificación.
+LEGACY_CONTENT_FIELDS = {"price_display"}
 
 # El slug es la dirección pública de la página: lo fija el worker desde la orden
 # y una regeneración jamás debe moverlo (mover una página que el cliente ya
@@ -384,6 +388,9 @@ def _merge_block(previous: dict, new: dict, sources: dict[str, tuple[str, ...]],
     for field in set(new) | set(previous):
         if field in skip:
             continue
+        if field in LEGACY_CONTENT_FIELDS:
+            merged.pop(field, None)
+            continue
         if _field_answered(field, sources, answered):
             continue
         if field in previous:
@@ -393,18 +400,6 @@ def _merge_block(previous: dict, new: dict, sources: dict[str, tuple[str, ...]],
             # que trae el build nuevo es puro relleno por defecto.
             merged.pop(field, None)
     return merged
-
-
-def _apply_price_policy(block: dict) -> None:
-    """Si la página oculta precios, ningún precio anterior sobrevive."""
-    if block.get("price_display") != "hide":
-        return
-    for service in block.get("services") or []:
-        if isinstance(service, dict):
-            service.pop("price_label", None)
-    featured = block.get("featured_package")
-    if isinstance(featured, dict):
-        featured.pop("price_label", None)
 
 
 def merge_client(previous: dict, new: dict, payload: dict,
@@ -437,13 +432,15 @@ def merge_client(previous: dict, new: dict, payload: dict,
                 content[lang] = _merge_block(prev_block, new_block, CONTENT_FIELD_SOURCES, answered)
             else:
                 content[lang] = new_block
-            if isinstance(content[lang], dict):
-                _apply_price_policy(content[lang])
         # Un idioma que existía antes y que el build nuevo no produjo se conserva:
         # perder la mitad bilingüe de una página vendida es exactamente la falla
         # que esta fusión ataca.
         for lang, prev_block in prev_content.items():
             content.setdefault(lang, copy.deepcopy(prev_block))
+        for block in content.values():
+            if isinstance(block, dict):
+                for field in LEGACY_CONTENT_FIELDS:
+                    block.pop(field, None)
         merged["content"] = content
     elif isinstance(prev_content, dict) and not isinstance(new_content, dict):
         merged["content"] = copy.deepcopy(prev_content)
@@ -462,5 +459,9 @@ def unknown_fields(client: dict) -> set[str]:
     out = {f for f in client if f not in FIELD_SOURCES and f not in PINNED_FIELDS and f != "content"}
     for block in (client.get("content") or {}).values():
         if isinstance(block, dict):
-            out |= {f"content.{f}" for f in block if f not in CONTENT_FIELD_SOURCES}
+            out |= {
+                f"content.{f}"
+                for f in block
+                if f not in CONTENT_FIELD_SOURCES and f not in LEGACY_CONTENT_FIELDS
+            }
     return out

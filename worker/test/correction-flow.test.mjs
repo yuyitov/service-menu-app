@@ -49,12 +49,18 @@ test('el formulario seguro acepta una corrección, quema el token y conserva la 
   const env = {
     SERVICE_MENU_KV: kv,
     PRODUCT_ID: 'hmu',
+    WORKER_NAME: 'service-menu-worker',
     BRAND_NAME: 'HMU Link',
+    BRAND_TAGLINE: 'Service Menus for Small Businesses',
+    VALID_BRAND_STYLES: 'black-gold,soft-blush,charcoal-clean,warm-sand',
     PUBLIC_BOOK_BASE_URL: 'https://www.hmulink.com',
     WORKER_PUBLIC_URL: 'https://service-menu-worker.example',
     GITHUB_TOKEN: 'test-token',
     GITHUB_REPO: 'yuyitov/service-menu-app',
     GITHUB_ACTIONS_EVENT: 'new-hmu-service-menu',
+    TALLY_FORM_URL_EN: 'https://tally.so/r/yPkN5X?order_id=',
+    TALLY_FORM_URL_ES: 'https://tally.so/r/MeyDpk?order_id=',
+    FROM_EMAIL: 'HMU Link <hello@hmulink.com>',
     FREE_CHANGES: '2',
   };
 

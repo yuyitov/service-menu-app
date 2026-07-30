@@ -62,3 +62,24 @@ blocks:
   # publicadas no se regeneran (decision de Vero, la regeneracion es P5).
   vcard:
     enabled_for: all
+  # ACTIVACION del pase de Google Wallet (linkFactory/18, decision 2a de Vero
+  # charly/34). Se enciende HOY y no antes porque hasta hoy el pase salia
+  # marcado [TEST ONLY] y solo lo podian guardar las cuentas de prueba: un
+  # cliente real tocaba el boton y no le pasaba NADA. El 2026-07-30 llego la
+  # aprobacion del Issuer "Bridge Company" y esa puerta se abrio.
+  #
+  # Va en "all" por la misma razon que el vCard: el valor —el cliente que
+  # vuelve cada tres meses y ya no encuentra el enlace— no depende del giro. El
+  # .vcf guarda el contacto en la agenda; el pase guarda la PAGINA en la app que
+  # la gente si vuelve a abrir. Son complementarios, no alternativos.
+  #
+  # Encender esto no basta para que salga el boton: hace falta ademas que el
+  # entorno que corre el generador traiga las credenciales del Issuer (variable
+  # GOOGLE_WALLET_ISSUER_ID + secreto GOOGLE_WALLET_SERVICE_ACCOUNT_JSON). Sin
+  # ellas la pagina se genera igual, sin boton y con un aviso por stderr — la
+  # pagina es el producto, el pase es el extra.
+  #
+  # Alcance: solo lo que se GENERE desde hoy. Las paginas ya publicadas no se
+  # regeneran (decision de Vero, la regeneracion es P5).
+  wallet_google:
+    enabled_for: all

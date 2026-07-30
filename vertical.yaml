@@ -53,4 +53,12 @@ strings_overrides:
 #       enabled_for: none
 #     portfolio:
 #       enabled_for: all
-blocks: {}
+blocks:
+  # ACTIVACION del vCard (linkFactory/22, decision de Vero charly/34). El
+  # bloque se construyo en linkFactory/14 y quedo apagado por default; sin esta
+  # linea el boton "Guardar en contactos" no existe en una sola pagina. Va en
+  # "all" porque el valor —el cliente recurrente que olvido el enlace— no
+  # depende del giro. Solo alcanza a lo que se GENERE desde hoy: las paginas ya
+  # publicadas no se regeneran (decision de Vero, la regeneracion es P5).
+  vcard:
+    enabled_for: all

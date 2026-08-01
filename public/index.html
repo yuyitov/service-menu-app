@@ -167,6 +167,11 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .blob--pink { background: var(--bubblegum); opacity: 0.3; }
 .blob--ocean { background: var(--ocean); opacity: 0.22; }
 .wrap > *:not(.blob) { position: relative; z-index: 1; }
+/* Fuera del hero y del pricing (que ya recortan), los blobs se asoman con
+   right negativos y estiraban el ancho del documento en movil (496px medidos
+   en un viewport de 375 — OJOS v1, O1). El clip vive en la seccion, mismo
+   patron que .hero, y no toca la animacion del blob. */
+#who, #styles, #how { overflow: hidden; }
 
 /* Load-in animations (hero) */
 @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }

@@ -9,3 +9,4 @@
 *.svg  text eol=lf
 *.md   text eol=lf
 *.txt  text eol=lf
+*.vcf  text eol=crlf

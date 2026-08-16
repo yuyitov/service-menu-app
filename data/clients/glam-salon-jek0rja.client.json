@@ -1,0 +1,167 @@
+{
+  "public_slug": "glam-salon-jek0rja",
+  "default_language": "es",
+  "brand_style": "soft-blush",
+  "business_type": "beauty",
+  "business_name": "Glam Salon",
+  "logo_url": "https://www.hmulink.com/links/glam-salon-jek0rja/assets/logo.jpg",
+  "primary_image_url": "https://www.hmulink.com/links/glam-salon-jek0rja/assets/gallery-1.jpg",
+  "gallery_images": [
+    {
+      "url": "https://www.hmulink.com/links/glam-salon-jek0rja/assets/gallery-1.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/glam-salon-jek0rja/assets/gallery-2.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/glam-salon-jek0rja/assets/gallery-3.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/glam-salon-jek0rja/assets/gallery-4.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/glam-salon-jek0rja/assets/gallery-5.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/glam-salon-jek0rja/assets/gallery-6.jpg"
+    }
+  ],
+  "whatsapp": "+523221553952",
+  "phone": "+523221553952",
+  "public_email": "veronica.perezarroyo@gmail.com",
+  "instagram": "https://instagram.com/instagram",
+  "facebook": "https://Www.facebook.com",
+  "tiktok": "https://www.tiktok.com/@tiktok",
+  "website": "https://www.google.com",
+  "booking_url": "https://www.reservio.com",
+  "primary_cta": "phone",
+  "google_maps_url": "https://maps.app.goo.gl/fGDSyrfUgMeS62i5A",
+  "google_reviews_url": null,
+  "other_public_link": null,
+  "delivery_pickup_links": [],
+  "portfolio_link": null,
+  "content": {
+    "es": {
+      "short_description": "Porque mereces verte y sentirte espectacular.",
+      "address": "Plaza Galerías Santa Anita",
+      "opening_hours_text": "Lunes a Sábado 9 am a  9 pm",
+      "service_area_text": "",
+      "client_care_text": "Solo con cita",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Cortes",
+        "Tintes",
+        "Uñas",
+        "Maquillaje"
+      ],
+      "services": [
+        {
+          "category": "Cortes",
+          "name": "Corte",
+          "price_label": "desde $399"
+        },
+        {
+          "category": "Cortes",
+          "name": "Tintes",
+          "price_label": "desde $999"
+        },
+        {
+          "category": "Cortes",
+          "name": "Efectos de color",
+          "price_label": "desde $1499"
+        },
+        {
+          "category": "Cortes",
+          "name": "Maquillaje",
+          "price_label": "desde $799"
+        }
+      ],
+      "policies": [
+        "Llega 10 minutos antes de tu cita",
+        "Cancelaciones con 24 hrs de anticipación"
+      ],
+      "faq": [
+        {
+          "question": "¿Aceptas tarjetas de crédito?",
+          "answer": "Sí aceptamos tarjeta de crédito y efectivo."
+        },
+        {
+          "question": "¿ Es necesario hacer cita?",
+          "answer": "Sí es necesario hacer cita para darte el tiempo y el servicio que mereces."
+        }
+      ],
+      "featured_package": {
+        "name": "Paquete de Novia",
+        "description": "Maquillaje, tratamiento y peinado $7500"
+      }
+    },
+    "en": {
+      "short_description": "Because you deserve to look and feel spectacular.",
+      "address": "Plaza Galerías Santa Anita",
+      "opening_hours_text": "Monday to Saturday 9 am to 9 pm",
+      "service_area_text": "",
+      "client_care_text": "By appointment only",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Cuts",
+        "Dyes",
+        "Nails",
+        "Makeup"
+      ],
+      "services": [
+        {
+          "category": "Cuts",
+          "name": "Cut",
+          "price_label": "desde $399"
+        },
+        {
+          "category": "Cuts",
+          "name": "Dyes",
+          "price_label": "desde $999"
+        },
+        {
+          "category": "Cuts",
+          "name": "Color effects",
+          "price_label": "desde $1499"
+        },
+        {
+          "category": "Cuts",
+          "name": "Makeup",
+          "price_label": "desde $799"
+        }
+      ],
+      "policies": [
+        "Arrive 10 minutes before your appointment",
+        "Cancellations with 24 hours notice"
+      ],
+      "faq": [
+        {
+          "question": "Do you accept credit cards?",
+          "answer": "Yes, we accept credit cards and cash."
+        },
+        {
+          "question": "Is it necessary to make an appointment?",
+          "answer": "Yes, it is necessary to make an appointment to give you the time and service you deserve."
+        }
+      ],
+      "featured_package": {
+        "name": "Bride Package",
+        "description": "Makeup, treatment, and hairstyle $7500"
+      }
+    }
+  },
+  "locations": [
+    {
+      "name": "",
+      "address": "Plaza Galerías Santa Anita",
+      "google_maps_url": "https://maps.app.goo.gl/fGDSyrfUgMeS62i5A",
+      "notes": "Local 301"
+    }
+  ]
+}

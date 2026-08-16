@@ -64,17 +64,17 @@
           "price_label": "desde $399"
         },
         {
-          "category": "Cortes",
+          "category": "Tintes",
           "name": "Tintes",
           "price_label": "desde $999"
         },
         {
-          "category": "Cortes",
+          "category": "Tintes",
           "name": "Efectos de color",
           "price_label": "desde $1499"
         },
         {
-          "category": "Cortes",
+          "category": "Maquillaje",
           "name": "Maquillaje",
           "price_label": "desde $799"
         }
@@ -121,17 +121,17 @@
           "price_label": "desde $399"
         },
         {
-          "category": "Cuts",
+          "category": "Dyes",
           "name": "Dyes",
           "price_label": "desde $999"
         },
         {
-          "category": "Cuts",
+          "category": "Dyes",
           "name": "Color effects",
           "price_label": "desde $1499"
         },
         {
-          "category": "Cuts",
+          "category": "Makeup",
           "name": "Makeup",
           "price_label": "desde $799"
         }

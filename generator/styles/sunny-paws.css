@@ -1,12 +1,19 @@
-/* sunny-paws - alegre, jugueton, amigable. Pet grooming / servicios para mascotas.
-   Paleta WOW: amarillo sol + naranja + blanco calido. Base clara, alt miel oscura. */
+/* sunny-paws (Pink Grapefruit) - jugoso, fresco y con energia. Paleta de Vero (Pinterest,
+   2026-08-02) + su referencia de composicion: #eed8d5 rosa suave +
+   #eacc83 amarillo + #cb616f pomelo.
+   v4, la que Vero aprobo mirando: el ROSA ES EL FONDO, no un pastel de
+   relleno; el titulo en cursiva y los botones van en AMARILLO; el degradado
+   amarillo baja por el hero. El rosa se afina de #cb616f a #b44656 porque
+   sobre el pomelo original el texto daba 3.27 y no se leia; a simple vista
+   es el mismo rosa y ahora da 4.53. Tema alt en rosa palido para que la
+   pagina respire entre secciones. */
 :root{
-  --base-bg:#fffaf0; --base-ink:#46351d; --base-soft:rgba(70,53,29,.7);
-  --base-hair:rgba(255,159,28,.35); --base-accent:#a35f00; --base-accent-ink:#fff8ec;
-  --alt-bg:#3b2a10; --alt-ink:#fdf3e3; --alt-soft:rgba(253,243,227,.65);
-  --alt-hair:rgba(255,193,105,.3); --alt-accent:#ffc169; --alt-accent-ink:#3b2a10;
-  --panel-bg:#3b2a10; --panel-ink:#fdf3e3; --panel-soft:rgba(253,243,227,.66);
-  --panel-hair:rgba(255,193,105,.4); --panel-accent:#ffc169;
-  --blob-a:#ffd9a0; --blob-b:#ff9f1c; --blob-c:#ffeccc; --blob-opacity:.5;
-  --dock-glow:rgba(240,140,0,.35); --dock-glow-strong:rgba(240,140,0,.55);
+  --base-bg:#b44656; --base-ink:#fbe9e6; --base-soft:rgba(251,233,230,.78);
+  --base-hair:rgba(234,204,131,.42); --base-accent:#eacc83; --base-accent-ink:#4e1f28;
+  --alt-bg:#eed8d5; --alt-ink:#4e1f28; --alt-soft:rgba(78,31,40,.72);
+  --alt-hair:rgba(180,70,86,.4); --alt-accent:#b44656; --alt-accent-ink:#fff8f7;
+  --panel-bg:#eacc83; --panel-ink:#4e1f28; --panel-soft:rgba(78,31,40,.75);
+  --panel-hair:rgba(78,31,40,.35); --panel-accent:#b44656;
+  --blob-a:#eacc83; --blob-b:#cb616f; --blob-c:#f7d9a8; --blob-opacity:.66;
+  --dock-glow:rgba(234,204,131,.5); --dock-glow-strong:rgba(234,204,131,.7);
 }

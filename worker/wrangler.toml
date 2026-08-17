@@ -60,6 +60,12 @@ TEMPLATE             = "service-menu"
 # Estilos válidos con los que el worker acepta el intake. Mismo orden y mismos
 # 12 de styles.catalog en vertical.yaml, que es la fuente de verdad.
 VALID_BRAND_STYLES   = "black-gold,soft-blush,charcoal-clean,warm-sand,aqua-clean,sage-calm,electric-slate,terracotta-warm,sunny-paws,midnight-ink,clarity-editorial,horizon-teal"
+# Nombres COMERCIALES que apuntan a un slug del catalogo ("alias:slug,..."),
+# de styles.aliases del vertical.yaml. El estilo se resuelve haciendo slugify()
+# del nombre que la clienta LEE, asi que sin esto renombrar una paleta (Sunny
+# Paws -> Pink Grapefruit, 2026-08-16) manda al estilo de respaldo a quien la
+# elija. Vacio = ningun alias.
+BRAND_STYLE_ALIASES= "pink-grapefruit:sunny-paws,blue-chocolate:horizon-teal,ink-ivory:warm-sand"
 # Modificación por FORMULARIO PRELLENADO: APAGADA en HMU, a propósito.
 # Verificado contra la API de Tally el 2026-07-26: los dos formularios vivos de
 # HMU (yPkN5X EN / MeyDpk ES) traen 12 hidden fields —order_id + los 6 de

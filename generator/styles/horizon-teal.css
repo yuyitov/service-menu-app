@@ -1,12 +1,16 @@
-/* horizon-teal - aventurero, fresco, expansivo. Tours / experiencias / actividades al aire libre.
-   Paleta WOW: teal profundo + arena calida. Base arena, alt teal nocturno. */
+/* horizon-teal (Blue Chocolate) - moderno, claro y con caracter. Paleta de Vero (Pinterest,
+   2026-08-02): #D1EEFE azul cielo + #432E1B chocolate. Eligio la version de
+   fondo AZUL. Los blobs van en BEIGE, no en cafe: el cafe medio sobre el azul
+   se leia como una mancha sucia (lo cazo ella mirando el hero). El beige sale
+   del mismo chocolate aclarado, asi que la familia se conserva. El chocolate
+   entero queda para tinta, botones y el panel destacado. */
 :root{
-  --base-bg:#f5f1e6; --base-ink:#0f2e2e; --base-soft:rgba(15,46,46,.66);
-  --base-hair:rgba(15,110,110,.3); --base-accent:#0f6e6e; --base-accent-ink:#f2f8f6;
-  --alt-bg:#0c3535; --alt-ink:#e9f4f0; --alt-soft:rgba(233,244,240,.65);
-  --alt-hair:rgba(124,198,184,.28); --alt-accent:#7cc6b8; --alt-accent-ink:#0c3535;
-  --panel-bg:#0c3535; --panel-ink:#e9f4f0; --panel-soft:rgba(233,244,240,.66);
-  --panel-hair:rgba(124,198,184,.4); --panel-accent:#7cc6b8;
-  --blob-a:#9fd3c8; --blob-b:#0f6e6e; --blob-c:#e8dcbd; --blob-opacity:.5;
-  --dock-glow:rgba(15,110,110,.3); --dock-glow-strong:rgba(15,110,110,.5);
+  --base-bg:#d1eefe; --base-ink:#3a2817; --base-soft:rgba(58,40,23,.74);
+  --base-hair:rgba(67,46,27,.3); --base-accent:#432e1b; --base-accent-ink:#eaf6ff;
+  --alt-bg:#432e1b; --alt-ink:#e6f4fe; --alt-soft:rgba(230,244,254,.72);
+  --alt-hair:rgba(209,238,254,.34); --alt-accent:#a9dcf6; --alt-accent-ink:#33220f;
+  --panel-bg:#432e1b; --panel-ink:#e6f4fe; --panel-soft:rgba(230,244,254,.72);
+  --panel-hair:rgba(209,238,254,.4); --panel-accent:#a9dcf6;
+  --blob-a:#e8dbc8; --blob-b:#d5c3aa; --blob-c:#f2ece1; --blob-opacity:.6;
+  --dock-glow:rgba(67,46,27,.4); --dock-glow-strong:rgba(67,46,27,.6);
 }

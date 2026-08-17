@@ -241,5 +241,6 @@
         "description": "Your HMU Link can be updated when your phone, location, hours, or links change, without throwing away cards or reprinting them.\nA card that doesn't become obsolete - One-time payment / no monthly fees."
       }
     }
-  }
+  },
+  "gallery_aspect": "3/4"
 }

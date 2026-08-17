@@ -12,8 +12,8 @@
   --base-hair:rgba(234,204,131,.42); --base-accent:#eacc83; --base-accent-ink:#4e1f28;
   --alt-bg:#eed8d5; --alt-ink:#4e1f28; --alt-soft:rgba(78,31,40,.72);
   --alt-hair:rgba(180,70,86,.4); --alt-accent:#b44656; --alt-accent-ink:#fff8f7;
-  --panel-bg:#eacc83; --panel-ink:#4e1f28; --panel-soft:rgba(78,31,40,.75);
-  --panel-hair:rgba(78,31,40,.35); --panel-accent:#b44656;
+  --panel-bg:#b44656; --panel-ink:#fbe9e6; --panel-soft:rgba(251,233,230,.78);
+  --panel-hair:rgba(234,204,131,.45); --panel-accent:#eacc83;
   --blob-a:#eacc83; --blob-b:#cb616f; --blob-c:#f7d9a8; --blob-opacity:.66;
   --dock-glow:rgba(234,204,131,.5); --dock-glow-strong:rgba(234,204,131,.7);
 }

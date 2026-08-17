@@ -138,7 +138,7 @@
       ],
       "featured_package": {
         "name": "Tu negocio siempre actualizado",
-        "description": "Tu HMU Link puede actualizarse cuando cambien tu teléfono, ubicación, horarios o enlaces, sin tirar tarjetas ni volver a imprimirlas. Una tarjeta que no se queda obsoleta - Pago único / sin mensualidades"
+        "description": "Tu HMU Link puede actualizarse cuando cambien tu teléfono, ubicación, horarios o enlaces, sin tirar tarjetas ni volver a imprimirlas.\nUna tarjeta que no se queda obsoleta - Pago único / sin mensualidades"
       }
     },
     "en": {
@@ -238,7 +238,7 @@
       ],
       "featured_package": {
         "name": "Your business always updated",
-        "description": "Your HMU Link can be updated when your phone, location, hours, or links change, without throwing away cards or reprinting them. A card that doesn't become obsolete - One-time payment / no monthly fees."
+        "description": "Your HMU Link can be updated when your phone, location, hours, or links change, without throwing away cards or reprinting them.\nA card that doesn't become obsolete - One-time payment / no monthly fees."
       }
     }
   }

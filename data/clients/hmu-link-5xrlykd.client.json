@@ -1,0 +1,263 @@
+{
+  "public_slug": "hmu-link-5xrlykd",
+  "default_language": "es",
+  "brand_style": "sunny-paws",
+  "business_type": "general",
+  "business_name": "HMU Link",
+  "logo_url": "https://www.hmulink.com/links/hmu-link-5xrlykd/assets/logo.png",
+  "primary_image_url": "https://www.hmulink.com/links/hmu-link-5xrlykd/assets/gallery-1.jpg",
+  "gallery_images": [
+    {
+      "url": "https://www.hmulink.com/links/hmu-link-5xrlykd/assets/gallery-1.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/hmu-link-5xrlykd/assets/gallery-2.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/hmu-link-5xrlykd/assets/gallery-3.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/hmu-link-5xrlykd/assets/gallery-4.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/hmu-link-5xrlykd/assets/gallery-5.jpg"
+    }
+  ],
+  "gallery_aspect": "3/4",
+  "whatsapp": "+523221553952",
+  "phone": "+523221553952",
+  "public_email": "hello@hmulink.com",
+  "instagram": null,
+  "facebook": null,
+  "tiktok": null,
+  "website": "https://www.hmulink.com",
+  "booking_url": null,
+  "primary_cta": "website",
+  "google_maps_url": null,
+  "google_reviews_url": null,
+  "other_public_link": null,
+  "delivery_pickup_links": [],
+  "portfolio_link": null,
+  "content": {
+    "es": {
+      "short_description": "Haz que encontrarte, contactarte y comprarte sea fácil.",
+      "address": "",
+      "opening_hours_text": "Lunes a sábado, 9:00 – 19:00 (CDMX)",
+      "service_area_text": "En línea en todo el mundo",
+      "client_care_text": "Sin cita, por orden de llegada",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Tarjetas de presentación digitales - Pago único",
+        "sin mensualidades."
+      ],
+      "services": [
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Tu tarjeta digital, lista para ayudarte a vender"
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Tarjeta HMU Link",
+          "price_label": "$799 MXN"
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Tu página digital publicada y lista para compartir el mismo día. Un solo pago, sin mensualidades."
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Modificación adicional",
+          "price_label": "$59 MXN"
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Por cada solicitud de cambios después de las 2 modificaciones incluidas."
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Todo lo que incluye"
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Página digital con link único",
+          "description": "Toda la información de tu negocio en un solo lugar."
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Sin aplicaciones ni descargas",
+          "description": "Se abre fácilmente desde cualquier celular."
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Botón directo a WhatsApp",
+          "description": "Tus clientes pueden escribirte con un solo toque."
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Código QR",
+          "description": "Compártelo en tu local, tarjetas, empaques, vitrina o redes sociales."
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "2 modificaciones incluidas",
+          "description": "Actualiza precios, horarios o información cuando lo necesites."
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "12 estilos para elegir",
+          "description": "Selecciona el diseño que mejor combine con tu marca."
+        },
+        {
+          "category": "Tarjetas de presentación digitales - Pago único",
+          "name": "Disponible en español e inglés",
+          "description": "Tus clientes pueden",
+          "price_label": "consultar la misma página en ambos idiomas."
+        }
+      ],
+      "policies": [
+        "La publicación se realiza el mismo día, una vez recibido el pago y toda la información necesaria.",
+        "El servicio incluye 2 modificaciones; los cambios adicionales tienen un costo de $59 MXN cada uno.",
+        "El cliente debe revisar que sus precios, horarios, datos de contacto y demás información sean correctos antes de aprobar la página."
+      ],
+      "faq": [
+        {
+          "question": "Pregunta 1: ¿Tengo que pagar una mensualidad?",
+          "answer": "/ Respuesta: No. HMU Link cuesta $799 MXN en un solo pago, sin mensualidades ni suscripciones."
+        },
+        {
+          "question": "Pregunta 2: ¿Mis clientes necesitan descargar una aplicación?",
+          "answer": "/ Respuesta: No. Tu tarjeta digital se abre desde cualquier celular mediante un link o código QR."
+        },
+        {
+          "question": "Pregunta 3: ¿Qué información puedo mostrar?",
+          "answer": "/ Respuesta: Puedes incluir tus servicios, precios, horarios, ubicación, redes sociales y un botón directo a WhatsApp."
+        },
+        {
+          "question": "Pregunta 4: ¿Puedo cambiar la información después?",
+          "answer": "/ Respuesta: Sí. Tu compra incluye 2 modificaciones. Los cambios adicionales cuestan $59 MXN cada uno."
+        },
+        {
+          "question": "Pregunta 5: ¿Cuándo estará lista mi tarjeta digital?",
+          "answer": "/ Respuesta: El mismo día, una vez que recibamos tu pago y toda la información necesaria."
+        }
+      ],
+      "featured_package": {
+        "name": "Precio especial de lanzamiento",
+        "description": "Pon tu negocio a un toque de tus clientes: servicios, precios, horarios, ubicación y WhatsApp.\nTu tarjeta digital lista el mismo día por $799 MXN — pago único, sin mensualidades."
+      }
+    },
+    "en": {
+      "short_description": "Make it easy to find you, contact you, and buy from you.",
+      "address": "",
+      "opening_hours_text": "Monday to Saturday, 9:00 AM – 7:00 PM (CDMX)",
+      "service_area_text": "Online worldwide",
+      "client_care_text": "No appointment necessary, first come, first served",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Digital business cards - One-time payment",
+        "no monthly fees."
+      ],
+      "services": [
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "Your digital card, ready to help you sell"
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "HMU Link Card",
+          "price_label": "$799 MXN"
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "Your digital page published and ready to share the same day. One payment, no monthly fees."
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "Additional modification",
+          "price_label": "$59 MXN"
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "For each request for changes after the 2 included modifications."
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "Everything included"
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "Digital page with unique link",
+          "description": "All your business information in one place."
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "No apps or downloads",
+          "description": "Easily opens from any mobile phone."
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "Direct button to WhatsApp",
+          "description": "Your customers can message you with one touch."
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "QR Code",
+          "description": "Share it in your store, cards, packaging, showcase, or social media."
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "2 modifications included",
+          "description": "Update prices, hours, or information whenever you need."
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "12 styles to choose from",
+          "description": "Choose the design that best matches your brand."
+        },
+        {
+          "category": "Digital business cards - One-time payment",
+          "name": "Available in Spanish and English",
+          "description": "Your customers can",
+          "price_label": "consultar la misma página en ambos idiomas."
+        }
+      ],
+      "policies": [
+        "Publication is done the same day, once payment and all necessary information are received.",
+        "The service includes 2 modifications; additional changes cost $59 MXN each.",
+        "The client must check that their prices, hours, contact details, and other information are correct before approving the page."
+      ],
+      "faq": [
+        {
+          "question": "Question 1: Do I have to pay a monthly fee?",
+          "answer": "/ Answer: No. HMU Link costs $799 MXN in a one-time payment, with no monthly fees or subscriptions."
+        },
+        {
+          "question": "Question 2: Do my customers need to download an app?",
+          "answer": "/ Answer: No. Your digital card opens from any mobile phone via a link or QR code."
+        },
+        {
+          "question": "Question 3: What information can I display?",
+          "answer": "/ Answer: You can include your services, prices, hours, location, social media, and a direct button to WhatsApp."
+        },
+        {
+          "question": "Question 4: Can I change the information later?",
+          "answer": "/ Answer: Yes. Your purchase includes 2 modifications. Additional changes cost $59 MXN each."
+        },
+        {
+          "question": "Question 5: When will my digital card be ready?",
+          "answer": "/ Answer: The same day, once we receive your payment and all necessary information."
+        }
+      ],
+      "featured_package": {
+        "name": "Special launch price",
+        "description": "Put your business one touch away from your customers: services, prices, hours, location, and WhatsApp.\nYour digital card ready the same day for $799 MXN — one-time payment, no monthly fees."
+      }
+    }
+  }
+}

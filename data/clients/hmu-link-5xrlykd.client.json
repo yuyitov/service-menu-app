@@ -113,8 +113,7 @@
         {
           "category": "Tarjetas de presentación digitales - Pago único",
           "name": "Disponible en español e inglés",
-          "description": "Tus clientes pueden",
-          "price_label": "consultar la misma página en ambos idiomas."
+          "description": "Tus clientes pueden consultar la misma página en ambos idiomas."
         }
       ],
       "policies": [
@@ -124,24 +123,24 @@
       ],
       "faq": [
         {
-          "question": "Pregunta 1: ¿Tengo que pagar una mensualidad?",
-          "answer": "/ Respuesta: No. HMU Link cuesta $799 MXN en un solo pago, sin mensualidades ni suscripciones."
+          "question": "¿Tengo que pagar una mensualidad?",
+          "answer": "No. HMU Link cuesta $799 MXN en un solo pago, sin mensualidades ni suscripciones."
         },
         {
-          "question": "Pregunta 2: ¿Mis clientes necesitan descargar una aplicación?",
-          "answer": "/ Respuesta: No. Tu tarjeta digital se abre desde cualquier celular mediante un link o código QR."
+          "question": "¿Mis clientes necesitan descargar una aplicación?",
+          "answer": "No. Tu tarjeta digital se abre desde cualquier celular mediante un link o código QR."
         },
         {
-          "question": "Pregunta 3: ¿Qué información puedo mostrar?",
-          "answer": "/ Respuesta: Puedes incluir tus servicios, precios, horarios, ubicación, redes sociales y un botón directo a WhatsApp."
+          "question": "¿Qué información puedo mostrar?",
+          "answer": "Puedes incluir tus servicios, precios, horarios, ubicación, redes sociales y un botón directo a WhatsApp."
         },
         {
-          "question": "Pregunta 4: ¿Puedo cambiar la información después?",
-          "answer": "/ Respuesta: Sí. Tu compra incluye 2 modificaciones. Los cambios adicionales cuestan $59 MXN cada uno."
+          "question": "¿Puedo cambiar la información después?",
+          "answer": "Sí. Tu compra incluye 2 modificaciones. Los cambios adicionales cuestan $59 MXN cada uno."
         },
         {
-          "question": "Pregunta 5: ¿Cuándo estará lista mi tarjeta digital?",
-          "answer": "/ Respuesta: El mismo día, una vez que recibamos tu pago y toda la información necesaria."
+          "question": "¿Cuándo estará lista mi tarjeta digital?",
+          "answer": "El mismo día, una vez que recibamos tu pago y toda la información necesaria."
         }
       ],
       "featured_package": {
@@ -223,8 +222,7 @@
         {
           "category": "Digital business cards - One-time payment",
           "name": "Available in Spanish and English",
-          "description": "Your customers can",
-          "price_label": "consultar la misma página en ambos idiomas."
+          "description": "Your customers can consultar la misma página en ambos idiomas."
         }
       ],
       "policies": [
@@ -234,24 +232,24 @@
       ],
       "faq": [
         {
-          "question": "Question 1: Do I have to pay a monthly fee?",
-          "answer": "/ Answer: No. HMU Link costs $799 MXN in a one-time payment, with no monthly fees or subscriptions."
+          "question": "Do I have to pay a monthly fee?",
+          "answer": "No. HMU Link costs $799 MXN in a one-time payment, with no monthly fees or subscriptions."
         },
         {
-          "question": "Question 2: Do my customers need to download an app?",
-          "answer": "/ Answer: No. Your digital card opens from any mobile phone via a link or QR code."
+          "question": "Do my customers need to download an app?",
+          "answer": "No. Your digital card opens from any mobile phone via a link or QR code."
         },
         {
-          "question": "Question 3: What information can I display?",
-          "answer": "/ Answer: You can include your services, prices, hours, location, social media, and a direct button to WhatsApp."
+          "question": "What information can I display?",
+          "answer": "You can include your services, prices, hours, location, social media, and a direct button to WhatsApp."
         },
         {
-          "question": "Question 4: Can I change the information later?",
-          "answer": "/ Answer: Yes. Your purchase includes 2 modifications. Additional changes cost $59 MXN each."
+          "question": "Can I change the information later?",
+          "answer": "Yes. Your purchase includes 2 modifications. Additional changes cost $59 MXN each."
         },
         {
-          "question": "Question 5: When will my digital card be ready?",
-          "answer": "/ Answer: The same day, once we receive your payment and all necessary information."
+          "question": "When will my digital card be ready?",
+          "answer": "The same day, once we receive your payment and all necessary information."
         }
       ],
       "featured_package": {

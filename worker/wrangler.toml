@@ -77,7 +77,11 @@ BRAND_STYLE_ALIASES= "pink-grapefruit:sunny-paws,blue-chocolate:horizon-teal,ink
 # así (modificationCopy en worker.js sigue este mismo interruptor). Prenderla
 # exige antes cablear los dos formularios como los de PawContact (25 hidden
 # fields + `name` en las 24 preguntas).
-MODIFICATION_FORM_PREFILL = ""
+# ENCENDIDO el 2026-09-08: sus dos formularios quedaron cableados con
+# scripts/cablear_prefill_en_tally.py (36 preguntas toman su valor de un hidden
+# field). Con esto, quien pide una modificacion recibe SU cuestionario con SUS
+# respuestas y cambia lo que quiera, en vez de escribir en texto libre.
+MODIFICATION_FORM_PREFILL = "1"
 
 # ID(s) del Payment Link de HMU Link (plink_...). Acepta varios separados por
 # coma — p.ej. el link USD ($39) y el MXN ($699) — para que todas las compras de

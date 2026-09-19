@@ -43,9 +43,9 @@
    pagina respire entre secciones. */
 :root{
   --base-bg:#b44656; --base-ink:#fbe9e6; --base-soft:rgba(251,233,230,.78);
-  --base-hair:rgba(234,204,131,.42); --base-accent:#eacc83; --base-accent-ink:#4e1f28;
+  --base-hair:rgba(234,204,131,.42); --base-accent:#eacc83; --base-price:#f8eed5; --base-accent-ink:#4e1f28;
   --alt-bg:#eed8d5; --alt-ink:#4e1f28; --alt-soft:rgba(78,31,40,.72);
-  --alt-hair:rgba(180,70,86,.4); --alt-accent:#b44656; --alt-accent-ink:#fff8f7;
+  --alt-hair:rgba(180,70,86,.4); --alt-accent:#b44656; --alt-price:#a03e4d; --alt-accent-ink:#fff8f7;
   --panel-bg:#b44656; --panel-ink:#fbe9e6; --panel-soft:rgba(251,233,230,.78);
   --panel-hair:rgba(234,204,131,.45); --panel-accent:#eacc83;
   --blob-a:#eacc83; --blob-b:#cb616f; --blob-c:#f7d9a8; --blob-opacity:.66;
@@ -62,12 +62,14 @@
 body{
   --bg:var(--base-bg); --ink:var(--base-ink); --soft:var(--base-soft);
   --hair:var(--base-hair); --accent:var(--base-accent); --accent-ink:var(--base-accent-ink);
+  --price:var(--base-price,var(--base-accent));
   background:var(--bg); color:var(--ink);
   transition:background 1s ease;
 }
 body.theme-alt{
   --bg:var(--alt-bg); --ink:var(--alt-ink); --soft:var(--alt-soft);
   --hair:var(--alt-hair); --accent:var(--alt-accent); --accent-ink:var(--alt-accent-ink);
+  --price:var(--alt-price,var(--alt-accent));
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -200,8 +202,10 @@ img.monogram{object-fit:contain;border:0;border-radius:12px;background:transpare
 .mrow__desc{display:block;color:var(--soft);margin-top:3px;font-style:italic;
   font-family:var(--serif);font-size:16.5px;line-height:1.5}
 .mrow__dots{flex:1;border-bottom:1px dotted var(--hair);transform:translateY(-4px);min-width:24px}
-/* 24px: texto grande, asi el minimo de contraste es 3.0 y lo cumplen las 12 paletas. */
-.mrow__price{font-family:var(--serif);font-size:24px;color:var(--accent);white-space:nowrap}
+/* Del tamano de la descripcion (Vero, 2026-09-19: el precio no debe destacar mas que
+   el servicio). A este tamano el contraste minimo es 4.5; la paleta cuyo acento no
+   llega declara --base-price/--alt-price y lo demas de su color no se toca. */
+.mrow__price{font-family:var(--serif);font-size:16px;color:var(--price);white-space:nowrap}
 
 @media (max-width:560px){
   .mrow{display:block}

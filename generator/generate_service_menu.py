@@ -59,6 +59,7 @@ from blocks import block_enabled, fill_tokens
 # El botón que el negocio eligió: la tabla de alias es DATO compartido con el
 # worker, no una copia local (ver primary_cta.py — tres copias divergidas).
 from primary_cta import normalize_primary_cta
+from strings_base import PERSON_BUSINESS_TYPE, PERSON_STRINGS
 from vertical_config import (
     BLOCKS, BRAND_NAME, CATALOGS, DIRECTORY, DOMAIN, LEGAL, SCHEMA,
     STRINGS, STYLES_CATALOG, TEMPLATE_COMMENT_OVERRIDES, TYPOGRAPHY,
@@ -850,6 +851,16 @@ def _gallery_images(payload: dict) -> list[str]:
 # Las formas de marco que el motor acepta para la galeria. Espejo de ASPECTOS
 # en build_client_from_intake: lo que no este aqui no se escribe en el HTML.
 ASPECTOS_VALIDOS = {"3/4", "1/1", "4/3"}
+
+
+
+def page_strings(view: dict, lang: str) -> dict:
+    """STRINGS del idioma, con el copy en primera persona encima cuando la
+    pagina es de una PERSONA (`business_type: "person"`, ver strings_base).
+    Cualquier otro payload recibe el mismo dict de siempre (byte-identico)."""
+    if str(view.get("business_type") or "").strip() == PERSON_BUSINESS_TYPE:
+        return {**STRINGS[lang], **PERSON_STRINGS.get(lang, {})}
+    return STRINGS[lang]
 
 
 def build_hero_image(payload: dict, s: dict) -> str:
@@ -2132,7 +2143,7 @@ def render_view(
     mismo `view` y `share_url`, y sus DOS puertas (bloque + interruptor de
     publicacion) viven donde se pueden auditar, no en la firma.
     """
-    s = STRINGS[lang]
+    s = page_strings(view, lang)
     brand = view["brand_style"]
     template_path = TEMPLATES_DIR / "base.html"
     if not template_path.exists():

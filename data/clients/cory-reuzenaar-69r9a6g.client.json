@@ -1,0 +1,176 @@
+{
+  "public_slug": "cory-reuzenaar-69r9a6g",
+  "default_language": "en",
+  "brand_style": "charcoal-clean",
+  "business_type": "professional",
+  "business_name": "Cory Reuzenaar",
+  "logo_url": "https://www.hmulink.com/links/cory-reuzenaar-69r9a6g/assets/logo.jpg",
+  "primary_image_url": "https://www.hmulink.com/links/cory-reuzenaar-69r9a6g/assets/hero.jpg",
+  "gallery_images": [
+    {
+      "url": "https://www.hmulink.com/links/cory-reuzenaar-69r9a6g/assets/event-finish-line.jpg"
+    },
+    {
+      "url": "https://www.hmulink.com/links/cory-reuzenaar-69r9a6g/assets/logistics-sunset.jpg"
+    }
+  ],
+  "whatsapp": null,
+  "phone": "+13125453919",
+  "public_email": "cr@whatnextent.com",
+  "instagram": null,
+  "facebook": null,
+  "tiktok": null,
+  "website": null,
+  "booking_url": null,
+  "primary_cta": "phone",
+  "google_maps_url": null,
+  "google_reviews_url": null,
+  "content": {
+    "en": {
+      "short_description": "Event Operations & Logistics. Major sporting events require more than race day. Cory works behind the scenes moving equipment, building sites and helping turn venues into fully operational event environments across the United States and Mexico — IRONMAN, HYROX Mexico and more. Heavy commercial vehicle licensed and available to travel.",
+      "opening_hours_text": "Available year-round for event schedules — contact Cory to check dates.",
+      "service_area_text": "United States & Mexico — nationwide. Available for travel-based assignments, multi-city event schedules, touring event circuits and extended event deployments.",
+      "client_care_text": "Comfortable in fast-moving environments where logistics, timing, teamwork, physical execution and problem-solving are critical. Additional professional background in real estate and security adds client interaction, responsibility and situational awareness.",
+      "price_display": "hide",
+      "service_categories": [
+        "Event Operations",
+        "Transportation & Logistics",
+        "Event Experience"
+      ],
+      "services": [
+        {
+          "category": "Event Operations",
+          "name": "Event Operations",
+          "description": "On-site operational support for large-scale sporting, endurance, fitness and live events."
+        },
+        {
+          "category": "Event Operations",
+          "name": "Site Build & Breakdown",
+          "description": "Load-in, event build, course setup, teardown and load-out."
+        },
+        {
+          "category": "Event Operations",
+          "name": "Course & Venue Infrastructure",
+          "description": "Barricades, crowd-control barriers, traffic cones, course equipment, event signage, staging and temporary infrastructure."
+        },
+        {
+          "category": "Transportation & Logistics",
+          "name": "Heavy Commercial Transportation",
+          "description": "Licensed to drive heavy commercial trucks: long-distance and event-to-event transport of equipment and infrastructure."
+        },
+        {
+          "category": "Transportation & Logistics",
+          "name": "Event Logistics",
+          "description": "Movement, coordination, deployment and recovery of event equipment, infrastructure and operational assets."
+        },
+        {
+          "category": "Transportation & Logistics",
+          "name": "Equipment & Asset Deployment",
+          "description": "Transporting, unloading, positioning, installing, recovering and reloading the equipment large sporting events need."
+        },
+        {
+          "category": "Event Experience",
+          "name": "IRONMAN",
+          "description": "Event transportation, equipment logistics, site setup, course infrastructure, barricade deployment, load-in/load-out and breakdown for major endurance events in the U.S."
+        },
+        {
+          "category": "Event Experience",
+          "name": "HYROX (incl. HYROX Mexico)",
+          "description": "Event operations, build and breakdown, logistics, equipment deployment, venue infrastructure and on-site operational support."
+        }
+      ],
+      "featured_package": {
+        "name": "Open to Opportunities",
+        "description": "Event Logistics Coordinator · Site Operations Lead · Build / Logistics Lead · Event Transportation & Logistics · Operations Manager – Build · Event Operations Manager. Let's work together."
+      },
+      "policies": [],
+      "faq": [
+        {
+          "question": "Where is Cory available to work?",
+          "answer": "Nationwide across the United States and Mexico, and internationally as needed. He is available to travel for multi-city schedules and extended deployments."
+        },
+        {
+          "question": "Can he both drive the equipment and set it up?",
+          "answer": "Yes. Cory is licensed to operate heavy commercial trucks and works directly with the equipment after arrival — unloading, deployment and setup."
+        },
+        {
+          "question": "What events has he worked?",
+          "answer": "Major endurance and fitness events including IRONMAN in the United States and HYROX, including HYROX Mexico."
+        }
+      ]
+    },
+    "es": {
+      "short_description": "Operaciones y logística de eventos. Un gran evento deportivo es mucho más que el día de la carrera. Cory trabaja tras bambalinas moviendo equipo, montando sedes y convirtiendo recintos en espacios de evento totalmente operativos en Estados Unidos y México — IRONMAN, HYROX México y más. Con licencia para vehículos comerciales pesados y disponible para viajar.",
+      "opening_hours_text": "Disponible todo el año para calendarios de eventos — contacta a Cory para confirmar fechas.",
+      "service_area_text": "Estados Unidos y México — a nivel nacional. Disponible para asignaciones con viaje, calendarios de eventos en varias ciudades, circuitos de eventos y despliegues prolongados.",
+      "client_care_text": "Se desempeña bien en entornos de ritmo rápido donde la logística, los tiempos, el trabajo en equipo, la ejecución física y la resolución de problemas son clave. Su experiencia adicional en bienes raíces y seguridad suma trato con clientes, responsabilidad y conciencia situacional.",
+      "price_display": "hide",
+      "service_categories": [
+        "Operación de eventos",
+        "Transporte y logística",
+        "Experiencia en eventos"
+      ],
+      "services": [
+        {
+          "category": "Operación de eventos",
+          "name": "Operación de eventos",
+          "description": "Soporte operativo en sitio para eventos deportivos, de resistencia, fitness y en vivo de gran escala."
+        },
+        {
+          "category": "Operación de eventos",
+          "name": "Montaje y desmontaje",
+          "description": "Carga de entrada, montaje del evento, armado de ruta, desmontaje y carga de salida."
+        },
+        {
+          "category": "Operación de eventos",
+          "name": "Infraestructura de ruta y sede",
+          "description": "Vallas, barreras de control de multitudes, conos, equipo de ruta, señalización, escenarios e infraestructura temporal."
+        },
+        {
+          "category": "Transporte y logística",
+          "name": "Transporte comercial pesado",
+          "description": "Licencia para camiones comerciales pesados: transporte de larga distancia y de evento a evento de equipo e infraestructura."
+        },
+        {
+          "category": "Transporte y logística",
+          "name": "Logística de eventos",
+          "description": "Movimiento, coordinación, despliegue y recuperación de equipo, infraestructura y activos operativos."
+        },
+        {
+          "category": "Transporte y logística",
+          "name": "Despliegue de equipo y activos",
+          "description": "Transportar, descargar, posicionar, instalar, recuperar y volver a cargar el equipo que requieren los grandes eventos deportivos."
+        },
+        {
+          "category": "Experiencia en eventos",
+          "name": "IRONMAN",
+          "description": "Transporte, logística de equipo, montaje, infraestructura de ruta, colocación de vallas, carga y desmontaje en eventos de resistencia en EE. UU."
+        },
+        {
+          "category": "Experiencia en eventos",
+          "name": "HYROX (incl. HYROX México)",
+          "description": "Operación, montaje y desmontaje, logística, despliegue de equipo, infraestructura de sede y soporte operativo en sitio."
+        }
+      ],
+      "featured_package": {
+        "name": "Abierto a oportunidades",
+        "description": "Coordinador de logística de eventos · Líder de operaciones en sitio · Líder de montaje / logística · Transporte y logística de eventos · Gerente de operaciones de montaje · Gerente de operación de eventos. Trabajemos juntos."
+      },
+      "policies": [],
+      "faq": [
+        {
+          "question": "¿Dónde puede trabajar Cory?",
+          "answer": "En todo Estados Unidos y México, e internacionalmente según se requiera. Está disponible para viajar en calendarios de varias ciudades y despliegues prolongados."
+        },
+        {
+          "question": "¿Puede transportar el equipo y también montarlo?",
+          "answer": "Sí. Tiene licencia para camiones comerciales pesados y trabaja directamente con el equipo al llegar: descarga, despliegue y montaje."
+        },
+        {
+          "question": "¿En qué eventos ha trabajado?",
+          "answer": "Grandes eventos de resistencia y fitness, incluyendo IRONMAN en Estados Unidos y HYROX, incluido HYROX México."
+        }
+      ]
+    }
+  }
+}

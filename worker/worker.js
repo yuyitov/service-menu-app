@@ -343,6 +343,16 @@ export default {
         return await handleNotify(request, env);
       }
 
+      // Entrega de REGALO (Vero, 2026-09-27): una página publicada a mano, sin
+      // compra de Stripe, recibe el mismo correo de entrega y las mismas
+      // modificaciones gratis que un cliente que pagó. Autenticado con
+      // NOTIFY_SECRET; lo dispara el workflow manual `gift-delivery.yml`.
+      if (request.method === 'POST' && pathname === '/gift-delivery') {
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'gift', ip, minuteSlot), 5, 120);
+        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
+        return await handleGiftDelivery(request, env);
+      }
+
       // Correcciones: consumidos por la página estática /correct/ del sitio.
       if (request.method === 'GET' && pathname === '/correction-status') {
         const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'corrstatus', ip, minuteSlot), 30, 120);
@@ -1090,6 +1100,80 @@ async function handleNotify(request, env) {
     status: 'delivered',
     pageUrl
   });
+}
+
+const GIFT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * POST /gift-delivery — body JSON {slug, email, lang, qr_png_base64?}.
+ *
+ * Una página REGALADA (publicada a mano en data/clients/, sin pasar por Stripe
+ * ni Tally) no tiene orden en KV, así que /notify no podía entregarla: sin
+ * orden no hay correo de entrega ni enlace de modificación. Aquí se crea una
+ * orden sintética `gift_<slug>` (source: 'gift', amount 0) con el correo del
+ * dueño y la moneda que decide el idioma del correo (es -> mxn, en -> usd), y
+ * se entrega con EXACTAMENTE el mismo camino que un cliente que pagó
+ * (handleNotify): mismo correo, mismo enlace /correct/, mismas FREE_CHANGES.
+ *
+ * Idempotente: si la página ya tiene entrega, no manda nada otra vez.
+ */
+async function handleGiftDelivery(request, env) {
+  const notifySecret = (env.NOTIFY_SECRET || '').trim();
+  if (!notifySecret) {
+    return jsonResponse({ ok: false, error: 'NOTIFY_SECRET not configured' }, 500);
+  }
+  const authHeader = request.headers.get('authorization') || '';
+  const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!timingSafeEqual(provided, notifySecret)) {
+    return jsonResponse({ ok: false, error: 'Unauthorized' }, 401);
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ ok: false, error: 'Invalid JSON' }, 400);
+  }
+
+  const slug = String(body?.slug || '').trim();
+  const email = String(body?.email || '').trim();
+  const lang = String(body?.lang || '').trim().toLowerCase() === 'es' ? 'es' : 'en';
+  if (!SLUG_RE.test(slug)) {
+    return jsonResponse({ ok: false, error: 'Invalid slug' }, 400);
+  }
+  if (!GIFT_EMAIL_RE.test(email) || email.length > 254) {
+    return jsonResponse({ ok: false, error: 'Invalid email' }, 400);
+  }
+
+  const existingDelivery = await env.SERVICE_MENU_KV
+    .get(kvKey(env, 'delivery', slug), { type: 'json' }).catch(() => null);
+  if (existingDelivery && existingDelivery.status === 'delivered') {
+    return jsonResponse({ ok: true, slug, idempotent: true, alreadyDelivered: true });
+  }
+
+  const orderId = `gift_${slug}`;
+  try {
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify({
+      order_id: orderId,
+      source: 'gift',
+      customer_email: email,
+      amount: 0,
+      currency: lang === 'es' ? 'mxn' : 'usd',
+      slug,
+      status: 'paid',
+      created_at: new Date().toISOString()
+    }));
+  } catch (err) {
+    console.error('gift order save failed:', safeError(err));
+    return jsonResponse({ ok: false, error: 'Failed to save gift order' }, 500);
+  }
+
+  // Mismo camino que un cliente que pagó: se reusa /notify tal cual.
+  return await handleNotify(new Request('https://internal/notify', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${notifySecret}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ slug, order_id: orderId, qr_png_base64: body?.qr_png_base64 || '' })
+  }), env);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

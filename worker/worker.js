@@ -1102,6 +1102,63 @@ async function handleNotify(request, env) {
   });
 }
 
+/**
+ * Regalo en modo 'intake': orden `gift_<token>` en estado 'paid' y el MISMO
+ * correo post-pago que manda el webhook de Stripe (formulario con order_id +
+ * customer_email). Desde ahí todo es el camino normal. Idempotente por correo
+ * durante 7 días: un segundo disparo no crea otra orden ni manda otro correo.
+ */
+async function sendGiftIntake(env, { email, lang }) {
+  const dedupKey = kvKey(env, 'flag', `gift_intake:${email.toLowerCase()}`);
+  const already = await env.SERVICE_MENU_KV.get(dedupKey).catch(() => null);
+  if (already) {
+    return jsonResponse({ ok: true, idempotent: true, alreadySent: true, order_id: already });
+  }
+  const baseFormEN = (env.TALLY_FORM_URL_EN || '').trim();
+  const baseFormES = (env.TALLY_FORM_URL_ES || '').trim();
+  if (!baseFormEN || !baseFormES) {
+    return jsonResponse({ ok: false, error: 'TALLY_FORM_URL not configured' }, 500);
+  }
+  if (!secret(env, 'SENDGRID_API_KEY')) {
+    return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
+  }
+
+  const orderId = `gift_${generateSecureToken().slice(0, 20)}`;
+  try {
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify({
+      order_id: orderId,
+      source: 'gift',
+      customer_email: email,
+      amount: 0,
+      currency: lang === 'es' ? 'mxn' : 'usd',
+      status: 'paid',
+      created_at: new Date().toISOString()
+    }));
+  } catch (err) {
+    console.error('gift order save failed:', safeError(err));
+    return jsonResponse({ ok: false, error: 'Failed to save gift order' }, 500);
+  }
+
+  const formUrlEN = `${baseFormEN}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(email)}`;
+  const formUrlES = `${baseFormES}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(email)}`;
+  try {
+    await sendEmail({
+      env,
+      to: email,
+      subject: lang === 'es'
+        ? `Completa tu página ${brandName(env)} — solo falta un formulario`
+        : `Complete your ${brandName(env)} service menu — one form to go`,
+      html: buildPostPaymentEmail({ formUrlEN, formUrlES, lang, env }),
+      text: buildPostPaymentText({ formUrlEN, formUrlES, lang, env })
+    });
+  } catch (err) {
+    console.error('gift post-payment email failed:', safeError(err));
+    return jsonResponse({ ok: false, error: 'Failed to send gift email' }, 500);
+  }
+  await env.SERVICE_MENU_KV.put(dedupKey, orderId, { expirationTtl: 604800 }).catch(() => {});
+  return jsonResponse({ ok: true, status: 'intake_sent', order_id: orderId });
+}
+
 const GIFT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
@@ -1138,11 +1195,18 @@ async function handleGiftDelivery(request, env) {
   const slug = String(body?.slug || '').trim();
   const email = String(body?.email || '').trim();
   const lang = String(body?.lang || '').trim().toLowerCase() === 'es' ? 'es' : 'en';
-  if (!SLUG_RE.test(slug)) {
-    return jsonResponse({ ok: false, error: 'Invalid slug' }, 400);
-  }
   if (!GIFT_EMAIL_RE.test(email) || email.length > 254) {
     return jsonResponse({ ok: false, error: 'Invalid email' }, 400);
+  }
+  // mode 'intake': el regalo arranca DONDE ARRANCA UN CLIENTE QUE PAGA — el
+  // correo post-pago con su formulario. El dueño llena el cuestionario, la
+  // página se genera sola, le llega la entrega y sus modificaciones usan el
+  // formulario prellenado como las de cualquier cliente.
+  if (String(body?.mode || '').trim() === 'intake') {
+    return await sendGiftIntake(env, { email, lang });
+  }
+  if (!SLUG_RE.test(slug)) {
+    return jsonResponse({ ok: false, error: 'Invalid slug' }, 400);
   }
 
   const existingDelivery = await env.SERVICE_MENU_KV

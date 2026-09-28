@@ -5,16 +5,27 @@ name: Entregar regalo
 # orden de regalo y manda el MISMO correo de entrega que a un cliente que pagó,
 # con su enlace para pedir cambios y sus modificaciones gratis (FREE_CHANGES).
 #
-# Uso: Actions -> "Entregar regalo" -> Run workflow -> slug de la página,
-# correo del dueño e idioma del correo. Es idempotente: si esa página ya se
-# entregó, no manda nada otra vez.
+# Dos modos:
+#  - cuestionario: el regalo arranca como una COMPRA — le llega el correo
+#    post-pago con su formulario de Tally; lo llena, su página se genera sola, le
+#    llega la entrega y sus modificaciones (formulario prellenado) como a
+#    cualquier cliente. No necesita slug.
+#  - entrega: para una página YA hecha a mano en data/clients/: le llega el
+#    correo de entrega con su enlace de cambios. Necesita slug.
+# Idempotente en los dos: un segundo disparo no manda otro correo.
 
 on:
   workflow_dispatch:
     inputs:
-      slug:
-        description: "Slug de la página (lo que va después de /links/)"
+      mode:
+        description: "cuestionario = vive todo como cliente nuevo; entrega = página ya hecha a mano"
         required: true
+        type: choice
+        options: [cuestionario, entrega]
+        default: cuestionario
+      slug:
+        description: "Solo para 'entrega': slug de la página (lo que va después de /links/)"
+        required: false
         type: string
       email:
         description: "Correo del dueño (ahí llega su enlace de cambios)"
@@ -41,6 +52,7 @@ jobs:
         env:
           WORKER_URL: ${{ secrets.SERVICE_MENU_WORKER_URL }}
           NOTIFY_SECRET: ${{ secrets.NOTIFY_SECRET }}
+          MODE: ${{ inputs.mode }}
           SLUG: ${{ inputs.slug }}
           EMAIL: ${{ inputs.email }}
           LANG_EMAIL: ${{ inputs.lang }}
@@ -50,18 +62,22 @@ jobs:
           if [ -z "$WORKER_URL" ] || [ -z "$NOTIFY_SECRET" ]; then
             echo "Faltan los secrets SERVICE_MENU_WORKER_URL / NOTIFY_SECRET."; exit 1
           fi
-          if [ ! -f "data/clients/$SLUG.client.json" ] || [ ! -f "public/links/$SLUG/index.html" ]; then
-            echo "No existe la página $SLUG en data/clients/ + public/links/. Publícala primero."; exit 1
+          if [ "$MODE" = "cuestionario" ]; then
+            payload=$(jq -nc --arg email "$EMAIL" --arg lang "$LANG_EMAIL" '{mode:"intake",email:$email,lang:$lang}')
+          else
+            if [ ! -f "data/clients/$SLUG.client.json" ] || [ ! -f "public/links/$SLUG/index.html" ]; then
+              echo "No existe la página $SLUG en data/clients/ + public/links/. Publícala primero."; exit 1
+            fi
+            qr=""
+            if [ -f "public/links/$SLUG/qr.png" ]; then qr=$(base64 -w0 "public/links/$SLUG/qr.png"); fi
+            payload=$(jq -nc --arg slug "$SLUG" --arg email "$EMAIL" --arg lang "$LANG_EMAIL" --arg qr "$qr" \
+              '{slug:$slug,email:$email,lang:$lang,qr_png_base64:$qr}')
           fi
-          qr=""
-          if [ -f "public/links/$SLUG/qr.png" ]; then qr=$(base64 -w0 "public/links/$SLUG/qr.png"); fi
-          payload=$(jq -nc --arg slug "$SLUG" --arg email "$EMAIL" --arg lang "$LANG_EMAIL" --arg qr "$qr" \
-            '{slug:$slug,email:$email,lang:$lang,qr_png_base64:$qr}')
           status=$(curl -sS -o resp.json -w '%{http_code}' -X POST "$WORKER_URL/gift-delivery" \
             -H "Authorization: Bearer $NOTIFY_SECRET" \
             -H "Content-Type: application/json" \
             -d "$payload")
-          cat resp.json; echo
+          sed -E 's/"customer_email":"[^"]*"/"customer_email":"***"/' resp.json; echo
           if [ "$status" != "200" ]; then
             echo "El worker respondió $status."
             if [ "$status" = "404" ]; then echo "¿Ya desplegaste el worker con /gift-delivery? (cd worker && npx wrangler deploy)"; fi

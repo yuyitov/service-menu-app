@@ -31,7 +31,7 @@
       "short_description": "Event operations & logistics across the U.S. and Mexico. IRONMAN · HYROX.",
       "opening_hours_text": "Available year-round for event schedules — contact me to check dates.",
       "service_area_text": "United States & Mexico — nationwide. Available for travel-based assignments, multi-city event schedules, touring event circuits and extended event deployments.",
-      "client_care_text": "Comfortable in fast-moving environments where logistics, timing, teamwork, physical execution and problem-solving are critical. Additional professional background in real estate and security adds client interaction, responsibility and situational awareness.",
+      "client_care_text": "Fast-moving environments where logistics, timing, teamwork and problem-solving are critical. Background in real estate and security.",
       "price_display": "hide",
       "service_categories": [
         "Event Operations",
@@ -41,7 +41,7 @@
       "services": [
         {
           "category": "Event Operations",
-          "name": "Event Operations",
+          "name": "On-Site Event Operations",
           "description": "On-site operational support for large-scale sporting, endurance, fitness and live events."
         },
         {
@@ -104,7 +104,7 @@
       "short_description": "Operación y logística de eventos deportivos en EE. UU. y México. IRONMAN · HYROX.",
       "opening_hours_text": "Disponible todo el año para calendarios de eventos — contáctame para confirmar fechas.",
       "service_area_text": "Estados Unidos y México — a nivel nacional. Disponible para asignaciones con viaje, calendarios de eventos en varias ciudades, circuitos de eventos y despliegues prolongados.",
-      "client_care_text": "Se desempeña bien en entornos de ritmo rápido donde la logística, los tiempos, el trabajo en equipo, la ejecución física y la resolución de problemas son clave. Su experiencia adicional en bienes raíces y seguridad suma trato con clientes, responsabilidad y conciencia situacional.",
+      "client_care_text": "Entornos de ritmo rápido donde la logística, los tiempos, el trabajo en equipo y la resolución de problemas son clave. Experiencia en bienes raíces y seguridad.",
       "price_display": "hide",
       "service_categories": [
         "Operación de eventos",
@@ -114,7 +114,7 @@
       "services": [
         {
           "category": "Operación de eventos",
-          "name": "Operación de eventos",
+          "name": "Operación de eventos en sitio",
           "description": "Soporte operativo en sitio para eventos deportivos, de resistencia, fitness y en vivo de gran escala."
         },
         {

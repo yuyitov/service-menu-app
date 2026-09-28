@@ -1162,7 +1162,8 @@ async function sendGiftIntake(env, { email, lang }) {
 const GIFT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * POST /gift-delivery — body JSON {slug, email, lang, qr_png_base64?}.
+ * POST /gift-delivery — body JSON {slug, email, lang, qr_png_base64?, prefill?}
+ * (o {mode:'intake', email, lang}: ver sendGiftIntake).
  *
  * Una página REGALADA (publicada a mano en data/clients/, sin pasar por Stripe
  * ni Tally) no tiene orden en KV, así que /notify no podía entregarla: sin
@@ -1216,7 +1217,35 @@ async function handleGiftDelivery(request, env) {
   }
 
   const orderId = `gift_${slug}`;
+  // Prellenado del formulario de MODIFICACIÓN: {campo del intake -> texto}, con
+  // los mismos nombres que cableó cablear_prefill_en_tally.py (las claves de
+  // tally-field-aliases.json). Se guarda como la submission de esta orden, que
+  // es de donde bestModificationUrl lo lee para un cliente que sí llenó Tally.
+  // Así el dueño de una página hecha a mano recibe SU cuestionario con SUS
+  // datos, igual que cualquier cliente. Sin prefill: /correct/ de texto libre.
+  const prefill = {};
+  if (body?.prefill && typeof body.prefill === 'object' && !Array.isArray(body.prefill)) {
+    for (const [k, v] of Object.entries(body.prefill)) {
+      if (typeof k === 'string' && /^[a-z0-9_]{1,64}$/.test(k) && typeof v === 'string' && v.trim()) {
+        prefill[k] = v.slice(0, 3000);
+      }
+    }
+  }
+  const submissionId = Object.keys(prefill).length ? `gift_${slug}` : '';
   try {
+    if (submissionId) {
+      await env.SERVICE_MENU_KV.put(kvKey(env, 'submission', submissionId), JSON.stringify({
+        submission_id: submissionId,
+        order_id: orderId,
+        customer_email: email,
+        slug,
+        prefill,
+        is_modification: false,
+        source: 'gift',
+        received_at: new Date().toISOString(),
+        status: 'gift'
+      }), { expirationTtl: 7776000 }); // 90 days, como una submission real
+    }
     await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify({
       order_id: orderId,
       source: 'gift',
@@ -1224,6 +1253,7 @@ async function handleGiftDelivery(request, env) {
       amount: 0,
       currency: lang === 'es' ? 'mxn' : 'usd',
       slug,
+      ...(submissionId ? { submission_id: submissionId } : {}),
       status: 'paid',
       created_at: new Date().toISOString()
     }));

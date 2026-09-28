@@ -11,7 +11,8 @@ name: Entregar regalo
 #    llega la entrega y sus modificaciones (formulario prellenado) como a
 #    cualquier cliente. No necesita slug.
 #  - entrega: para una página YA hecha a mano en data/clients/: le llega el
-#    correo de entrega con su enlace de cambios. Necesita slug.
+#    correo de entrega; su enlace de cambios es SU formulario prellenado si
+#    existe data/gifts/<slug>.prefill.json. Necesita slug.
 # Idempotente en los dos: un segundo disparo no manda otro correo.
 
 on:
@@ -70,8 +71,15 @@ jobs:
             fi
             qr=""
             if [ -f "public/links/$SLUG/qr.png" ]; then qr=$(base64 -w0 "public/links/$SLUG/qr.png"); fi
-            payload=$(jq -nc --arg slug "$SLUG" --arg email "$EMAIL" --arg lang "$LANG_EMAIL" --arg qr "$qr" \
-              '{slug:$slug,email:$email,lang:$lang,qr_png_base64:$qr}')
+            # Su formulario de MODIFICACIÓN prellenado con lo que ya dice su página
+            # (data/gifts/<slug>.prefill.json). Sin ese archivo, el enlace es la
+            # página /correct/ de texto libre.
+            prefill='{}'
+            if [ -f "data/gifts/$SLUG.prefill.json" ]; then
+              prefill=$(jq -c 'with_entries(select(.key | startswith("_") | not))' "data/gifts/$SLUG.prefill.json")
+            fi
+            payload=$(jq -nc --arg slug "$SLUG" --arg email "$EMAIL" --arg lang "$LANG_EMAIL" --arg qr "$qr" --argjson prefill "$prefill" \
+              '{slug:$slug,email:$email,lang:$lang,qr_png_base64:$qr,prefill:$prefill}')
           fi
           status=$(curl -sS -o resp.json -w '%{http_code}' -X POST "$WORKER_URL/gift-delivery" \
             -H "Authorization: Bearer $NOTIFY_SECRET" \

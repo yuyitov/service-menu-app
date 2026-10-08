@@ -36,10 +36,12 @@ is not approval to begin sales. Source baseline: main commit
    raise this budget or call complete-profile editing solved without browser,
    email-link and real-form boundary tests. Oversized valid profiles currently
    require resolution; they are not silently truncated.
-2. These tests use an in-process Durable Object/storage model, not Cloudflare's
-   actual SQLite/Workers runtime. Wrangler and Miniflare were unavailable in the
-   preparation environment. Run a real isolated runtime integration before
-   approval. New DO binding/migration configuration is prepared, not activated.
+2. The real local workerd/SQLite smoke now passes seven checks, including full
+   runtime restart, concurrency, two gift edits and signed paid intake. It caught
+   and fixed a startup failure from exported test constants: production now uses
+   worker-entry.mjs, exposing only the handler and HmuState. Fault-injection unit
+   tests still use their in-process storage model. Hosted Cloudflare deployment,
+   namespace migration and production cutover are not tested or activated.
 3. Confirm the active Worker revision, GitHub dispatch permission and SendGrid
    account health without exposing credential values. Do not rotate or create
    credentials under this branch's preparation authorization.
@@ -128,6 +130,23 @@ retrieval/translation: changing text preserves old photos, hours and policies;
 a supplied gallery replaces the old set; both language HTML views render.
 QR generation, visual browser QA, real uploads/translations and production
 workflow execution remain unrun.
+
+## Reproduce the real local runtime check
+
+Install official test dependencies in an approved temporary directory, not in a
+production account. The versions used were Miniflare 4.20260730.0 and esbuild
+0.25.12; Miniflare starts its real workerd binary with SQLite-backed HmuState.
+
+```
+npm install --prefix /tmp/hmu-runtime-deps --save-exact --no-audit --no-fund miniflare@4.20260730.0 esbuild@0.25.12
+HMU_RUNTIME_DEPS_DIR=/tmp/hmu-runtime-deps HMU_RUNTIME_OUTPUT=/tmp/hmu-runtime-results node worker/test/runtime-smoke.mjs
+```
+
+The test reads the committed Wrangler entrypoint, bundles it, creates only local
+KV/SQLite data with fake identifiers and intercepts every outbound provider
+request. It never contacts Stripe, SendGrid or GitHub, and requires no Cloudflare
+login. The output directory receives the seven-check JSON result, bundle and
+synthetic SQLite state. Use a fresh output directory for each run.
 
 ## Primary references
 

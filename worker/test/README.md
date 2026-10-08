@@ -52,3 +52,9 @@ Durable Object model, using memory-only storage and fully intercepted provider
 calls. `reliability-harness.mjs` supplies the model and signed synthetic events.
 The model is not a substitute for a Cloudflare SQLite runtime integration.
 See `../RELEASE_READINESS.md` for cutover, recovery and remaining acceptance gates.
+
+`runtime-smoke.mjs` is an optional real workerd/SQLite check with pinned temporary
+dependencies. It is separate from run_all.mjs and intercepts all provider traffic.
+It verifies production entrypoint startup, persistence across process restart,
+concurrent deduplication, two gift changes, rejected-email recovery, signed paid
+intake and generation retry. See ../RELEASE_READINESS.md for the exact command.

@@ -37,25 +37,24 @@ Stripe Payment Link (LIVE)
   → correction link one-time
 ```
 
-El cliente paga, llena un formulario de intake, y de forma automatizada recibe su página
-publicada más un email de entrega con el link y el QR. Tiene derecho a una corrección
-incluida vía un link de un solo uso (página `/correct/` → worker → Actions aplica los
-cambios con gpt-4o-mini y regenera; si no puede con seguridad, cae a manual). Las
-correcciones adicionales ($6 USD / $59 MXN) se compran vía `/buy-correction` (Stripe
-Checkout creado por el worker).
+El cliente paga, llena el formulario de intake y recibe su página publicada por
+correo. La compra incluye **dos modificaciones**: el correo debe enlazar a su
+cuestionario prellenado; cada envío consume una modificación después de publicar.
+Los regalos preconstruidos usan el mismo camino de entrega, con prefill obligatorio.
+Las correcciones adicionales mantienen su precio de $6 USD / $59 MXN.
 
 ## Estado actual
 
-**Phases 6-9 — Pipeline automatizado en producción, Stripe LIVE, vendiendo.**
+La rama de preparación de octubre corrige entrega, reintentos, reservas de cambios
+y orden de publicación. **No acredita que estos cambios estén desplegados ni que
+el producto haya pasado la prueba completa de compra y regalo en producción.**
+Antes de publicar esta versión, seguir [el plan de validación y transición](worker/RELEASE_READINESS.md).
+El texto histórico que declaraba el flujo completo listo para vender no es una
+prueba de la configuración o entrega actuales.
 
-El flujo completo está desplegado y probado end-to-end con clientes reales: Stripe
-Payment Link en modo **LIVE** → email post-pago → intake en Tally → Cloudflare Worker →
-GitHub Actions → GitHub Pages → email de entrega con link + QR → 1 corrección incluida
-(auto-aplicada vía gpt-4o-mini, con fallback manual) → correcciones adicionales de pago.
-
-Precios vigentes: **$49 USD / $799 MXN** (precio de lanzamiento, tachado el precio de
-lista $79 USD / $1,299 MXN), pago único. 1 corrección gratis incluida; correcciones
-adicionales $6 USD / $59 MXN cada una.
+Precios: **$49 USD / $799 MXN**, pago único; dos modificaciones incluidas.
+Los precios de lista siguen siendo $79 USD / $1,299 MXN, y las modificaciones
+adicionales $6 USD / $59 MXN. Esta rama no modifica precios ni diseño público.
 
 - CTAs primarios de ambas landings (`/` y `/es/`) abren directamente el Stripe Payment
   Link correspondiente a su mercado (USD / MXN).

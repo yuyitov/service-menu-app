@@ -38,6 +38,7 @@ id      = "0743b2af26cd47fb88d4fef62e90a118"
 
 # ─── Environment Variables (no-secret) ────────────────────────────────────────
 [vars]
+STATE_SERIALIZATION = "durable"
 # ── Identidad de la vertical (gate de migración a la fábrica, 2026-07-26) ─────
 # El worker de HMU pasó a ser el del MOTOR, que ya no trae "HMU" escrito en el
 # código: lo lee de estas vars. Cada valor de abajo es EXACTAMENTE el default
@@ -130,3 +131,12 @@ WORKER_PUBLIC_URL    = "https://service-menu-worker.veronica-perezarroyo.workers
 # sin ningún otro cambio (fail-open).
 PROSPECT_PREFILL_BASE_URL = "https://preview.hmulink.com/p"
 
+
+# Prepared only. Requires a separately approved, non-gradual state cutover.
+[[durable_objects.bindings]]
+name = "HMU_STATE"
+class_name = "HmuState"
+
+[[migrations]]
+tag = "hmu-state-v1"
+new_sqlite_classes = ["HmuState"]

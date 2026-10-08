@@ -124,6 +124,11 @@
     <p data-i18n="doneBody">La estamos aplicando automáticamente. Te llegará un correo de confirmación cuando tu página esté actualizada (normalmente en menos de 15 minutos).</p>
   </div>
 
+  <div id="state-processing" class="hidden">
+    <h1 data-i18n="processingTitle">Estamos actualizando tu página</h1>
+    <p data-i18n="processingBody">Tu solicitud ya está en proceso. No necesitas enviarla otra vez. Recibirás un correo cuando la actualización esté confirmada.</p>
+  </div>
+
   <div id="state-used" class="hidden">
     <h1 data-i18n="usedTitle">Este enlace de corrección ya fue usado</h1>
     <p data-i18n="usedBody">Este enlace ya se usó. Tu compra incluye 2 modificaciones gratis: si todavía te queda una, el enlace nuevo te llegó en el correo de "tu página fue actualizada". Si ya usaste las dos, puedes comprar una corrección adicional ($59 MXN / $6 USD):</p>
@@ -164,6 +169,8 @@
   var STRINGS = {
     es: {
       docTitle: 'Solicitar corrección — HMU Link',
+      processingTitle: 'Estamos actualizando tu página',
+      processingBody: 'Tu solicitud ya está en proceso. No necesitas enviarla otra vez. Recibirás un correo cuando la actualización esté confirmada.',
       loadingTitle: 'Verificando tu enlace…',
       loadingBody: 'Un momento, por favor.',
       pillFree: 'Corrección incluida',
@@ -196,6 +203,8 @@
     },
     en: {
       docTitle: 'Request a correction — HMU Link',
+      processingTitle: 'We are updating your page',
+      processingBody: 'Your request is already in progress. You do not need to submit it again. You will receive an email when the update is confirmed.',
       loadingTitle: 'Checking your link…',
       loadingBody: 'One moment, please.',
       pillFree: 'Included correction',
@@ -257,7 +266,7 @@
     applyLang();
   });
 
-  var states = ['loading', 'form', 'done', 'used', 'invalid', 'unavailable'];
+  var states = ['loading', 'form', 'done', 'processing', 'used', 'invalid', 'unavailable'];
   function show(state) {
     states.forEach(function (s) {
       document.getElementById('state-' + s).classList.toggle('hidden', s !== state);
@@ -335,6 +344,8 @@
         link.textContent = data.page_url || '';
         show('form');
         ta.focus();
+      } else if (data.state === 'processing') {
+        show('processing');
       } else if (data.state === 'used') {
         setBuyLink(data.buy_url);
         show('used');

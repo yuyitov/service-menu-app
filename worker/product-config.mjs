@@ -414,14 +414,25 @@ export function prospectSlug(session) {
 //   rompería el link, así que es mejor prellenar de más a de menos sin pasarse.
 //   El orden de inserción del objeto define la prioridad (lo más útil primero).
 // Nunca lanza: ante cualquier entrada rara devuelve "".
-export function buildPrefillQuery(prefill, maxLen = 1500) {
+const PREFILL_DELETE_TOKENS = new Set(['borrar', 'borralo', 'borrarlo', 'eliminar', 'quitar', 'quitalo', 'delete', 'remove', 'ninguno', 'ninguna', 'nada', 'none', 'n/a', 'na', '-', '--', '---', '—']);
+export function isPrefillDeleteToken(value) {
+  if (typeof value !== 'string') return false;
+  const plain = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/^[\[\](){}]+|[\[\](){}]+$/g, '').trim().toLowerCase();
+  return PREFILL_DELETE_TOKENS.has(plain);
+}
+
+export function buildPrefillQuery(prefill, maxLen = 1500, { strict = false } = {}) {
   if (!prefill || typeof prefill !== 'object') return '';
   let out = '';
   for (const [name, value] of Object.entries(prefill)) {
     if (typeof value !== 'string' || value === '') continue;
+    if (strict && isPrefillDeleteToken(value)) continue;
     if (typeof name !== 'string' || name === '') continue;
     const pair = `&${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
-    if (out.length + pair.length > maxLen) continue;
+    if (out.length + pair.length > maxLen) {
+      if (strict) throw new RangeError('Complete prefill exceeds the validated URL budget');
+      continue;
+    }
     out += pair;
   }
   return out;

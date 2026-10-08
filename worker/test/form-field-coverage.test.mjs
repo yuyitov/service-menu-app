@@ -47,6 +47,8 @@ const WRANGLER = join(AQUI, '..', 'wrangler.toml')
 // Una pregunta que no llega y no está aquí es un campo perdido, no una excepción.
 // ─────────────────────────────────────────────────────────────────────────────
 const NO_VIAJAN = new Map([
+  ...['q_contact_email_for_your_hmu_link_preview','q_your_name','q_phone_or_whatsapp_if_we_have_questions_about_your_hmu_link', 'q_correo_de_contacto_para_la_vista_previa_de_tu_hmu_link','q_tu_nombre','q_telefono_o_whatsapp_por_si_tenemos_preguntas_sobre_tu_hmu'].map(k => [k, 'contacto interno; nunca público']),
+  ...['q_how_many_public_locations_should_appear_on_your_hmu_link','q_cuantas_ubicaciones_publicas_deben_aparecer_en_tu_hmu_link'].map(k => [k, 'control de visibilidad del formulario']),
   // — Datos internos: se guardan en el registro de KV (worker.js guarda
   //   `answers` completo) para que Vero pueda escribirle al cliente. Nunca se
   //   despachan: publicarlos sería poner el contacto privado en una página web.
@@ -92,6 +94,7 @@ const NO_VIAJAN = new Map([
 // hizo que las 4 opciones de PawContact entregaran la misma página.
 // ─────────────────────────────────────────────────────────────────────────────
 const TRANSFORMADAS = new Map([
+  ['pick_your_style', 'estilo'], ['default_language', 'idioma'], ['primary_cta', 'cta'],
   ['Pick your style', 'estilo'],
   ['Elige tu estilo', 'estilo'],
   ['Which language should your HMU Link show first?', 'idioma'],
@@ -124,6 +127,7 @@ const COLISIONES = new Map([
 // para que no crezca sin que nadie lo note.
 // ─────────────────────────────────────────────────────────────────────────────
 const SIN_PREGUNTA = new Map([
+  ['price_display', 'retirado del formulario y omitido por el generador; compatibilidad de intake histórico'],
   ['public_slug', 'derivado: nombre del negocio + submission_id'],
   ['style_unmapped', 'bandera derivada: avisa que el estilo elegido no está en el catálogo'],
   ['portfolio_link',
@@ -151,6 +155,7 @@ function envDeWrangler() {
   return {
     BRAND_NAME: leer('BRAND_NAME') || 'HMU Link',
     VALID_BRAND_STYLES: leer('VALID_BRAND_STYLES'),
+    BRAND_STYLE_ALIASES: leer('BRAND_STYLE_ALIASES'),
     TALLY_FORM_URL_EN: leer('TALLY_FORM_URL_EN'),
     TALLY_FORM_URL_ES: leer('TALLY_FORM_URL_ES'),
   }

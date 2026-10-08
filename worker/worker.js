@@ -64,6 +64,7 @@ import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFoot
 // verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
 // una vertical con otras preguntas edita SUS alias sin tocar este worker.
+import { DurableStateStore, RequestQueue, boundedRequest } from './durable-state.mjs';
 import RAW_FIELD_ALIASES from './tally-field-aliases.json' with { type: 'json' };
 import RAW_PRIMARY_CTA_ALIASES from './primary-cta-aliases.json' with { type: 'json' };
 
@@ -277,7 +278,7 @@ export {
   buildDeliveryEmail, buildDeliveryText, DELIVERY_QR_CID
 };
 
-export default {
+const requestHandler = {
   async fetch(request, env, ctx) {
     try {
       const missingConfig = runtimeConfigErrors(env);
@@ -337,6 +338,8 @@ export default {
         return await handleEmailEvents(request, env);
       }
 
+      if (request.method === 'POST' && pathname === '/reconcile-operation') return await handleReconcileOperation(request, env);
+
       if (request.method === 'POST' && pathname === '/notify') {
         const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'notify', ip, minuteSlot), 20, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
@@ -382,6 +385,143 @@ export default {
     }
   }
 };
+
+// One named coordinator owns all order, token, quota and notification state.
+// The production configuration opts in and fails closed if its binding is absent.
+export default {
+  async fetch(request, env, ctx) {
+    if (request.method === 'GET' && new URL(request.url).pathname === '/health') return requestHandler.fetch(request, env, ctx);
+    if (env.STATE_SERIALIZATION === 'durable') {
+      if (!env.HMU_STATE) return new Response(JSON.stringify({ ok: false, error: 'Durable state binding missing' }), { status: 503 });
+      try { request = await boundedRequest(request); }
+      catch (error) { return new Response(JSON.stringify({ ok: false, error: error.message }), { status: error.message === 'request_body_too_large' ? 413 : 408 }); }
+      const id = env.HMU_STATE.idFromName(`${env.PRODUCT_ID || 'hmu'}:state-v1`);
+      return env.HMU_STATE.get(id).fetch(request);
+    }
+    if (env.PRODUCT_ID === 'hmu') return new Response(JSON.stringify({ ok: false, error: 'Durable state must be enabled for HMU' }), { status: 503 });
+    return requestHandler.fetch(request, env, ctx);
+  }
+};
+
+export class HmuState {
+  constructor(state, env) {
+    this.state = state;
+    this.env = { ...env, SERVICE_MENU_KV: new DurableStateStore(state.storage, env.SERVICE_MENU_KV) };
+    this.queue = new RequestQueue();
+  }
+  fetch(request) {
+    return this.queue.run(() => requestHandler.fetch(request, this.env, this.state));
+  }
+  alarm() {
+    return this.queue.run(() => this.env.SERVICE_MENU_KV.cleanupExpired());
+  }
+}
+
+async function putRecords(env, records, ttlByKey = {}) {
+  const entries = Object.entries(records).map(([key, value]) => ({ key, value: JSON.stringify(value), options: { expirationTtl: ttlByKey[key] || 7776000 } }));
+  if (typeof env.SERVICE_MENU_KV.putMany !== 'function') {
+    // This fallback is only for legacy products and existing unit harnesses.
+    // HMU production MUST use HmuState, whose putMany is atomic.
+    for (const entry of entries) await env.SERVICE_MENU_KV.put(entry.key, entry.value, entry.options);
+    return;
+  }
+  await env.SERVICE_MENU_KV.putMany(entries);
+}
+
+class ProviderError extends Error {
+  constructor(message, outcome = 'unknown') { super(message); this.outcome = outcome; }
+}
+class PrefillError extends Error {
+  constructor(code) { super(code); this.code = code; }
+}
+
+// Do not guess whether a timed-out provider accepted an external side effect.
+// Explicit HTTP rejection can retry. An uncertain attempt remains visible and
+// requires provider reconciliation; a restart never blindly sends it again.
+async function sendOnce(env, key, message) {
+  const stateKey = kvKey(env, 'outbox', key);
+  const existing = await env.SERVICE_MENU_KV.get(stateKey, { type: 'json' });
+  if (existing?.status === 'sent') return { idempotent: true };
+  if (['sending', 'uncertain'].includes(existing?.status)) {
+    const age = Date.now() - Date.parse(existing.started_at);
+    throw new ProviderError(age > 120000 ? 'Email outcome needs reconciliation' : 'Email attempt in progress');
+  }
+  if (!secret(env, 'SENDGRID_API_KEY')) throw new ProviderError('SENDGRID_API_KEY not configured', 'rejected');
+  const attempt = { status: 'sending', attempt_id: generateSecureToken(), started_at: new Date().toISOString() };
+  await env.SERVICE_MENU_KV.put(stateKey, JSON.stringify(attempt));
+  let result;
+  try { result = await sendEmail({ ...message, env }); }
+  catch (error) {
+    await env.SERVICE_MENU_KV.put(stateKey, JSON.stringify({ ...attempt, status: error.outcome === 'rejected' ? 'retryable' : 'uncertain' }));
+    throw error;
+  }
+  await env.SERVICE_MENU_KV.put(stateKey, JSON.stringify({ ...attempt, status: 'sent', sent_at: new Date().toISOString(), provider_id: result.messageId || '' }));
+  return result;
+}
+
+// Operator-only recovery. This endpoint NEVER sends mail or dispatches a build.
+// A human must verify the provider outcome, supply its reference, then explicitly
+// replay the original operation. It cannot replenish committed quota.
+async function handleReconcileOperation(request, env) {
+  const authHeader = request.headers.get('authorization') || '';
+  const provided = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  if (!env.NOTIFY_SECRET || !timingSafeEqual(provided, String(env.NOTIFY_SECRET).trim())) return jsonResponse({ ok: false, error: 'Unauthorized' }, 401);
+  let body;
+  try { body = await request.json(); } catch { return jsonResponse({ ok: false, error: 'Invalid JSON' }, 400); }
+  const { kind, outcome } = body;
+  const reason = String(body.reason || '').trim();
+  const reference = String(body.provider_reference || '').trim();
+  if (body.action !== 'inspect' && (!['accepted', 'rejected'].includes(outcome) || reason.length < 10 || reason.length > 1000 || reference.length < 3 || reference.length > 500)) {
+    return jsonResponse({ ok: false, error: 'Verified outcome, reason and provider reference required' }, 400);
+  }
+  const now = new Date().toISOString();
+  const audit = { kind, outcome, reason, provider_reference: reference, reconciled_at: now };
+  if (kind === 'email') {
+    const id = String(body.outbox_key || '');
+    if (!/^(delivery|modification|correction|post-payment|paid-correction|gift-intake):[a-zA-Z0-9_:-]{1,150}$/.test(id)) return jsonResponse({ ok: false, error: 'Invalid email operation' }, 400);
+    const key = kvKey(env, 'outbox', id);
+    const record = await env.SERVICE_MENU_KV.get(key, { type: 'json' });
+    if (body.action === 'inspect') return jsonResponse({ ok: true, status: record?.status || 'missing', attempt_id: record?.attempt_id || '', started_at: record?.started_at || '', provider_id: record?.provider_id || '' });
+    if (!record?.attempt_id || body.attempt_id !== record.attempt_id) return jsonResponse({ ok: false, error: 'stale_email_attempt' }, 409);
+    if (!record || !['sending', 'uncertain'].includes(record.status)) return jsonResponse({ ok: false, error: 'Email is not awaiting reconciliation' }, 409);
+    audit.operation = id;
+    audit.attempt_id = record.attempt_id;
+    record.status = outcome === 'accepted' ? 'sent' : 'retryable';
+    record.reconciliation = audit;
+    if (outcome === 'accepted') record.sent_at = now;
+    await env.SERVICE_MENU_KV.put(key, JSON.stringify(record));
+    return jsonResponse({ ok: true, status: record.status, replay_required: true });
+  }
+  if (kind === 'generation') {
+    const recordKind = body.record_kind;
+    const id = String(body.id || '');
+    if (!['submission', 'correction_request'].includes(recordKind) || !/^[a-zA-Z0-9_-]{1,150}$/.test(id)) return jsonResponse({ ok: false, error: 'Invalid generation operation' }, 400);
+    const key = kvKey(env, recordKind, id);
+    const record = await env.SERVICE_MENU_KV.get(key, { type: 'json' });
+    if (body.action === 'inspect') return jsonResponse({ ok: true, status: record?.status || 'missing', generation_attempt: record?.generation_attempt || 0, quota_committed: Boolean(record?.quota_committed) });
+    if (!record || record.quota_committed || !['dispatching', 'generating'].includes(record.status) || Number(body.generation_attempt) !== record.generation_attempt) return jsonResponse({ ok: false, error: 'Generation is not awaiting reconciliation' }, 409);
+    const order = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', record.order_id), { type: 'json' });
+    const active = order?.active_generation;
+    if (!active || active.kind !== recordKind || active.id !== id || active.attempt !== record.generation_attempt) return jsonResponse({ ok: false, error: 'stale_page_reservation' }, 409);
+    if (record.correction_token) {
+      const token = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', record.correction_token), { type: 'json' });
+      const claim = recordKind === 'submission' ? 'pending_submission' : 'pending_correction';
+      if (!token || token[claim] !== id || token.used_at) return jsonResponse({ ok: false, error: 'stale_token_reservation' }, 409);
+    }
+    audit.operation = `${recordKind}:${id}`;
+    if (outcome === 'rejected' && record.publication_confirmed) return jsonResponse({ ok: false, error: 'Publication already confirmed; retry notification instead' }, 409);
+    if (outcome === 'rejected') {
+      const released = await releaseModification(env, id, recordKind, body.generation_attempt, audit);
+      if (!released) return jsonResponse({ ok: false, error: 'Generation reservation not releasable' }, 409);
+    } else {
+      record.status = 'generating';
+      record.reconciliation = audit;
+      await env.SERVICE_MENU_KV.put(key, JSON.stringify(record), { expirationTtl: 7776000 });
+    }
+    return jsonResponse({ ok: true, status: outcome === 'accepted' ? 'generating' : 'failed_generation', replay_required: outcome === 'rejected' });
+  }
+  return jsonResponse({ ok: false, error: 'Invalid operation kind' }, 400);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STRIPE WEBHOOK HANDLER
@@ -518,8 +658,11 @@ async function handleStripeWebhook(request, env) {
   const now = new Date().toISOString();
   const orderId = paymentIntentId;
 
+  // A webhook retry must not reset a generating or delivered order.
+  const savedOrder = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', orderId), { type: 'json' });
   // Save order record
   try {
+    if (!savedOrder) {
     await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify({
       order_id: orderId,
       payment_intent_id: paymentIntentId,
@@ -539,6 +682,7 @@ async function handleStripeWebhook(request, env) {
       status: 'paid',
       created_at: now
     }));
+    }
   } catch (err) {
     console.error('order record save failed:', safeError(err));
     return jsonResponse({ ok: false, error: 'Failed to save order record' }, 500);
@@ -582,11 +726,6 @@ async function handleStripeWebhook(request, env) {
     formUrlES += buildPrefillQuery(expandProspectPrefill(prefill.es), 2500);
   }
 
-  // Reserve the idempotency marker BEFORE sending so a concurrent duplicate
-  // (Stripe retry / race) can't double-send the email. If the send fails we
-  // clear the marker so Stripe's own retry can try again.
-  await env.SERVICE_MENU_KV.put(processedKey, '1', { expirationTtl: 604800 }).catch(() => {});
-
   // Send post-payment email. Asunto en el idioma del comprador (moneda MXN →
   // español): un asunto en inglés a un cliente mexicano confunde y dispara
   // filtros de spam por incongruencia de idioma.
@@ -596,8 +735,7 @@ async function handleStripeWebhook(request, env) {
   const subjectES = `Completa tu página ${brandName(env)} — solo falta un formulario`;
   const subjectEN = `Complete your ${brandName(env)} service menu — one form to go`;
   try {
-    await sendEmail({
-      env,
+    await sendOnce(env, `post-payment:${paymentIntentId}`, {
       to: customerEmail,
       subject: emailLang === 'es' ? subjectES : emailLang === 'en' ? subjectEN
         : `${subjectES} / ${subjectEN}`,
@@ -606,10 +744,10 @@ async function handleStripeWebhook(request, env) {
     });
   } catch (err) {
     console.error('post-payment email failed:', safeError(err));
-    await env.SERVICE_MENU_KV.delete(processedKey).catch(() => {});
     return jsonResponse({ ok: false, error: 'Failed to send post-payment email' }, 500);
   }
 
+  await env.SERVICE_MENU_KV.put(processedKey, '1', { expirationTtl: 604800 });
   return jsonResponse({ ok: true, paymentIntentId, hasEmail: true });
 }
 
@@ -705,6 +843,19 @@ async function handleTallyWebhook(request, env) {
     ).catch(() => {});
     return jsonResponse({ ok: false, status: 'invalid_order_id' }, 403);
   }
+
+  const priorSubmission = await env.SERVICE_MENU_KV.get(kvKey(env, 'submission', normalized.submission_id), { type: 'json' });
+  if (priorSubmission) {
+    if (priorSubmission.order_id !== incomingOrderId) return jsonResponse({ ok: false, error: 'submission_order_mismatch' }, 403);
+    if (['generating', 'applied'].includes(priorSubmission.status)) {
+      return jsonResponse({ ok: true, idempotent: true, slug: priorSubmission.slug, status: priorSubmission.status });
+    }
+    if (priorSubmission.status === 'dispatching') {
+      return jsonResponse({ ok: false, error: 'Dispatch outcome requires reconciliation' }, 503);
+    }
+  }
+
+  if (existingOrder.active_generation) return jsonResponse({ ok: false, error: 'page_generation_in_progress' }, 409);
 
   // ¿Es una MODIFICACIÓN de una página ya publicada? (Ola 1c) El formulario
   // llega con los hidden client_slug + correction_token que puso el enlace de
@@ -802,104 +953,55 @@ async function handleTallyWebhook(request, env) {
   }
   const slug = publicPayload.public_slug;
 
-  // Save submission to KV (full answers, private fields included — KV only)
   const submissionKey = kvKey(env, 'submission', normalized.submission_id);
-  try {
-    await env.SERVICE_MENU_KV.put(submissionKey, JSON.stringify({
-      submission_id: normalized.submission_id,
-      order_id: incomingOrderId,
-      customer_email: orderEmail,
-      slug,
-      answers: normalized.answers,
-      // Lo que el cliente escribió, tal cual, keyed por field name de Tally:
-      // es lo que reconstruye SU formulario cuando pide una modificación.
-      prefill: normalized.prefill,
-      // Marca que este envío EDITA una página ya entregada: /notify lo usa para
-      // mandar el correo de "tu página fue actualizada" en vez del de entrega.
-      is_modification: Boolean(modification.token),
-      received_at: now,
-      status: 'received'
-    }), { expirationTtl: 7776000 }); // 90 days
-  } catch (err) {
-    console.error('submission save failed:', safeError(err));
-    return jsonResponse({ ok: false, error: 'Failed to save submission' }, 500);
-  }
-
-  // Update order status to intake_received
-  try {
-    existingOrder.status = 'intake_received';
-    existingOrder.submission_id = normalized.submission_id;
-    existingOrder.slug = slug;
-    existingOrder.updated_at = now;
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', incomingOrderId), JSON.stringify(existingOrder));
-  } catch (err) {
-    console.error('order update failed:', safeError(err));
-    return jsonResponse({ ok: false, error: 'Failed to update order' }, 500);
-  }
-
-  // Dispatch GitHub Actions to generate page.
-  // The full public payload travels in client_payload (MyGuest pattern):
-  // GitHub Actions never needs KV access.
-  // OJO: NO incluir order_id — GitHub imprime el env de cada step en los logs
-  // públicos del repo. El workflow notifica con submission_id y el worker
-  // resuelve el order_id desde KV.
-  try {
-    await dispatchGitHubAction(env, {
-      submission_id: normalized.submission_id,
-      slug,
-      public_payload: publicPayload
-    });
-  } catch (err) {
-    console.error('github dispatch failed:', safeError(err));
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', incomingOrderId), JSON.stringify({
-      ...existingOrder,
-status: 'failed_dispatch',
-      updated_at: now
-    }));
-    // FALLO SILENCIOSO #3: pago + formulario OK, pero el dispatch a GitHub
-    // Actions fallo -> el cliente pago y su pagina NO se esta generando. Aqui
-    // se responde 500 a proposito (para que Stripe reintente), asi que el
-    // dedup por-orden es CRITICO: aunque reintente, sale UNA alerta al dia.
-    await alertOnce(env, `failed_dispatch:${incomingOrderId}`, 86400,
-      `${marca(env)}: pago cobrado pero la generacion NO arranco`, [
-        'El cliente pago y su formulario llego, pero el dispatch a GitHub',
-        'Actions fallo: su pagina NO se esta generando.',
-        '',
-        `orden: ${incomingOrderId}`,
-        '',
-        'Revisa GITHUB_TOKEN y GITHUB_REPO en el worker.',
-      ]);
-    return jsonResponse({ ok: false, error: 'Failed to dispatch generation' }, 500);
-  }
-
-  // Modificación despachada: recién ahora se quema el token (si el dispatch
-  // falla, el cliente puede reintentar con el mismo enlace) y se descuenta una
-  // de las incluidas, acuñando la siguiente si le quedan.
+  const previousSubmissionId = priorSubmission?.previous_submission_id || existingOrder.submission_id || '';
+  const previousSubmission = previousSubmissionId
+    ? await env.SERVICE_MENU_KV.get(kvKey(env, 'submission', previousSubmissionId), { type: 'json' }) : null;
+  const previousOrder = { ...existingOrder };
+  const generationAttempt = (priorSubmission?.generation_attempt || 0) + 1;
+  const submission = {
+    submission_id: normalized.submission_id, order_id: incomingOrderId,
+    customer_email: orderEmail, slug, answers: normalized.answers,
+    prefill: { ...(modification.token ? previousSubmission?.prefill : {}), ...normalized.prefill },
+    is_modification: Boolean(modification.token), correction_token: modification.token || '',
+    previous_submission_id: previousSubmissionId, generation_attempt: generationAttempt,
+    received_at: now, status: 'dispatching'
+  };
+  existingOrder.active_generation = { kind: 'submission', id: normalized.submission_id, attempt: generationAttempt };
+  existingOrder.status = 'intake_received';
+  existingOrder.submission_id = normalized.submission_id;
+  existingOrder.slug = slug;
+  existingOrder.updated_at = now;
+  const records = { [submissionKey]: submission, [kvKey(env, 'order', incomingOrderId)]: existingOrder };
   if (modification.token) {
-    try {
-      modification.record.used_at = now;
-      modification.record.submission_id = normalized.submission_id;
-      await env.SERVICE_MENU_KV.put(
-        kvKey(env, 'correction', modification.token),
-        JSON.stringify(modification.record),
-        { expirationTtl: 7776000 }
-      );
-      if (modification.record.paid !== true) {
-        await consumeFreeChange(env, slug, modification.record);
-      }
-    } catch (err) {
-      console.error('modification token burn failed:', safeError(err));
-    }
+    modification.record.pending_submission = normalized.submission_id;
+    records[kvKey(env, 'correction', modification.token)] = modification.record;
   }
-
-  // Update order to 'generating'
+  // Durable reservation comes BEFORE the external dispatch. A crash after an
+  // accepted but unacknowledged dispatch is held for reconciliation, not repeated.
+  await putRecords(env, records);
   try {
-    existingOrder.status = 'generating';
-    existingOrder.updated_at = now;
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', incomingOrderId), JSON.stringify(existingOrder));
-  } catch (err) {
-    console.error('status update failed:', safeError(err));
+    await dispatchGitHubAction(env, { submission_id: normalized.submission_id,
+      generation_attempt: generationAttempt, slug, public_payload: publicPayload });
+  } catch (error) {
+    if (error.outcome === 'rejected') {
+      submission.status = 'failed_dispatch';
+      const reset = { [submissionKey]: submission, [kvKey(env, 'order', incomingOrderId)]: previousOrder };
+      if (modification.token) {
+        delete modification.record.pending_submission;
+        reset[kvKey(env, 'correction', modification.token)] = modification.record;
+      }
+      await putRecords(env, reset);
+    }
+    await alertOnce(env, `failed_dispatch:${incomingOrderId}`, 86400,
+      `${marca(env)}: la generación no está confirmada`,
+      ['Revisa el estado de generación y la conexión con GitHub antes de reintentar.', `orden: ${incomingOrderId}`]);
+    return jsonResponse({ ok: false, error: error.outcome === 'rejected'
+      ? 'Generation dispatch rejected; retry is safe' : 'Dispatch outcome requires reconciliation' }, 503);
   }
+  submission.status = 'generating';
+  existingOrder.status = 'generating';
+  await putRecords(env, { [submissionKey]: submission, [kvKey(env, 'order', incomingOrderId)]: existingOrder });
 
   return jsonResponse({
     ok: true,
@@ -963,6 +1065,12 @@ async function handleNotify(request, env) {
     orderId = (submissionRecord?.order_id || '').trim();
   }
 
+  if (submissionRecord?.generation_attempt && Number(body?.generation_attempt) !== submissionRecord.generation_attempt) {
+    return jsonResponse({ ok: false, error: 'stale_generation_attempt' }, 409);
+  }
+  if (submissionRecord?.slug && submissionRecord.slug !== slug) {
+    return jsonResponse({ ok: false, error: 'submission_slug_mismatch' }, 403);
+  }
   // Este envío EDITÓ una página ya entregada: el correo que toca es el de
   // "tu página fue actualizada", no otra entrega (que además sería idempotente
   // y no mandaría nada — el cliente se quedaría sin aviso).
@@ -992,107 +1100,62 @@ async function handleNotify(request, env) {
     return jsonResponse({ ok: true, slug, idempotent: true, alreadyDelivered: true });
   }
 
-  // Generate correction token
-  const correctionToken = generateSecureToken();
-
+  if (submissionRecord?.status === 'failed_generation') return jsonResponse({ ok: false, error: 'generation_not_pending' }, 409);
+  if (submissionRecord?.generation_attempt && submissionRecord.status !== 'applied') {
+    submissionRecord.status = 'applied';
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'submission', submissionId), JSON.stringify(submissionRecord), { expirationTtl: 7776000 });
+  }
+  const correctionToken = existingDelivery?.correction_token || generateSecureToken();
   const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
   const pageUrl = `${baseUrl}/links/${slug}/`;
-
-  // Idioma del cuerpo = idioma del comprador (moneda MXN → español), igual que
-  // el asunto. Se guarda también en el token para los correos de corrección.
-  // Una moneda que no identifica idioma (CAD, EUR…) cae a inglés: aquí, a
-  // diferencia del correo post-pago, no se manda bilingüe porque este correo
-  // lleva la página YA generada en un idioma concreto.
   const deliveryLang = emailLangFromCurrency(order.currency) || 'en';
-
-  // Save correction token (la corrección gratuita incluida)
+  // Build a complete edit link BEFORE any delivery or entitlement state changes.
+  // Do not silently substitute a blank or free-text form for the promised flow.
+  let correctionUrl;
   try {
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction', correctionToken), JSON.stringify({
-      correction_token: correctionToken,
-      order_id: orderId,
-      slug,
-      lang: deliveryLang,
-      paid: false,
-      created_at: new Date().toISOString(),
-      used_at: null
-    }), { expirationTtl: 2592000 }); // 30 days
-  } catch (err) {
-    console.error('correction token save failed:', safeError(err));
+    correctionUrl = await bestModificationUrl(env, { token: correctionToken, slug, lang: deliveryLang, orderId });
+  } catch (error) {
+    if (error instanceof PrefillError) return jsonResponse({ ok: false, error: error.code }, 422);
+    throw error;
   }
-
-  // Save delivery record
+  const delivery = existingDelivery || {
+    slug, order_id: orderId, customer_email: customerEmail, page_url: pageUrl,
+    correction_token: correctionToken, free_total: freeChanges(env), free_used: 0,
+    status: 'pending_email', created_at: new Date().toISOString()
+  };
+  if (!existingDelivery) {
+    await putRecords(env, {
+      [kvKey(env, 'correction', correctionToken)]: {
+        correction_token: correctionToken, order_id: orderId, slug, lang: deliveryLang,
+        paid: false, created_at: new Date().toISOString(), used_at: null
+      },
+      [deliveryKey]: delivery
+    }, { [kvKey(env, 'correction', correctionToken)]: 2592000 });
+  }
   try {
-    await env.SERVICE_MENU_KV.put(deliveryKey, JSON.stringify({
-      slug,
-      order_id: orderId,
-      customer_email: customerEmail,
-      page_url: pageUrl,
-      correction_token: correctionToken,
-      // Contador de modificaciones incluidas (FREE_CHANGES <- legal.free_changes).
-      // Se congela AQUÍ el total que le tocaba al cliente al comprar: si mañana
-      // la vertical cambia el número, quien ya compró conserva lo prometido.
-      free_total: freeChanges(env),
-      free_used: 0,
-      status: 'delivered',
-      delivered_at: new Date().toISOString()
-    }), { expirationTtl: 7776000 }); // 90 days
-  } catch (err) {
-    console.error('delivery record save failed:', safeError(err));
-  }
-
-  // Send delivery email
-  if (!secret(env, 'SENDGRID_API_KEY')) {
-    return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
-  }
-
-  // Formulario completo prellenado si la vertical ya lo soporta; si no, la
-  // página de texto libre de siempre.
-  const correctionUrl = await bestModificationUrl(env, {
-    token: correctionToken,
-    slug,
-    lang: deliveryLang,
-    orderId
-  });
-  try {
-    await sendEmail({
-      env,
+    await sendOnce(env, `delivery:${slug}`, {
       to: customerEmail,
       subject: deliveryLang === 'es'
         ? `¡Tu página ${brandName(env)} está lista! 🎉`
         : `Your ${brandName(env)} service menu is ready! 🎉`,
-      html: buildDeliveryEmail({
-        pageUrl,
-        slug,
-        lang: deliveryLang,
-        correctionUrl,
-        hasQr: Boolean(qrPngBase64),
-        hasLinterFlags: linterFlags > 0,
-        env
-      }),
+      html: buildDeliveryEmail({ pageUrl, slug, lang: deliveryLang, correctionUrl,
+        hasQr: Boolean(qrPngBase64), hasLinterFlags: linterFlags > 0, env }),
       text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl, hasQr: Boolean(qrPngBase64), env }),
-      attachments: qrPngBase64
-        ? [{
-            content: qrPngBase64,
-            type: 'image/png',
-            filename: `${(env.PRODUCT_ID || 'hmu').trim()}-qr-${slug}.png`,
-            disposition: 'inline',
-            content_id: DELIVERY_QR_CID
-          }]
-        : []
+      attachments: qrPngBase64 ? [{ content: qrPngBase64, type: 'image/png',
+        filename: `${(env.PRODUCT_ID || 'hmu').trim()}-qr-${slug}.png`,
+        disposition: 'inline', content_id: DELIVERY_QR_CID }] : []
     });
-  } catch (err) {
-    console.error('delivery email failed:', safeError(err));
-    return jsonResponse({ ok: false, error: 'Failed to send delivery email' }, 500);
+  } catch (error) {
+    return jsonResponse({ ok: false, error: error.outcome === 'rejected'
+      ? 'Delivery email rejected; retry is safe'
+      : 'Delivery email outcome requires reconciliation' }, 503);
   }
-
-  // Update order status to delivered
-  try {
-    order.status = 'delivered';
-    order.updated_at = new Date().toISOString();
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify(order));
-  } catch (err) {
-    console.error('order status update failed:', safeError(err));
-  }
+  delivery.status = 'delivered';
+  delivery.delivered_at = new Date().toISOString();
+  order.status = 'delivered';
+  if (order.active_generation?.id === submissionId) delete order.active_generation;
+  order.updated_at = delivery.delivered_at;
+  await putRecords(env, { [deliveryKey]: delivery, [kvKey(env, 'order', orderId)]: order });
 
   return jsonResponse({
     ok: true,
@@ -1110,52 +1173,38 @@ async function handleNotify(request, env) {
  */
 async function sendGiftIntake(env, { email, lang }) {
   const dedupKey = kvKey(env, 'flag', `gift_intake:${email.toLowerCase()}`);
-  const already = await env.SERVICE_MENU_KV.get(dedupKey).catch(() => null);
-  if (already) {
-    return jsonResponse({ ok: true, idempotent: true, alreadySent: true, order_id: already });
+  const raw = await env.SERVICE_MENU_KV.get(dedupKey);
+  let reservation = null;
+  if (raw) {
+    try { reservation = JSON.parse(raw); }
+    catch { return jsonResponse({ ok: true, idempotent: true, alreadySent: true, order_id: raw }); }
+    if (reservation.status === 'sent') return jsonResponse({ ok: true, idempotent: true, alreadySent: true, order_id: reservation.order_id });
   }
   const baseFormEN = (env.TALLY_FORM_URL_EN || '').trim();
   const baseFormES = (env.TALLY_FORM_URL_ES || '').trim();
-  if (!baseFormEN || !baseFormES) {
-    return jsonResponse({ ok: false, error: 'TALLY_FORM_URL not configured' }, 500);
+  if (!baseFormEN || !baseFormES) return jsonResponse({ ok: false, error: 'TALLY_FORM_URL not configured' }, 500);
+  const orderId = reservation?.order_id || `gift_${generateSecureToken().slice(0, 20)}`;
+  if (!reservation) {
+    reservation = { order_id: orderId, lang, status: 'pending' };
+    await putRecords(env, { [dedupKey]: reservation, [kvKey(env, 'order', orderId)]: {
+      order_id: orderId, source: 'gift', customer_email: email, amount: 0,
+      currency: lang === 'es' ? 'mxn' : 'usd', status: 'paid', created_at: new Date().toISOString()
+    } });
   }
-  if (!secret(env, 'SENDGRID_API_KEY')) {
-    return jsonResponse({ ok: false, error: 'SENDGRID_API_KEY not configured' }, 500);
-  }
-
-  const orderId = `gift_${generateSecureToken().slice(0, 20)}`;
-  try {
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'order', orderId), JSON.stringify({
-      order_id: orderId,
-      source: 'gift',
-      customer_email: email,
-      amount: 0,
-      currency: lang === 'es' ? 'mxn' : 'usd',
-      status: 'paid',
-      created_at: new Date().toISOString()
-    }));
-  } catch (err) {
-    console.error('gift order save failed:', safeError(err));
-    return jsonResponse({ ok: false, error: 'Failed to save gift order' }, 500);
-  }
-
+  lang = reservation.lang || lang;
   const formUrlEN = `${baseFormEN}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(email)}`;
   const formUrlES = `${baseFormES}${encodeURIComponent(orderId)}&customer_email=${encodeURIComponent(email)}`;
   try {
-    await sendEmail({
-      env,
-      to: email,
-      subject: lang === 'es'
+    await sendOnce(env, `gift-intake:${orderId}`, {
+      to: email, subject: lang === 'es'
         ? `Completa tu página ${brandName(env)} — solo falta un formulario`
         : `Complete your ${brandName(env)} service menu — one form to go`,
       html: buildPostPaymentEmail({ formUrlEN, formUrlES, lang, env }),
       text: buildPostPaymentText({ formUrlEN, formUrlES, lang, env })
     });
-  } catch (err) {
-    console.error('gift post-payment email failed:', safeError(err));
-    return jsonResponse({ ok: false, error: 'Failed to send gift email' }, 500);
-  }
-  await env.SERVICE_MENU_KV.put(dedupKey, orderId, { expirationTtl: 604800 }).catch(() => {});
+  } catch { return jsonResponse({ ok: false, error: 'Gift intake email not confirmed' }, 503); }
+  reservation.status = 'sent';
+  await env.SERVICE_MENU_KV.put(dedupKey, JSON.stringify(reservation), { expirationTtl: 604800 });
   return jsonResponse({ ok: true, status: 'intake_sent', order_id: orderId });
 }
 
@@ -1216,6 +1265,7 @@ async function handleGiftDelivery(request, env) {
     return jsonResponse({ ok: true, slug, idempotent: true, alreadyDelivered: true });
   }
 
+  if (existingDelivery && existingDelivery.customer_email?.toLowerCase() !== email.toLowerCase()) return jsonResponse({ ok: false, error: 'gift_recipient_mismatch' }, 409);
   const orderId = `gift_${slug}`;
   // Prellenado del formulario de MODIFICACIÓN: {campo del intake -> texto}, con
   // los mismos nombres que cableó cablear_prefill_en_tally.py (las claves de
@@ -1226,10 +1276,16 @@ async function handleGiftDelivery(request, env) {
   const prefill = {};
   if (body?.prefill && typeof body.prefill === 'object' && !Array.isArray(body.prefill)) {
     for (const [k, v] of Object.entries(body.prefill)) {
-      if (typeof k === 'string' && /^[a-z0-9_]{1,64}$/.test(k) && typeof v === 'string' && v.trim()) {
-        prefill[k] = v.slice(0, 3000);
+      if (typeof k === 'string' && /^[a-z0-9_]{1,64}$/.test(k) && !['order_id', 'customer_email', 'client_slug', 'correction_token'].includes(k) && typeof v === 'string' && v.trim()) {
+        prefill[k] = v;
       }
     }
+  }
+  if (modificationFormPrefillEnabled(env)) {
+    try {
+      modificationFormUrl(env, { token: 'validation-placeholder', slug, lang,
+        orderId, customerEmail: email, prefill });
+    } catch (error) { return jsonResponse({ ok: false, error: error.code || 'prefill_unavailable' }, 422); }
   }
   const submissionId = Object.keys(prefill).length ? `gift_${slug}` : '';
   try {
@@ -1274,45 +1330,6 @@ async function handleGiftDelivery(request, env) {
 // CORRECTIONS — status, request, purchase, notify
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Marca una modificación gratis como consumida en el registro de entrega y, si
-// al cliente le quedan incluidas, acuña y devuelve el token del SIGUIENTE
-// enlace. Devuelve '' cuando ya no quedan (a partir de ahí se compra).
-// Nunca lanza: un fallo de contador no puede tumbar una corrección ya aplicada
-// — en el peor caso el cliente pide la siguiente por correo.
-async function consumeFreeChange(env, slug, tokenRecord) {
-  try {
-    const deliveryKey = kvKey(env, 'delivery', slug);
-    const delivery = await env.SERVICE_MENU_KV.get(deliveryKey, { type: 'json' });
-    if (!delivery) return '';
-    // Entregas anteriores a esta versión no tienen contador: se asume que la
-    // que se acaba de usar era la primera.
-    const total = Number.isInteger(delivery.free_total) ? delivery.free_total : freeChanges(env);
-    const used = (Number.isInteger(delivery.free_used) ? delivery.free_used : 0) + 1;
-    delivery.free_total = total;
-    delivery.free_used = used;
-
-    let nextToken = '';
-    if (used < total) {
-      nextToken = generateSecureToken();
-      await env.SERVICE_MENU_KV.put(kvKey(env, 'correction', nextToken), JSON.stringify({
-        correction_token: nextToken,
-        order_id: tokenRecord.order_id,
-        slug,
-        lang: tokenRecord.lang === 'es' ? 'es' : 'en',
-        paid: false,
-        created_at: new Date().toISOString(),
-        used_at: null
-      }), { expirationTtl: 7776000 }); // 90 days
-      delivery.correction_token = nextToken;
-    }
-    await env.SERVICE_MENU_KV.put(deliveryKey, JSON.stringify(delivery), { expirationTtl: 7776000 });
-    return nextToken;
-  } catch (err) {
-    console.error('free change counter failed:', safeError(err));
-    return '';
-  }
-}
-
 function correctionFormUrl(env, token, lang) {
   const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
   return `${baseUrl}/correct/?t=${encodeURIComponent(token)}&l=${lang === 'es' ? 'es' : 'en'}`;
@@ -1351,14 +1368,15 @@ function modificationFormUrl(env, { token, slug, lang, orderId, customerEmail, p
   const base = ((lang === 'es' ? env.TALLY_FORM_URL_ES : env.TALLY_FORM_URL_EN) || '').trim();
   if (!base || !slug || !token) return '';
   const fields = prefill && typeof prefill === 'object' ? Object.keys(prefill).length : 0;
-  if (fields < MIN_PREFILL_FIELDS_FOR_FORM_EDIT) return '';
+  if (fields < MIN_PREFILL_FIELDS_FOR_FORM_EDIT) throw new PrefillError('prefill_unavailable');
 
   // Las bases TALLY_FORM_URL_* ya terminan en `?order_id=`.
   let url = `${base}${encodeURIComponent(orderId || '')}`;
   url += `&customer_email=${encodeURIComponent(customerEmail || '')}`;
   url += `&client_slug=${encodeURIComponent(slug)}`;
   url += `&correction_token=${encodeURIComponent(token)}`;
-  url += buildPrefillQuery(prefill, MODIFICATION_PREFILL_MAX);
+  try { url += buildPrefillQuery(prefill, MODIFICATION_PREFILL_MAX, { strict: true }); }
+  catch { throw new PrefillError('prefill_too_large'); }
   return url;
 }
 
@@ -1453,61 +1471,123 @@ async function guideResubmissionBackToModification(env, { order, orderId, submis
  * Correo de "tu página fue actualizada" tras una modificación hecha con el
  * formulario completo. Reusa los mismos cuerpos que la corrección por texto
  * libre, e incluye el enlace de la SIGUIENTE modificación si al cliente le
- * quedan incluidas (consumeFreeChange ya la acuñó y la dejó en el registro de
+ * quedan incluidas (commitModification ya la acuñó y la dejó en el registro de
  * entrega). Idempotente por submission_id: Actions puede reintentar.
  */
 async function notifyModificationApplied({ env, slug, orderId, submissionId }) {
-  const deliveryKey = kvKey(env, 'delivery', slug);
-  const delivery = await env.SERVICE_MENU_KV.get(deliveryKey, { type: 'json' }).catch(() => null);
-  if (delivery?.last_modification_notified === submissionId) {
-    return jsonResponse({ ok: true, idempotent: true, slug });
+  const priorDelivery = await env.SERVICE_MENU_KV.get(kvKey(env, 'delivery', slug), { type: 'json' });
+  if (priorDelivery?.last_modification_notified === submissionId) return jsonResponse({ ok: true, idempotent: true, slug });
+  const submission = await env.SERVICE_MENU_KV.get(kvKey(env, 'submission', submissionId), { type: 'json' });
+  if (!submission || !['dispatching', 'generating', 'applied'].includes(submission.status)) {
+    return jsonResponse({ ok: false, error: 'generation_not_pending' }, 409);
   }
-
-  const order = orderId
-    ? await env.SERVICE_MENU_KV.get(kvKey(env, 'order', orderId), { type: 'json' }).catch(() => null)
-    : null;
-  const customerEmail = order?.customer_email || delivery?.customer_email || '';
+  submission.publication_confirmed = true;
+  await env.SERVICE_MENU_KV.put(kvKey(env, 'submission', submissionId), JSON.stringify(submission), { expirationTtl: 7776000 });
+  await commitModification(env, slug, submissionId, 'submission');
+  const delivery = await env.SERVICE_MENU_KV.get(kvKey(env, 'delivery', slug), { type: 'json' });
+  const order = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', orderId), { type: 'json' });
   const lang = emailLangFromCurrency(order?.currency) || 'en';
-  const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
-  const pageUrl = `${baseUrl}/links/${slug}/`;
-
-  // Enlace de la siguiente modificación incluida, si quedan.
+  const pageUrl = `${(env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim()}/links/${slug}/`;
   let nextCorrectionUrl = '';
-  const nextToken = delivery?.correction_token || '';
-  if (nextToken) {
-    const nextRecord = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', nextToken), { type: 'json' }).catch(() => null);
-    if (nextRecord && !nextRecord.used_at) {
-      nextCorrectionUrl = await bestModificationUrl(env, { token: nextToken, slug, lang, orderId });
-    }
+  try {
+    if (delivery?.correction_token) nextCorrectionUrl = await bestModificationUrl(env, {
+      token: delivery.correction_token, slug, lang, orderId });
+  } catch (error) {
+    return jsonResponse({ ok: false, error: error.code || 'prefill_unavailable' }, 422);
   }
-
-  if (customerEmail && secret(env, 'SENDGRID_API_KEY')) {
-    try {
-      await sendEmail({
-        env,
-        to: customerEmail,
-        subject: lang === 'es'
-          ? `✅ Tu página ${brandName(env)} fue actualizada`
-          : `✅ Your ${brandName(env)} page was updated`,
-        html: buildCorrectionAppliedEmail({
-          pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, env
-        }),
-        text: buildCorrectionAppliedText({
-          pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, env
-        })
-      });
-    } catch (err) {
-      console.error('modification applied email failed:', safeError(err));
-      return jsonResponse({ ok: false, error: 'Failed to send modification email' }, 500);
-    }
-  }
-
-  if (delivery) {
-    delivery.last_modification_notified = submissionId;
-    delivery.updated_at = new Date().toISOString();
-    await env.SERVICE_MENU_KV.put(deliveryKey, JSON.stringify(delivery), { expirationTtl: 7776000 }).catch(() => {});
-  }
+  const customerEmail = order?.customer_email || delivery?.customer_email;
+  if (!customerEmail) return jsonResponse({ ok: false, error: 'No customer email on record' }, 500);
+  try {
+    await sendOnce(env, `modification:${submissionId}`, {
+      to: customerEmail,
+      subject: lang === 'es' ? `✅ Tu página ${brandName(env)} fue actualizada` : `✅ Your ${brandName(env)} page was updated`,
+      html: buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, env }),
+      text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, env })
+    });
+  } catch (error) { return jsonResponse({ ok: false, error: 'Modification email not confirmed' }, 503); }
+  delivery.last_modification_notified = submissionId;
+  await env.SERVICE_MENU_KV.put(kvKey(env, 'delivery', slug), JSON.stringify(delivery), { expirationTtl: 7776000 });
   return jsonResponse({ ok: true, slug, status: 'modification_notified' });
+}
+
+// Finalize one reserved edit only after the exact generation has been published.
+async function commitModification(env, slug, id, kind) {
+  const key = kvKey(env, kind, id);
+  const request = await env.SERVICE_MENU_KV.get(key, { type: 'json' });
+  if (request?.quota_committed) return;
+  const token = request?.correction_token;
+  const record = token ? await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', token), { type: 'json' }) : null;
+  const delivery = await env.SERVICE_MENU_KV.get(kvKey(env, 'delivery', slug), { type: 'json' });
+  if (!record || !delivery || record.slug !== slug) throw new Error('Modification entitlement unavailable');
+  const claim = kind === 'submission' ? 'pending_submission' : 'pending_correction';
+  if (record[claim] !== id) throw new Error('Modification reservation mismatch');
+  const updates = {};
+  if (record.paid !== true) {
+    const total = Number.isInteger(delivery.free_total) ? delivery.free_total : freeChanges(env);
+    const used = Number.isInteger(delivery.free_used) ? delivery.free_used : 0;
+    if (used >= total) throw new Error('No free modification remaining');
+    delivery.free_total = total;
+    delivery.free_used = used + 1;
+    delivery.correction_token = '';
+    if (delivery.free_used < total) {
+      const nextToken = generateSecureToken();
+      updates[kvKey(env, 'correction', nextToken)] = {
+        correction_token: nextToken, order_id: record.order_id, slug, lang: record.lang,
+        paid: false, created_at: new Date().toISOString(), used_at: null
+      };
+      delivery.correction_token = nextToken;
+    }
+  }
+  record.used_at = new Date().toISOString();
+  delete record[claim];
+  request.quota_committed = true;
+  request.status = 'applied';
+  const order = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', record.order_id), { type: 'json' });
+  if (order) {
+    const active = order.active_generation;
+    if (!active || active.kind !== kind || active.id !== id || active.attempt !== request.generation_attempt) throw new Error('Page reservation mismatch');
+    order.status = 'delivered';
+    delete order.active_generation;
+    updates[kvKey(env, 'order', record.order_id)] = order;
+  }
+  updates[key] = request;
+  updates[kvKey(env, 'correction', token)] = record;
+  updates[kvKey(env, 'delivery', slug)] = delivery;
+  await putRecords(env, updates);
+}
+
+async function releaseModification(env, id, kind, attempt, reconciliation = null) {
+  const key = kvKey(env, kind, id);
+  const request = await env.SERVICE_MENU_KV.get(key, { type: 'json' });
+  if (!request || request.quota_committed || request.publication_confirmed || ['applied', 'failed_generation'].includes(request.status)) return;
+  if (request.generation_attempt && Number(attempt) !== request.generation_attempt) return;
+  if (reconciliation) request.reconciliation = reconciliation;
+  if (!request.correction_token) {
+    const order = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', request.order_id), { type: 'json' });
+    if (!order || order.status === 'delivered') return;
+    request.status = 'failed_generation';
+    if (order.active_generation?.id !== id) return;
+    order.status = 'paid';
+    delete order.active_generation;
+    await putRecords(env, { [key]: request, [kvKey(env, 'order', request.order_id)]: order });
+    return true;
+  }
+  const record = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', request.correction_token), { type: 'json' });
+  const claim = kind === 'submission' ? 'pending_submission' : 'pending_correction';
+  if (!record || record[claim] !== id) return;
+  delete record[claim];
+  request.status = 'failed_generation';
+  const updates = { [key]: request, [kvKey(env, 'correction', request.correction_token)]: record };
+  const order = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', request.order_id), { type: 'json' });
+  if (order) {
+    if (order.active_generation?.id !== id) return;
+    order.status = 'delivered';
+    delete order.active_generation;
+    if (request.previous_submission_id) order.submission_id = request.previous_submission_id;
+    updates[kvKey(env, 'order', request.order_id)] = order;
+  }
+  await putRecords(env, updates);
+  return true;
 }
 
 /**
@@ -1527,9 +1607,16 @@ async function resolveModification(env, normalized, order) {
   const record = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', token), { type: 'json' }).catch(() => null);
   if (!record) return { error: 'unknown_correction_token' };
   if (record.used_at) return { error: 'correction_token_already_used' };
+  if (record.pending_submission || record.pending_correction) return { error: 'modification_in_progress' };
   if (record.slug !== slug) return { error: 'token_slug_mismatch' };
-  if (record.order_id && order?.order_id && record.order_id !== order.order_id) {
+  if (!record.order_id || !order?.order_id || record.order_id !== order.order_id) {
     return { error: 'token_order_mismatch' };
+  }
+  if (record.paid !== true) {
+    const delivery = await env.SERVICE_MENU_KV.get(kvKey(env, 'delivery', slug), { type: 'json' });
+    if (!delivery || (delivery.free_used || 0) >= (Number.isInteger(delivery.free_total) ? delivery.free_total : freeChanges(env))) {
+      return { error: 'no_free_modification_remaining' };
+    }
   }
   return { slug, token, record };
 }
@@ -1553,7 +1640,8 @@ async function bestModificationUrl(env, { token, slug, lang, orderId }) {
     });
     if (url) return url;
   } catch (err) {
-    console.error('modification url build failed:', safeError(err));
+    if (err instanceof PrefillError) throw err;
+    throw new PrefillError('prefill_unavailable');
   }
   return correctionFormUrl(env, token, lang);
 }
@@ -1579,6 +1667,9 @@ async function handleCorrectionStatus(url, env) {
     return jsonResponse({ ok: true, state: 'invalid' });
   }
   const baseUrl = (env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim();
+  if (record.pending_submission || record.pending_correction) {
+    return jsonResponse({ ok: true, state: 'processing', slug: record.slug });
+  }
   if (record.used_at) {
     return jsonResponse({
       ok: true,
@@ -1629,72 +1720,54 @@ async function handleCorrectionRequest(request, env) {
     return jsonResponse({ ok: false, state: 'used', buy_url: buyCorrectionUrl(env, record.slug) }, 403);
   }
 
+  if (record.pending_submission) return jsonResponse({ ok: false, error: 'modification_in_progress' }, 409);
+  if (record.pending_correction) {
+    const pending = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction_request', record.pending_correction), { type: 'json' });
+    if (pending?.changes !== changes) return jsonResponse({ ok: false, error: 'modification_in_progress' }, 409);
+    if (pending.status === 'dispatching') return jsonResponse({ ok: false, error: 'Dispatch outcome requires reconciliation' }, 503);
+    return jsonResponse({ ok: true, idempotent: true, correction_id: record.pending_correction, slug: record.slug });
+  }
+  const order = await env.SERVICE_MENU_KV.get(kvKey(env, 'order', record.order_id), { type: 'json' });
+  if (!order) return jsonResponse({ ok: false, error: 'Order not found' }, 404);
+  if (order.active_generation) return jsonResponse({ ok: false, error: 'page_generation_in_progress' }, 409);
+  if (record.paid !== true) {
+    const delivery = await env.SERVICE_MENU_KV.get(kvKey(env, 'delivery', record.slug), { type: 'json' });
+    if (!delivery || (delivery.free_used || 0) >= (Number.isInteger(delivery.free_total) ? delivery.free_total : freeChanges(env))) {
+      return jsonResponse({ ok: false, error: 'no_free_modification_remaining' }, 403);
+    }
+  }
+  const previousOrder = { ...order };
   const slug = record.slug;
   const now = new Date().toISOString();
   const correctionId = `c${generateSecureToken().slice(0, 20)}`;
-
-  // El registro guarda el texto completo (KV, privado); a Actions solo viaja
-  // el texto saneado + slug + correction_id — nunca order_id ni el token.
+  const requestRecord = {
+    correction_id: correctionId, correction_token: token, order_id: record.order_id,
+    slug, lang: record.lang === 'es' ? 'es' : 'en', paid: !!record.paid,
+    changes, status: 'dispatching', generation_attempt: 1, created_at: now
+  };
+  record.pending_correction = correctionId;
+  order.active_generation = { kind: 'correction_request', id: correctionId, attempt: 1 };
+  await putRecords(env, {
+    [kvKey(env, 'correction_request', correctionId)]: requestRecord,
+    [kvKey(env, 'order', record.order_id)]: order,
+    [kvKey(env, 'correction', token)]: record
+  });
   try {
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction_request', correctionId), JSON.stringify({
-      correction_id: correctionId,
-      correction_token: token,
-      order_id: record.order_id,
-      slug,
-      lang: record.lang === 'es' ? 'es' : 'en',
-      paid: !!record.paid,
-      changes,
-      status: 'dispatched',
-      created_at: now
-    }), { expirationTtl: 7776000 }); // 90 days
-  } catch (err) {
-    console.error('correction request save failed:', safeError(err));
-    return jsonResponse({ ok: false, error: 'Failed to save correction' }, 500);
-  }
-
-  try {
-    await dispatchGitHubAction(env, {
-      is_correction: true,
-      correction_id: correctionId,
-      slug,
-      correction_text: changes
-    });
-  } catch (err) {
-    // El token NO se quema si el dispatch falla: el cliente puede reintentar.
-    console.error('github dispatch for correction failed:', safeError(err));
-    return jsonResponse({ ok: false, error: 'Failed to dispatch correction' }, 500);
-  }
-
-  // Quemar el token después del dispatch exitoso. (Ventana de carrera entre
-  // dos POST simultáneos con el mismo token: aceptada — el rate limit la acota
-  // y el peor caso es una regeneración doble de la misma página.)
-  try {
-    record.used_at = now;
-    record.correction_id = correctionId;
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction', token), JSON.stringify(record), { expirationTtl: 7776000 });
-  } catch (err) {
-    console.error('correction token update failed:', safeError(err));
-  }
-
-  // Contador de modificaciones GRATIS (estándar de la casa: 2, configurable por
-  // vertical con FREE_CHANGES <- legal.free_changes). Antes cada token valía por
-  // una y se acababa ahí; ahora, si al cliente le quedan incluidas, se acuña el
-  // siguiente enlace aquí y viaja en el correo de "tu página fue actualizada".
-  // Solo consumen cupo las gratis: una modificación comprada no descuenta.
-  if (record.paid !== true) {
-    const nextToken = await consumeFreeChange(env, slug, record);
-    if (nextToken) {
-      try {
-        const requestRecord = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction_request', correctionId), { type: 'json' });
-        if (requestRecord) {
-          requestRecord.next_correction_token = nextToken;
-          await env.SERVICE_MENU_KV.put(kvKey(env, 'correction_request', correctionId), JSON.stringify(requestRecord), { expirationTtl: 7776000 });
-        }
-      } catch (err) {
-        console.error('next correction token save failed:', safeError(err));
-      }
+    await dispatchGitHubAction(env, { is_correction: true, correction_id: correctionId,
+      generation_attempt: 1, slug, correction_text: changes });
+  } catch (error) {
+    if (error.outcome === 'rejected') {
+      delete record.pending_correction;
+      requestRecord.status = 'failed_dispatch';
+      await putRecords(env, { [kvKey(env, 'correction', token)]: record,
+        [kvKey(env, 'order', record.order_id)]: previousOrder,
+        [kvKey(env, 'correction_request', correctionId)]: requestRecord });
     }
+    return jsonResponse({ ok: false, error: error.outcome === 'rejected'
+      ? 'Correction dispatch rejected; retry is safe' : 'Dispatch outcome requires reconciliation' }, 503);
   }
+  requestRecord.status = 'generating';
+  await env.SERVICE_MENU_KV.put(kvKey(env, 'correction_request', correctionId), JSON.stringify(requestRecord), { expirationTtl: 7776000 });
 
   // Copia de auditoría para Verónica — nunca bloquea la respuesta al cliente.
   await notifyAdmin(env, `${brandName(env)} corrección solicitada — ${slug}`, [
@@ -1760,6 +1833,7 @@ async function handleBuyCorrection(url, env) {
   let session;
   try {
     const resp = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      signal: AbortSignal.timeout(15000),
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${stripeKey}`,
@@ -1811,7 +1885,6 @@ async function handleCorrectionPurchase(session, env) {
   const currency = (session.currency || order?.currency || 'usd').toLowerCase();
   const lang = currency === 'mxn' ? 'es' : 'en';
 
-  await env.SERVICE_MENU_KV.put(processedKey, '1', { expirationTtl: 604800 }).catch(() => {});
 
   if (!delivery || !ownerEmail) {
     // Sin registro de entrega no se puede acuñar con seguridad: atender a mano.
@@ -1826,28 +1899,21 @@ async function handleCorrectionPurchase(session, env) {
     return jsonResponse({ ok: true, manual: true, paymentIntentId });
   }
 
-  const token = generateSecureToken();
+  const purchaseKey = kvKey(env, 'correction_purchase', paymentIntentId);
+  const purchase = await env.SERVICE_MENU_KV.get(purchaseKey, { type: 'json' });
+  const token = purchase?.token || generateSecureToken();
+  let formUrl;
   try {
-    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction', token), JSON.stringify({
-      correction_token: token,
-      order_id: delivery.order_id || '',
-      slug,
-      lang,
-      paid: true,
-      created_at: new Date().toISOString(),
-      used_at: null
-    }), { expirationTtl: 2592000 }); // 30 days
-  } catch (err) {
-    console.error('paid correction token save failed:', safeError(err));
-    await env.SERVICE_MENU_KV.delete(processedKey).catch(() => {});
-    return jsonResponse({ ok: false, error: 'Failed to save correction token' }, 500);
-  }
-
-  const formUrl = correctionFormUrl(env, token, lang);
+    formUrl = await bestModificationUrl(env, { token, slug, lang, orderId: delivery.order_id });
+  } catch (error) { return jsonResponse({ ok: false, error: error.code || 'prefill_unavailable' }, 422); }
+  if (!purchase) await putRecords(env, {
+    [purchaseKey]: { token, slug, order_id: delivery.order_id },
+    [kvKey(env, 'correction', token)]: { correction_token: token, order_id: delivery.order_id,
+      slug, lang, paid: true, created_at: new Date().toISOString(), used_at: null }
+  }, { [kvKey(env, 'correction', token)]: 2592000 });
   const pageUrl = `${(env.PUBLIC_BOOK_BASE_URL || 'https://www.hmulink.com').trim()}/links/${slug}/`;
   try {
-    await sendEmail({
-      env,
+    await sendOnce(env, `paid-correction:${paymentIntentId}`, {
       to: ownerEmail,
       subject: lang === 'es'
         ? `Tu corrección adicional de ${brandName(env)} — pídela aquí`
@@ -1857,13 +1923,13 @@ async function handleCorrectionPurchase(session, env) {
     });
   } catch (err) {
     console.error('correction purchase email failed:', safeError(err));
-    await env.SERVICE_MENU_KV.delete(processedKey).catch(() => {});
     return jsonResponse({ ok: false, error: 'Failed to send correction email' }, 500);
   }
 
   // Sin copia de admin por la compra en sí: el recibo de Stripe ya registra el
   // pago, y el aviso "<marca> corrección solicitada" (handleCorrectionRequest)
   // llega con el cambio real cuando el comprador lo envía.
+  await env.SERVICE_MENU_KV.put(processedKey, '1', { expirationTtl: 604800 });
   return jsonResponse({ ok: true, paymentIntentId, slug });
 }
 
@@ -1878,8 +1944,21 @@ async function handleCorrectionNotify(body, env) {
   if (!record) {
     return jsonResponse({ ok: false, error: 'Correction request not found' }, 404);
   }
-  if (record.notified_at) {
+  if (record.generation_attempt && Number(body?.generation_attempt) !== record.generation_attempt) {
+    return jsonResponse({ ok: false, error: 'stale_generation_attempt' }, 409);
+  }
+  if (record.notified_at && record.status === status) {
     return jsonResponse({ ok: true, idempotent: true, correction_id: correctionId });
+  }
+  if (['failed_generation', 'failed_dispatch'].includes(record.status)) return jsonResponse({ ok: false, error: 'generation_not_pending' }, 409);
+  if (status === 'applied' && record.generation_attempt) {
+    record.publication_confirmed = true;
+    await env.SERVICE_MENU_KV.put(kvKey(env, 'correction_request', correctionId), JSON.stringify(record), { expirationTtl: 7776000 });
+    await commitModification(env, record.slug, correctionId, 'correction_request');
+    const committed = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction_request', correctionId), { type: 'json' });
+    Object.assign(record, committed);
+    const delivery = await env.SERVICE_MENU_KV.get(kvKey(env, 'delivery', record.slug), { type: 'json' });
+    record.next_correction_token = delivery?.correction_token || '';
   }
 
   const order = record.order_id
@@ -1901,11 +1980,11 @@ async function handleCorrectionNotify(body, env) {
       })
     : '';
 
+  if (!customerEmail) return jsonResponse({ ok: false, error: 'No customer email on record' }, 500);
   if (customerEmail) {
     try {
       if (status === 'applied') {
-        await sendEmail({
-          env,
+        await sendOnce(env, `correction:${correctionId}:${status}`, {
           to: customerEmail,
           subject: lang === 'es'
             ? `✅ Tu página ${brandName(env)} fue actualizada`
@@ -1914,8 +1993,7 @@ async function handleCorrectionNotify(body, env) {
           text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, env })
         });
       } else {
-        await sendEmail({
-          env,
+        await sendOnce(env, `correction:${correctionId}:${status}`, {
           to: customerEmail,
           subject: lang === 'es'
             ? 'Recibimos tu corrección — la aplicamos en 1 día hábil'
@@ -2150,21 +2228,44 @@ async function handleGenerationFailedAlert(request, env) {
   const correctionId = cleanValue(body?.correction_id);
   const runUrl = cleanValue(body?.run_url);
   const reason = cleanValue(body?.reason) || 'La generación de la página falló en GitHub Actions.';
+  const kind = correctionId ? 'correction_request' : 'submission';
+  const id = correctionId || submissionId;
+  if (id) {
+    const key = kvKey(env, kind, id);
+    const record = await env.SERVICE_MENU_KV.get(key, { type: 'json' });
+    if (record && Number(body?.generation_attempt) === record.generation_attempt) {
+      if (body?.failure_stage === 'generation' && body?.publication_confirmed !== true) {
+        await releaseModification(env, id, kind, body.generation_attempt);
+      } else {
+        // Pages may already be live. Notification failures and uncertain deploys
+        // must never grant another edit or rewind the latest submitted profile.
+        record.failure_stage = String(body?.failure_stage || 'unknown');
+        record.needs_reconciliation = true;
+        if (body?.publication_confirmed === true) record.publication_confirmed = true;
+        await env.SERVICE_MENU_KV.put(key, JSON.stringify(record), { expirationTtl: 7776000 });
+      }
+    }
+  }
 
-  // Dedup por el identificador más específico disponible.
-  const dedup = `genfail:${correctionId || submissionId || slug || runUrl || 'unknown'}`;
+  const stage = String(body?.failure_stage || 'unknown');
+  const published = body?.publication_confirmed === true;
+  const summary = published
+    ? 'Pages confirmó la publicación; falta confirmar el aviso al cliente.'
+    : stage === 'generation'
+      ? 'La generación falló antes de la etapa de publicación.'
+      : 'El resultado de la publicación no está confirmado; conserva la reserva.';
+  const action = published
+    ? 'Acción: revisar el estado del correo y reintentar /notify con el mismo intento. No regenerar ni liberar el cambio.'
+    : stage === 'generation'
+      ? 'Acción: revisar y corregir el fallo de generación; reintentar el mismo envío con su reserva recuperada.'
+      : 'Acción: comprobar el run y Pages. Conciliar el resultado antes de liberar o repetir cualquier operación.';
+  const dedup = `genfail:${correctionId || submissionId || slug || runUrl || 'unknown'}:${body?.generation_attempt || 0}:${stage}`;
   await alertOnce(env, dedup, 86400,
-    `⚠️ HMU: la generación FALLÓ — ${slug || submissionId || 'sin id'}`, [
-      'La generación de la página falló DESPUÉS del pago + formulario.',
-      'El cliente pagó y llenó el intake, pero su página no se generó.',
-      '',
-      `slug: ${slug || '(desconocido)'}`,
+    `⚠️ HMU: revisar ${stage} — ${slug || submissionId || 'sin id'}`, [
+      summary, '', `slug: ${slug || '(desconocido)'}`,
       submissionId ? `submission_id: ${submissionId}` : '',
       correctionId ? `correction_id: ${correctionId}` : '',
-      `motivo: ${reason}`,
-      runUrl ? `run de Actions: ${runUrl}` : '',
-      '',
-      'Acción: revisar el run de Actions y re-disparar la generación.'
+      `motivo: ${reason}`, runUrl ? `run de Actions: ${runUrl}` : '', '', action
     ].filter(Boolean));
 
   return jsonResponse({ ok: true });
@@ -2357,13 +2458,14 @@ async function verifyTallySignature(rawBody, signatureHeader, secret) {
 async function dispatchGitHubAction(env, payload) {
   const githubToken = secret(env, 'GITHUB_TOKEN');
   if (!githubToken || !env.GITHUB_REPO) {
-    throw new Error('GITHUB_TOKEN or GITHUB_REPO not configured');
+    throw new ProviderError('GITHUB_TOKEN or GITHUB_REPO not configured', 'rejected');
   }
 
   const repo = env.GITHUB_REPO;
   const eventType = env.GITHUB_ACTIONS_EVENT || 'new-hmu-service-menu';
 
   const response = await fetch(`https://api.github.com/repos/${repo}/dispatches`, {
+    signal: AbortSignal.timeout(15000),
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${githubToken}`,
@@ -2379,7 +2481,7 @@ async function dispatchGitHubAction(env, payload) {
   });
 
   if (!response.ok) {
-    throw new Error(`GitHub dispatch failed: ${response.status} ${response.statusText}`);
+    throw new ProviderError(`GitHub dispatch failed: ${response.status} ${response.statusText}`, response.status >= 500 || response.status === 408 ? 'unknown' : 'rejected');
   }
 }
 
@@ -2457,6 +2559,7 @@ async function sendEmail({ env, to, subject, html, text, attachments }) {
   }
 
   const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    signal: AbortSignal.timeout(15000),
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${sendgridKey}`,
@@ -2466,11 +2569,11 @@ async function sendEmail({ env, to, subject, html, text, attachments }) {
   });
 
   if (!response.ok) {
-    throw new Error(`Email send failed: ${response.status}`);
+    throw new ProviderError(`Email send failed: ${response.status}`, response.status >= 500 || response.status === 408 ? 'unknown' : 'rejected');
   }
 
   // SendGrid responds 202 with an empty body — nothing to parse.
-  return { ok: true, status: response.status };
+  return { ok: true, status: response.status, messageId: response.headers.get('x-message-id') || '' };
 }
 
 // Normalización de payload Tally — copiada del patrón probado de MyGuest.
@@ -2527,7 +2630,8 @@ function normalizeTallyPayload(payload) {
         answers[k] = value;
       }
     }
-    const name = typeof field?.name === 'string' ? field.name.trim() : '';
+    const candidateName = typeof field?.name === 'string' ? field.name.trim() : String(field?.label || '').trim();
+    const name = /^[a-z0-9_]{1,100}$/.test(candidateName) && !['order_id', 'customer_email', 'client_slug', 'correction_token'].includes(candidateName) ? candidateName : '';
     if (!isHidden && name && typeof value === 'string' && value !== '') {
       prefill[name] = value;
     }
@@ -3579,16 +3683,16 @@ function buildCorrectionPurchaseEmail({ formUrl, pageUrl, lang, env }) {
   const t = es
     ? {
         heading: '¡Gracias por tu compra! ✏️',
-        intro: 'Ya puedes pedir tu corrección adicional. Usa este botón y descríbenos los cambios que quieres en tu página:',
+        intro: modificationFormPrefillEnabled(env) ? 'Abre tu cuestionario prellenado y edita solo lo que quieras cambiar:' : 'Ya puedes pedir tu corrección adicional. Usa este botón y descríbenos los cambios que quieres en tu página:',
         btn: 'Pedir mi corrección',
-        note: 'El enlace es de un solo uso y vence en 30 días. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.',
+        note: modificationFormPrefillEnabled(env) ? 'El enlace es de un solo uso y vence en 30 días. Sin fotos nuevas conservamos las anteriores; si subes fotos, incluye todas las que quieras publicar.' : 'El enlace es de un solo uso y vence en 30 días. Para cambiar fotos o logo, responde a este correo adjuntando los archivos.',
         label: 'Tu página:'
       }
     : {
         heading: 'Thanks for your purchase! ✏️',
-        intro: 'You can now request your extra correction. Use this button and describe the changes you want on your page:',
+        intro: modificationFormPrefillEnabled(env) ? 'Open your prefilled form and edit only what you want to change:' : 'You can now request your extra correction. Use this button and describe the changes you want on your page:',
         btn: 'Request my correction',
-        note: 'The link is single-use and expires in 30 days. To change photos or your logo, reply to this email with the files attached.',
+        note: modificationFormPrefillEnabled(env) ? 'The link is single-use and expires in 30 days. Existing photos remain unless you upload a complete replacement set.' : 'The link is single-use and expires in 30 days. To change photos or your logo, reply to this email with the files attached.',
         label: 'Your page:'
       };
   return correctionEmailShell(`

@@ -44,3 +44,11 @@ El snapshot mezcla dos endpoints, porque ninguno trae todo:
 
 Se emparejan **por orden**, no por título, precisamente porque el título puede
 ser el `name`.
+
+## Release-readiness regressions
+
+`release-readiness.test.mjs` exercises the real worker through a serialized
+Durable Object model, using memory-only storage and fully intercepted provider
+calls. `reliability-harness.mjs` supplies the model and signed synthetic events.
+The model is not a substitute for a Cloudflare SQLite runtime integration.
+See `../RELEASE_READINESS.md` for cutover, recovery and remaining acceptance gates.

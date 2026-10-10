@@ -2473,6 +2473,8 @@ async function sendEmail({ env, to, subject, html, text, attachments }) {
   return { ok: true, status: response.status };
 }
 
+const STABLE_FIELD_NAME_RE = /^[a-z][a-z0-9_]*$/;
+
 // Normalización de payload Tally — copiada del patrón probado de MyGuest.
 // Tally envía data.fields[] con {key, label, type, value}; los hidden fields
 // prefilled por URL llegan como fields con label "order_id". El objeto answers
@@ -2527,7 +2529,12 @@ function normalizeTallyPayload(payload) {
         answers[k] = value;
       }
     }
-    const name = typeof field?.name === 'string' ? field.name.trim() : '';
+    // El webhook de Tally ya no trae `name`: cuando la pregunta lo declara, lo
+    // manda en `label` (el título humano desaparece). Un label con forma de
+    // nombre estable (snake_case) es ese nombre.
+    const declaredName = typeof field?.name === 'string' ? field.name.trim() : '';
+    const label = typeof field?.label === 'string' ? field.label.trim() : '';
+    const name = declaredName || (STABLE_FIELD_NAME_RE.test(label) ? label : '');
     if (!isHidden && name && typeof value === 'string' && value !== '') {
       prefill[name] = value;
     }

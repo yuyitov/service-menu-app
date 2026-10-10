@@ -1,0 +1,74 @@
+{
+  "public_slug": "diagnostic-test-four-xvem875",
+  "default_language": "en",
+  "brand_style": "charcoal-clean",
+  "business_type": "person",
+  "business_name": "Diagnostic Test Four",
+  "logo_url": null,
+  "primary_image_url": null,
+  "gallery_images": [],
+  "whatsapp": null,
+  "phone": null,
+  "public_email": "casinosmanager.mx+prueba4@gmail.com",
+  "instagram": null,
+  "facebook": null,
+  "tiktok": null,
+  "website": null,
+  "booking_url": null,
+  "primary_cta": null,
+  "google_maps_url": null,
+  "google_reviews_url": null,
+  "other_public_link": null,
+  "delivery_pickup_links": [],
+  "portfolio_link": null,
+  "content": {
+    "es": {
+      "short_description": "Prueba técnica ficticia número cuatro para confirmar el camino en inglés.",
+      "address": "",
+      "opening_hours_text": "Lun-Vie 10:00-18:00 (prueba)Lun-Vie 10:00-18:00 (prueba)",
+      "service_area_text": "En línea (prueba ficticiaEn línea (prueba ficticia))",
+      "client_care_text": "",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Servicios"
+      ],
+      "services": [
+        {
+          "category": "Servicios",
+          "name": "Consulta de prueba 30 min",
+          "description": "desde $10 USDConsulta de prueba 30 min",
+          "price_label": "from $10 USD"
+        }
+      ],
+      "policies": [],
+      "faq": []
+    },
+    "en": {
+      "short_description": "Fictional technical test number four to confirm the English path.",
+      "address": "",
+      "opening_hours_text": "Mon-Fri 10:00-18:00 (test)Mon-Fri 10:00-18:00 (test)",
+      "service_area_text": "Online (fictional testOnline (fictional test))",
+      "client_care_text": "",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Services"
+      ],
+      "services": [
+        {
+          "category": "Services",
+          "name": "Test consultation 30 min",
+          "description": "from $10 USDTest consultation 30 min",
+          "price_label": "from $10 USD"
+        }
+      ],
+      "policies": [],
+      "faq": []
+    }
+  }
+}

@@ -75,13 +75,6 @@ const NO_VIAJAN = new Map([
   // PawContact el 07-26, visible aquí en pequeño y sin consecuencias.
   ['yPkN5X', 'consentimiento legal de Términos y Privacidad (su título es el id del form porque declara `name`): queda en KV, no se publica'],
   ['MeyDpk', 'consentimiento legal de Términos y Privacidad (su título es el id del form porque declara `name`): queda en KV, no se publica'],
-
-  // — Reportada a Vero el 2026-07-26 como candidata a QUITAR. No la lee ni el
-  //   worker ni el generador: el cliente escribe sus preferencias de marca y no
-  //   pasa nada con ellas. Se deja aquí, no en las perdidas, porque quitar una
-  //   pregunta del formulario vivo con 4 clientes reales es decisión de Vero.
-  ['Brand notes', 'PENDIENTE DE DECISIÓN (2026-07-26): nadie la lee — ni worker ni generador. Reportada a Vero como pregunta muerta'],
-  ['Notas de marca', 'PENDIENTE DE DECISIÓN (2026-07-26): nadie la lee — ni worker ni generador. Reportada a Vero como pregunta muerta'],
 ])
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -126,6 +119,9 @@ const COLISIONES = new Map([
 const SIN_PREGUNTA = new Map([
   ['public_slug', 'derivado: nombre del negocio + submission_id'],
   ['style_unmapped', 'bandera derivada: avisa que el estilo elegido no está en el catálogo'],
+  ['price_display',
+   'LEGADO: la pregunta "cómo mostrar los precios" ya no está en el formulario vivo (retirada; el ' +
+   'generador la trata como LEGACY_CONTENT_FIELDS). El worker la sigue leyendo y sale vacía.'],
   ['portfolio_link',
    'REPORTADO A VERO 2026-07-26, decisión suya: el motor SÍ sabe pintar el botón de ' +
    'Portafolio (blocks.portfolio, habilitado para creative/beauty/wellness/professional/' +
@@ -151,6 +147,7 @@ function envDeWrangler() {
   return {
     BRAND_NAME: leer('BRAND_NAME') || 'HMU Link',
     VALID_BRAND_STYLES: leer('VALID_BRAND_STYLES'),
+    BRAND_STYLE_ALIASES: leer('BRAND_STYLE_ALIASES'),
     TALLY_FORM_URL_EN: leer('TALLY_FORM_URL_EN'),
     TALLY_FORM_URL_ES: leer('TALLY_FORM_URL_ES'),
   }
@@ -159,6 +156,15 @@ const ENV = envDeWrangler()
 const ESTILOS_VALIDOS = ENV.VALID_BRAND_STYLES.split(',').map((s) => s.trim()).filter(Boolean)
 
 const CENTINELA = 'CENTINELAxyz'
+
+// Una pregunta con `name` en Tally se reporta con ese NOMBRE como título (es lo que
+// manda el webhook: `label`); el título humano queda en `title_editor` del
+// inventario. Las tablas de arriba están escritas con el título humano, así que se
+// busca por cualquiera de los dos. Los alias del worker, en cambio, tienen que
+// casar con el `title` (la etiqueta real del webhook): por eso `payloadDeUna` no
+// cambia.
+const claves = (q) => [q.title, q.title_editor].filter(Boolean)
+const enMapa = (mapa, q) => claves(q).map((k) => mapa.get(k)).find((v) => v !== undefined)
 
 function payloadDeUna(form, pregunta, valor) {
   const value = pregunta.type === 'FILE_UPLOAD'
@@ -216,7 +222,7 @@ for (const form of snapshot.forms) {
   const destino = {}
 
   for (const q of form.questions) {
-    const transformada = TRANSFORMADAS.get(q.title)
+    const transformada = enMapa(TRANSFORMADAS, q)
 
     if (transformada) {
       // No se busca el centinela: se afirma que TODA opción viva mapea.
@@ -246,10 +252,10 @@ for (const form of snapshot.forms) {
     const campo = campoQueRecibe(p, CENTINELA)
     if (campo) {
       destino[campo] = [...(destino[campo] || []), q.title]
-      if (NO_VIAJAN.has(q.title)) {
+      if (enMapa(NO_VIAJAN, q) !== undefined) {
         sinRazon.push(`«${q.title}» está en NO_VIAJAN pero SÍ llega a ${campo} — quita la excepción`)
       }
-    } else if (!NO_VIAJAN.has(q.title)) {
+    } else if (enMapa(NO_VIAJAN, q) === undefined) {
       perdidas.push(`«${q.title}»  <${q.type}>  id=${q.id}`)
     }
   }

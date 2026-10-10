@@ -1,0 +1,72 @@
+{
+  "public_slug": "prueba-diagnostico-dos-rdrabel",
+  "default_language": "es",
+  "brand_style": "charcoal-clean",
+  "business_type": "person",
+  "business_name": "Prueba Diagnostico Dos",
+  "logo_url": null,
+  "primary_image_url": null,
+  "gallery_images": [],
+  "whatsapp": null,
+  "phone": null,
+  "public_email": "casinosmanager.mx+prueba2@gmail.com",
+  "instagram": null,
+  "facebook": null,
+  "tiktok": null,
+  "website": null,
+  "booking_url": null,
+  "primary_cta": null,
+  "google_maps_url": null,
+  "google_reviews_url": null,
+  "other_public_link": null,
+  "delivery_pickup_links": [],
+  "portfolio_link": null,
+  "content": {
+    "es": {
+      "short_description": "Prueba tecnica ficticia numero dos. No es un negocio real.",
+      "address": "",
+      "opening_hours_text": "Lun-Vie 10:00-18:00 (prueba)",
+      "service_area_text": "En linea (prueba ficticia)",
+      "client_care_text": "",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Servicios"
+      ],
+      "services": [
+        {
+          "category": "Servicios",
+          "name": "Consulta de prueba 30 min",
+          "price_label": "desde $100 MXN"
+        }
+      ],
+      "policies": [],
+      "faq": []
+    },
+    "en": {
+      "short_description": "Fictitious technical test number two. It is not a real business.",
+      "address": "",
+      "opening_hours_text": "Mon-Fri 10:00-18:00 (test)",
+      "service_area_text": "Online (fictitious test)",
+      "client_care_text": "",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Services"
+      ],
+      "services": [
+        {
+          "category": "Services",
+          "name": "Test Consultation 30 min",
+          "price_label": "desde $100 MXN"
+        }
+      ],
+      "policies": [],
+      "faq": []
+    }
+  }
+}

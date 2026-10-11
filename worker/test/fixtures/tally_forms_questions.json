@@ -1,11 +1,11 @@
 {
   "_comment": "Inventario de los DOS formularios Tally VIVOS de HMU Link (EN y ES). Solo ids, tipos, titulos y el texto de las opciones: cero respuestas, cero datos de clientes. Lo genera worker/test/tomar_snapshot.mjs desde la API de Tally. NO sale de tally_form.yaml del repo: ese archivo es un BORRADOR que nunca creo estos formularios y su propio encabezado lo dice. Medir contra el yaml da falsos positivos.",
-  "snapshot_date": "2026-09-28",
+  "snapshot_date": "2026-10-11",
   "forms": [
     {
       "lang": "en",
       "form_id": "yPkN5X",
-      "form_name": "HMU Link Intake — English",
+      "form_name": "HMU Link",
       "hidden_fields": [
         "order_id",
         "business_name",
@@ -460,7 +460,7 @@
     {
       "lang": "es",
       "form_id": "MeyDpk",
-      "form_name": "HMU Link Intake — Español",
+      "form_name": "HMU Link",
       "hidden_fields": [
         "order_id",
         "business_name",

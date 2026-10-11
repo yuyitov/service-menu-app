@@ -1,0 +1,127 @@
+{
+  "public_slug": "veronica-perez-arroyo-casinos-manager-laxlpao",
+  "default_language": "es",
+  "brand_style": "clarity-editorial",
+  "business_type": "person",
+  "business_name": "Verónica Pérez Arroyo * Casinos Manager",
+  "logo_url": "https://www.hmulink.com/links/veronica-perez-arroyo-casinos-manager-laxlpao/assets/logo.jpg",
+  "primary_image_url": "https://www.hmulink.com/links/veronica-perez-arroyo-casinos-manager-laxlpao/assets/gallery-1.jpg",
+  "gallery_images": [
+    {
+      "url": "https://www.hmulink.com/links/veronica-perez-arroyo-casinos-manager-laxlpao/assets/gallery-1.jpg"
+    }
+  ],
+  "gallery_aspect": "4/3",
+  "whatsapp": "+523221553952",
+  "phone": "+523221553952",
+  "public_email": "casinosmanager.mx@gmail.com",
+  "instagram": null,
+  "facebook": null,
+  "tiktok": null,
+  "website": "https://www.casinosmanager.com",
+  "booking_url": null,
+  "primary_cta": "website",
+  "google_maps_url": null,
+  "google_reviews_url": null,
+  "other_public_link": null,
+  "delivery_pickup_links": [],
+  "portfolio_link": null,
+  "content": {
+    "es": {
+      "short_description": "Plataforma inteligente para la administración, control y auditoría de casinos. Combina inteligencia artificial, análisis de datos y automatización para transformar la información operativa y financiera en decisiones más precisas. Diseñada desde la experiencia real y adaptable a cada OPERACIÓN.",
+      "address": "",
+      "opening_hours_text": "Lunes a Domingo 10am - 10pm",
+      "service_area_text": "En línea. Visitas a casinos bajo acuerdo.",
+      "client_care_text": "",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Software de gestión inteligencia de datos implementación y personalización"
+      ],
+      "services": [
+        {
+          "category": "Software de gestión inteligencia de datos implementación y personalización",
+          "name": "Plataforma Integral de Gestión de Casinos"
+        },
+        {
+          "category": "Software de gestión inteligencia de datos implementación y personalización",
+          "name": "Software para centralizar la administración, supervisión operativa, control financiero y auditoría de casinos."
+        },
+        {
+          "category": "Software de gestión inteligencia de datos implementación y personalización",
+          "name": "Inteligencia Artificial y Análisis de Datos"
+        },
+        {
+          "category": "Software de gestión inteligencia de datos implementación y personalización",
+          "name": "Herramientas de análisis, automatización y reportes inteligentes para identificar tendencias detectar desviaciones y fac"
+        },
+        {
+          "category": "Software de gestión inteligencia de datos implementación y personalización",
+          "name": "Implementación y Personalización"
+        },
+        {
+          "category": "Software de gestión inteligencia de datos implementación y personalización",
+          "name": "Configuración de casinos manager según la estructura de cada casino con opciones de adaptación capacitación y acompañami"
+        }
+      ],
+      "policies": [
+        "Confidencialidad total sobre la información de cada casino. Trabajo bajo acuerdo por escrito."
+      ],
+      "faq": [],
+      "featured_package": {
+        "name": "Casinos Manager",
+        "description": "Gestión Inteligente de Casinos\nTransforma la operación de tu casino con una plataforma que Integra administración auditoría automatización Inteligencia artificial y análisis de datos.\nDisponible para implementación y personalización según las necesidades de tu operación."
+      }
+    },
+    "en": {
+      "short_description": "Intelligent platform for the management, control, and auditing of casinos. It combines artificial intelligence, data analysis, and automation to transform operational and financial information into more accurate decisions. Designed from real experience and adaptable to each OPERATION.",
+      "address": "",
+      "opening_hours_text": "Monday to Sunday 10am - 10pm",
+      "service_area_text": "Online. Visits to casinos by agreement.",
+      "client_care_text": "",
+      "reservations_text": "",
+      "class_schedule_text": "",
+      "tour_details_text": "",
+      "pet_notes_text": "",
+      "service_categories": [
+        "Data intelligence management software implementation and customization"
+      ],
+      "services": [
+        {
+          "category": "Data intelligence management software implementation and customization",
+          "name": "Comprehensive Casino Management Platform"
+        },
+        {
+          "category": "Data intelligence management software implementation and customization",
+          "name": "Software to centralize the administration, operational supervision, financial control, and auditing of casinos."
+        },
+        {
+          "category": "Data intelligence management software implementation and customization",
+          "name": "Artificial Intelligence and Data Analysis"
+        },
+        {
+          "category": "Data intelligence management software implementation and customization",
+          "name": "Analysis tools, automation, and intelligent reporting to identify trends, detect deviations, and facilitate"
+        },
+        {
+          "category": "Data intelligence management software implementation and customization",
+          "name": "Implementation and Customization"
+        },
+        {
+          "category": "Data intelligence management software implementation and customization",
+          "name": "Configuration of casino manager according to the structure of each casino with adaptation options, training, and support"
+        }
+      ],
+      "policies": [
+        "Total confidentiality regarding the information of each casino. Work under written agreement."
+      ],
+      "faq": [],
+      "featured_package": {
+        "name": "Casinos Manager",
+        "description": "Intelligent Casino Management\nTransform the operation of your casino with a platform that integrates administration, auditing, automation, artificial intelligence, and data analysis.\nAvailable for implementation and customization according to the needs of your operation."
+      }
+    }
+  }
+}

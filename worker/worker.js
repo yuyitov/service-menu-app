@@ -277,7 +277,9 @@ export {
   // notas de Vero de la Fase 2 (el idioma por moneda y la imagen del correo).
   buildDeliveryEmail, buildDeliveryText, DELIVERY_QR_CID,
   // El enlace de MODIFICACIÓN (qué formulario abre y con qué prellenado).
-  bestModificationUrl, modificationLinks, handleModifyRedirect
+  bestModificationUrl, modificationLinks, handleModifyRedirect,
+  // Los correos que el cliente tiene que ENCONTRAR en su bandeja.
+  buildPostPaymentEmail, buildPostPaymentText
 };
 
 export default {
@@ -3144,6 +3146,15 @@ function jsonResponse(data, status = 200) {
 // identifica el idioma (MXN/USD), las dos cuando no (emailLangFromCurrency
 // devuelve null). Inglés primero en el caso bilingüe: si la moneda no es ni MXN
 // ni USD, el comprador es de fuera y el inglés es la apuesta más segura.
+// Gmail manda estos correos a la pestaña "Promociones" (visto el 2026-10-16 con
+// los de prueba: en la bandeja, pero fuera de "Principal"). Un cliente que no los
+// ve no abre su formulario ni su enlace de cambios, así que se le dice dónde buscar.
+function inboxTip(lang) {
+  return lang === 'en'
+    ? 'Can’t find our emails? Check the Promotions or Spam tab in Gmail and drag this one to “Primary” so you never miss your link.'
+    : '¿No ves nuestros correos? Revisa la pestaña Promociones o Spam de Gmail y arrástralo a «Principal» para no perder tu enlace.';
+}
+
 function postPaymentLangs(lang) {
   return lang === 'es' || lang === 'en' ? [lang] : ['en', 'es'];
 }
@@ -3191,7 +3202,8 @@ function buildPostPaymentEmail({ formUrlEN, formUrlES, lang, env }) {
       ${t.secondBtn}
     </div>
 
-    <p style="color: #666; font-size: 14px;">${t.closing}</p>`;
+    <p style="color: #666; font-size: 14px;">${t.closing}</p>
+    <p style="color: #888; font-size: 13px;">💡 ${inboxTip(l)}</p>`;
   });
   return `
 <!DOCTYPE html>
@@ -3225,7 +3237,9 @@ function buildPostPaymentText({ formUrlEN, formUrlES, lang, env }) {
         lineES,
         lineEN,
         '',
-        'Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.'
+        'Una vez que completes el formulario, generaremos tu página y recibirás un link para compartir con tus clientes.',
+        '',
+        inboxTip('es')
       ]
     : [
         'Your service page is almost ready!',
@@ -3235,7 +3249,9 @@ function buildPostPaymentText({ formUrlEN, formUrlES, lang, env }) {
         lineEN,
         lineES,
         '',
-        "Once you complete the form, we'll generate your page and you'll get a link to share with your customers."
+        "Once you complete the form, we'll generate your page and you'll get a link to share with your customers.",
+        '',
+        inboxTip('en')
       ]);
   const body = postPaymentLangs(lang).map((l) => block(l).join('\n')).join('\n\n---\n\n');
   return [body, '', emailFooterText(env)].join('\n');
@@ -3410,6 +3426,8 @@ ${linterBlock}${qrBlock}
       <p style="margin: 15px 0 0 0; color: #888; font-size: 12px;">${t.correctionAlt}</p>${altLanguageHtml(alt)}
     </div>
 
+    <p style="color: #888; font-size: 13px;">💡 ${inboxTip(lang)}</p>
+
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
     <p style="color: #999; font-size: 12px; margin: 0;">${emailFooterHtml(env)}</p>
   </div>
@@ -3446,6 +3464,8 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, alt, hasQr, env }) {
       ...altLanguageText(alt),
       'También puedes responder a este correo con los cambios (fotos o logo: adjúntalos en tu respuesta).',
       '',
+      inboxTip('es'),
+      '',
       emailFooterText(env)
     ].join('\n');
   }
@@ -3467,6 +3487,8 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, alt, hasQr, env }) {
     correctionUrl,
     ...altLanguageText(alt),
     'You can also reply to this email with the changes (photos or logo: attach the files in your reply).',
+    '',
+    inboxTip('en'),
     '',
     emailFooterText(env)
   ].join('\n');

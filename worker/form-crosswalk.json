@@ -1,0 +1,466 @@
+{
+  "_comment": "GENERADO por test/generar_crosswalk.mjs desde el inventario de los formularios vivos. No editar a mano.",
+  "snapshot_date": "2026-10-11",
+  "forms": {
+    "en": "yPkN5X",
+    "es": "MeyDpk"
+  },
+  "questions": [
+    {
+      "en": "default_language",
+      "es": "default_language",
+      "options": [
+        {
+          "en": "English first",
+          "es": "Inglés primero"
+        },
+        {
+          "en": "Spanish first",
+          "es": "Español primero"
+        }
+      ]
+    },
+    {
+      "en": "business_name",
+      "es": "business_name"
+    },
+    {
+      "en": "business_type",
+      "es": "business_type",
+      "options": [
+        {
+          "en": "Spa / Wellness",
+          "es": "Spa / Wellness"
+        },
+        {
+          "en": "Salon / Hair",
+          "es": "Salón de belleza / Cabello"
+        },
+        {
+          "en": "Barbershop",
+          "es": "Barbería"
+        },
+        {
+          "en": "Nails / Lashes / Brows",
+          "es": "Uñas / Pestañas / Cejas"
+        },
+        {
+          "en": "Massage / Facials / Beauty",
+          "es": "Masajes / Faciales / Estética"
+        },
+        {
+          "en": "Fitness / Yoga / Pilates",
+          "es": "Fitness / Yoga / Pilates"
+        },
+        {
+          "en": "Restaurant / Café / Food",
+          "es": "Restaurante / Café / Comida"
+        },
+        {
+          "en": "Pet grooming",
+          "es": "Estética para mascotas"
+        },
+        {
+          "en": "Tattoo / Piercing",
+          "es": "Tatuajes / Piercing"
+        },
+        {
+          "en": "Tours / Experiences",
+          "es": "Tours / Experiencias"
+        },
+        {
+          "en": "Workshops / Classes",
+          "es": "Talleres / Clases"
+        },
+        {
+          "en": "Coach / Consultant / Professional services",
+          "es": "Coach / Consultor(a) / Servicios profesionales"
+        },
+        {
+          "en": "Therapist / Wellness professional",
+          "es": "Terapeuta / Profesional del bienestar"
+        },
+        {
+          "en": "Home services",
+          "es": "Servicios a domicilio"
+        },
+        {
+          "en": "Independent professional (my own profile)",
+          "es": "Profesional independiente (mi perfil personal)"
+        },
+        {
+          "en": "Other local service business",
+          "es": "Otro negocio local de servicios"
+        }
+      ]
+    },
+    {
+      "en": "short_description",
+      "es": "short_description"
+    },
+    {
+      "en": "Upload your logo",
+      "es": "Sube tu logo"
+    },
+    {
+      "en": "Upload a main photo",
+      "es": "Sube una foto principal"
+    },
+    {
+      "en": "q_contact_email_for_your_hmu_link_preview",
+      "es": "q_correo_de_contacto_para_la_vista_previa_de_tu_hmu_link"
+    },
+    {
+      "en": "q_your_name",
+      "es": "q_tu_nombre"
+    },
+    {
+      "en": "q_phone_or_whatsapp_if_we_have_questions_about_your_hmu_link",
+      "es": "q_telefono_o_whatsapp_por_si_tenemos_preguntas_sobre_tu_hmu"
+    },
+    {
+      "en": "phone",
+      "es": "phone"
+    },
+    {
+      "en": "whatsapp",
+      "es": "whatsapp"
+    },
+    {
+      "en": "public_email",
+      "es": "public_email"
+    },
+    {
+      "en": "q_how_many_public_locations_should_appear_on_your_hmu_link",
+      "es": "q_cuantas_ubicaciones_publicas_deben_aparecer_en_tu_hmu_link",
+      "options": [
+        {
+          "en": "1 location",
+          "es": "1 ubicación"
+        },
+        {
+          "en": "2 locations",
+          "es": "2 ubicaciones"
+        },
+        {
+          "en": "3 locations",
+          "es": "3 ubicaciones"
+        },
+        {
+          "en": "More than 3",
+          "es": "Más de 3"
+        },
+        {
+          "en": "No physical location (online or at-home services)",
+          "es": "Sin ubicación física (en línea o a domicilio)"
+        }
+      ]
+    },
+    {
+      "en": "service_area_text",
+      "es": "service_area_text"
+    },
+    {
+      "en": "location_1_name",
+      "es": "location_1_name"
+    },
+    {
+      "en": "address",
+      "es": "address"
+    },
+    {
+      "en": "google_maps_url",
+      "es": "google_maps_url"
+    },
+    {
+      "en": "location_1_notes",
+      "es": "location_1_notes"
+    },
+    {
+      "en": "location_2_name",
+      "es": "location_2_name"
+    },
+    {
+      "en": "location_2_address",
+      "es": "location_2_address"
+    },
+    {
+      "en": "location_2_maps_url",
+      "es": "location_2_maps_url"
+    },
+    {
+      "en": "location_2_notes",
+      "es": "location_2_notes"
+    },
+    {
+      "en": "location_3_name",
+      "es": "location_3_name"
+    },
+    {
+      "en": "location_3_address",
+      "es": "location_3_address"
+    },
+    {
+      "en": "location_3_maps_url",
+      "es": "location_3_maps_url"
+    },
+    {
+      "en": "location_3_notes",
+      "es": "location_3_notes"
+    },
+    {
+      "en": "additional_locations_text",
+      "es": "additional_locations_text"
+    },
+    {
+      "en": "opening_hours_text",
+      "es": "opening_hours_text"
+    },
+    {
+      "en": "service_categories_text",
+      "es": "service_categories_text"
+    },
+    {
+      "en": "services_text",
+      "es": "services_text"
+    },
+    {
+      "en": "featured_text",
+      "es": "featured_text"
+    },
+    {
+      "en": "instagram",
+      "es": "instagram"
+    },
+    {
+      "en": "facebook",
+      "es": "facebook"
+    },
+    {
+      "en": "tiktok",
+      "es": "tiktok"
+    },
+    {
+      "en": "website",
+      "es": "website"
+    },
+    {
+      "en": "booking_url",
+      "es": "booking_url"
+    },
+    {
+      "en": "google_reviews_url",
+      "es": "google_reviews_url"
+    },
+    {
+      "en": "other_public_link",
+      "es": "other_public_link"
+    },
+    {
+      "en": "primary_cta",
+      "es": "primary_cta",
+      "options": [
+        {
+          "en": "WhatsApp",
+          "es": "WhatsApp"
+        },
+        {
+          "en": "Phone call",
+          "es": "Llamada telefónica"
+        },
+        {
+          "en": "Instagram",
+          "es": "Instagram"
+        },
+        {
+          "en": "Google Maps / directions",
+          "es": "Google Maps / cómo llegar"
+        },
+        {
+          "en": "External booking link",
+          "es": "Enlace externo de reservas"
+        },
+        {
+          "en": "Website",
+          "es": "Sitio web"
+        },
+        {
+          "en": "Email",
+          "es": "Correo"
+        },
+        {
+          "en": "Other public link",
+          "es": "Otro enlace público"
+        }
+      ]
+    },
+    {
+      "en": "More photos",
+      "es": "Más fotos"
+    },
+    {
+      "en": "pick_your_style",
+      "es": "pick_your_style",
+      "options": [
+        {
+          "en": "Black & Gold — elegant and luxurious",
+          "es": "Black & Gold — elegante y lujoso"
+        },
+        {
+          "en": "Soft Blush — soft and feminine",
+          "es": "Soft Blush — suave y femenino"
+        },
+        {
+          "en": "Charcoal Clean — clean and modern",
+          "es": "Charcoal Clean — limpio y moderno"
+        },
+        {
+          "en": "Ink & Ivory — minimal and editorial",
+          "es": "Ink & Ivory — mínimo y editorial"
+        },
+        {
+          "en": "Aqua Clean — fresh and light",
+          "es": "Aqua Clean — fresco y ligero"
+        },
+        {
+          "en": "Sage Calm — calm and natural",
+          "es": "Sage Calm — tranquilo y natural"
+        },
+        {
+          "en": "Electric Slate — bold and energetic",
+          "es": "Electric Slate — audaz y enérgico"
+        },
+        {
+          "en": "Terracotta Warm — cozy and inviting",
+          "es": "Terracotta Warm — cálido y artesanal"
+        },
+        {
+          "en": "Pink Grapefruit — juicy and full of energy",
+          "es": "Pink Grapefruit — jugoso y con energía"
+        },
+        {
+          "en": "Midnight Ink — dark and artistic",
+          "es": "Midnight Ink — oscuro y artístico"
+        },
+        {
+          "en": "Clarity Editorial — professional and polished",
+          "es": "Clarity Editorial — profesional y confiable"
+        },
+        {
+          "en": "Blue Chocolate — modern and full of character",
+          "es": "Blue Chocolate — moderno y con carácter"
+        }
+      ]
+    },
+    {
+      "en": "policies_text",
+      "es": "policies_text"
+    },
+    {
+      "en": "faq_text",
+      "es": "faq_text"
+    },
+    {
+      "en": "client_care_text",
+      "es": "client_care_text",
+      "options": [
+        {
+          "en": "By appointment only",
+          "es": "Solo con cita"
+        },
+        {
+          "en": "Walk-ins welcome",
+          "es": "Sin cita, por orden de llegada"
+        },
+        {
+          "en": "Both — appointments and walk-ins",
+          "es": "Ambas — con cita y sin cita"
+        }
+      ]
+    },
+    {
+      "en": "reservations_text",
+      "es": "reservations_text",
+      "options": [
+        {
+          "en": "Yes — by phone or WhatsApp",
+          "es": "Sí — por teléfono o WhatsApp"
+        },
+        {
+          "en": "Yes — through a booking link",
+          "es": "Sí — con un enlace de reservas"
+        },
+        {
+          "en": "No — walk-in only",
+          "es": "No — solo por orden de llegada"
+        }
+      ]
+    },
+    {
+      "en": "delivery_pickup_links_text",
+      "es": "delivery_pickup_links_text"
+    },
+    {
+      "en": "class_schedule_text",
+      "es": "class_schedule_text"
+    },
+    {
+      "en": "tour_details_text",
+      "es": "tour_details_text"
+    },
+    {
+      "en": "q_do_you_work_with_clients_online_in_person_or_both",
+      "es": "q_trabajas_con_clientes_en_linea_en_persona_o_ambas",
+      "options": [
+        {
+          "en": "Online",
+          "es": "En línea"
+        },
+        {
+          "en": "In person",
+          "es": "En persona"
+        },
+        {
+          "en": "Both",
+          "es": "Ambas"
+        }
+      ]
+    },
+    {
+      "en": "q_what_areas_do_you_cover",
+      "es": "q_que_zonas_cubres"
+    },
+    {
+      "en": "q_anything_clients_must_know_before_bringing_their_pet",
+      "es": "pet_notes_text"
+    },
+    {
+      "en": "Please confirm all of the following",
+      "es": "Por favor confirma todo lo siguiente",
+      "options": [
+        {
+          "en": "I own or have permission to use the logo, photos, and text I'm submitting, and I authorize HMU Link to publish them on my public page.",
+          "es": "Soy dueño/a o tengo permiso de usar el logo, las fotos y los textos que estoy enviando, y autorizo a HMU Link a publicarlos en mi página pública."
+        },
+        {
+          "en": "I authorize HMU Link to translate my content and lightly edit it for the English and Spanish versions of my page.",
+          "es": "Autorizo a HMU Link a traducir mi contenido y editarlo ligeramente para las versiones en español e inglés de mi página."
+        },
+        {
+          "en": "I understand my HMU Link is a public web page: anything in the sections marked 📢 public may be visible to anyone.",
+          "es": "Entiendo que mi HMU Link es una página web pública: todo lo de las secciones marcadas 📢 público puede ser visible para cualquier persona."
+        }
+      ]
+    },
+    {
+      "en": "yPkN5X",
+      "es": "MeyDpk",
+      "options": [
+        {
+          "en": "I have read and agree to the Terms & Conditions and Privacy Policy",
+          "es": "He leído y acepto los Términos y Condiciones y el Aviso de Privacidad"
+        }
+      ]
+    }
+  ]
+}

@@ -59,13 +59,14 @@
  */
 
 import { classifyStripeEvent } from './stripe-filter.mjs';
-import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fotosEnOrdenDeSubida, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, tallyFormLang, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
+import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fotosEnOrdenDeSubida, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, tallyFormLang, translatePrefill, inferPrefillLang, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
 // Mapa campo-público -> alias de título del intake de Tally, única fuente de
 // verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
 // una vertical con otras preguntas edita SUS alias sin tocar este worker.
 import RAW_FIELD_ALIASES from './tally-field-aliases.json' with { type: 'json' };
 import RAW_PRIMARY_CTA_ALIASES from './primary-cta-aliases.json' with { type: 'json' };
+import FORM_CROSSWALK from './form-crosswalk.json' with { type: 'json' };
 
 /**
  * Los alias de cada campo, MAS su propio nombre canonico al final.
@@ -276,7 +277,7 @@ export {
   // notas de Vero de la Fase 2 (el idioma por moneda y la imagen del correo).
   buildDeliveryEmail, buildDeliveryText, DELIVERY_QR_CID,
   // El enlace de MODIFICACIÓN (qué formulario abre y con qué prellenado).
-  bestModificationUrl
+  bestModificationUrl, modificationLinks, handleModifyRedirect
 };
 
 export default {
@@ -353,6 +354,13 @@ export default {
         const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'gift', ip, minuteSlot), 5, 120);
         if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
         return await handleGiftDelivery(request, env);
+      }
+
+      // Elegir el idioma del formulario de modificación (enlace del correo).
+      if (request.method === 'GET' && pathname === '/modify') {
+        const allowed = await checkRateLimit(env, kvKey(env, 'rl', 'modify', ip, minuteSlot), 30, 120);
+        if (!allowed) return jsonResponse({ ok: false, error: 'Too many requests' }, 429);
+        return await handleModifyRedirect(url, env);
       }
 
       // Correcciones: consumidos por la página estática /correct/ del sitio.
@@ -1053,7 +1061,7 @@ async function handleNotify(request, env) {
 
   // Formulario completo prellenado si la vertical ya lo soporta; si no, la
   // página de texto libre de siempre.
-  const correctionUrl = await bestModificationUrl(env, {
+  const { url: correctionUrl, alt: correctionAlt } = await modificationEmailLinks(env, {
     token: correctionToken,
     slug,
     lang: deliveryLang,
@@ -1071,11 +1079,12 @@ async function handleNotify(request, env) {
         slug,
         lang: deliveryLang,
         correctionUrl,
+        alt: correctionAlt,
         hasQr: Boolean(qrPngBase64),
         hasLinterFlags: linterFlags > 0,
         env
       }),
-      text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl, hasQr: Boolean(qrPngBase64), env }),
+      text: buildDeliveryText({ pageUrl, lang: deliveryLang, correctionUrl, alt: correctionAlt, hasQr: Boolean(qrPngBase64), env }),
       attachments: qrPngBase64
         ? [{
             content: qrPngBase64,
@@ -1479,11 +1488,12 @@ async function notifyModificationApplied({ env, slug, orderId, submissionId }) {
 
   // Enlace de la siguiente modificación incluida, si quedan.
   let nextCorrectionUrl = '';
+  let nextAlt = null;
   const nextToken = delivery?.correction_token || '';
   if (nextToken) {
     const nextRecord = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', nextToken), { type: 'json' }).catch(() => null);
     if (nextRecord && !nextRecord.used_at) {
-      nextCorrectionUrl = await bestModificationUrl(env, { token: nextToken, slug, lang, orderId });
+      ({ url: nextCorrectionUrl, alt: nextAlt } = await modificationEmailLinks(env, { token: nextToken, slug, lang, orderId }));
     }
   }
 
@@ -1496,10 +1506,10 @@ async function notifyModificationApplied({ env, slug, orderId, submissionId }) {
           ? `✅ Tu página ${brandName(env)} fue actualizada`
           : `✅ Your ${brandName(env)} page was updated`,
         html: buildCorrectionAppliedEmail({
-          pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, env
+          pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, alt: nextAlt, env
         }),
         text: buildCorrectionAppliedText({
-          pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, env
+          pageUrl, lang, buyUrl: buyCorrectionUrl(env, slug), nextCorrectionUrl, alt: nextAlt, env
         })
       });
     } catch (err) {
@@ -1540,7 +1550,26 @@ async function resolveModification(env, normalized, order) {
   return { slug, token, record };
 }
 
-async function bestModificationUrl(env, { token, slug, lang, orderId }) {
+/**
+ * Los enlaces de MODIFICACIÓN de un cliente: el formulario prellenado en el
+ * idioma principal y, si se sabe traducir, el del otro idioma.
+ *
+ * El cliente debe poder pedir su modificación en el idioma que quiera sin
+ * importar en qué moneda pagó (que decide el idioma del correo) ni en cuál llenó
+ * el original: el prellenado guarda nombres `q_...` y texto de opciones en el
+ * idioma del formulario de origen, así que se TRADUCE al del formulario que se
+ * abre (translatePrefill; los textos libres quedan como los escribió). Pasó el
+ * 2026-10-16: compra en USD, formulario llenado en español, enlace al formulario
+ * en inglés y todo vacío — el tipo de negocio re-elegido a ciegas rediseñó la
+ * página.
+ *
+ * - Idioma de origen: form_id del envío (tallyFormLang); si el envío es anterior
+ *   a que se guardara, se deduce de los nombres del prellenado.
+ * - Idioma principal: `forceLang` si se pide; si no, el del formulario de origen
+ *   (donde el cliente ya trabajó); si no se sabe, el del correo (`lang`).
+ * - Sin idioma de origen no se puede traducir: solo hay enlace principal.
+ */
+async function modificationLinks(env, { token, slug, lang, orderId, forceLang = '' }) {
   try {
     const order = orderId
       ? await env.SERVICE_MENU_KV.get(kvKey(env, 'order', orderId), { type: 'json' })
@@ -1549,24 +1578,95 @@ async function bestModificationUrl(env, { token, slug, lang, orderId }) {
     const submission = submissionId
       ? await env.SERVICE_MENU_KV.get(kvKey(env, 'submission', submissionId), { type: 'json' })
       : null;
-    // El prellenado guarda texto de opciones y nombres `q_...` en el idioma del
-    // formulario donde se llenó; si el enlace abriera el otro, casi nada cargaría
-    // (pasó el 2026-10-16: compra en USD, formulario llenado en ES, enlace en EN).
-    // Los envíos viejos sin form_id conservan el idioma que ya traía `lang`.
-    const formLang = tallyFormLang(env, submission?.form_id) || lang;
-    const url = modificationFormUrl(env, {
+    const fromLang = tallyFormLang(env, submission?.form_id)
+      || inferPrefillLang(submission?.prefill, FORM_CROSSWALK);
+    const primary = forceLang || fromLang || lang;
+    const construir = (target) => modificationFormUrl(env, {
       token,
       slug,
-      lang: formLang,
+      lang: target,
       orderId,
       customerEmail: order?.customer_email || '',
-      prefill: submission?.prefill
+      prefill: fromLang
+        ? translatePrefill(submission?.prefill, fromLang, target, FORM_CROSSWALK)
+        : submission?.prefill
     });
-    if (url) return url;
+    const url = construir(primary);
+    if (url) {
+      const otro = primary === 'es' ? 'en' : 'es';
+      const altUrl = fromLang ? construir(otro) : '';
+      return { url, lang: primary, alt: altUrl ? { url: altUrl, lang: otro } : null };
+    }
   } catch (err) {
     console.error('modification url build failed:', safeError(err));
   }
-  return correctionFormUrl(env, token, lang);
+  return { url: correctionFormUrl(env, token, forceLang || lang), lang: forceLang || lang, alt: null };
+}
+
+// Enlace estable (no el prellenado largo) para abrir el formulario en otro idioma.
+function modifyLangUrl(env, token, lang) {
+  const base = (env.WORKER_PUBLIC_URL || '').trim().replace(/\/+$/, '');
+  if (!base || !token || (lang !== 'es' && lang !== 'en')) return '';
+  return `${base}/modify?t=${encodeURIComponent(token)}&lang=${lang}`;
+}
+
+// Línea de los correos para elegir el otro idioma. Se escribe en el idioma al que
+// lleva el enlace, que es el que el cliente que lo quiere sí lee.
+function altLanguageCopy(alt) {
+  if (!alt || !alt.url) return null;
+  return alt.lang === 'en'
+    ? { lead: 'The form opens in Spanish, like the one you filled before. Prefer English?', link: 'Open the English form' }
+    : { lead: 'El formulario se abre en inglés, como el que llenaste antes. ¿Prefieres español?', link: 'Abre el formulario en español' };
+}
+
+function altLanguageHtml(alt) {
+  const c = altLanguageCopy(alt);
+  if (!c) return '';
+  return `
+      <p style="margin: 12px 0 0 0; color: #666; font-size: 13px;">${c.lead} <a href="${escapeHtml(alt.url)}" style="color: #00798a;">${c.link}</a></p>`;
+}
+
+function altLanguageText(alt) {
+  const c = altLanguageCopy(alt);
+  return c ? [`${c.lead} ${c.link}: ${alt.url}`, ''] : [];
+}
+
+// Los enlaces de modificación listos para un correo: el principal y, si se sabe
+// traducir el prellenado, el del otro idioma por el enlace estable /modify.
+async function modificationEmailLinks(env, { token, slug, lang, orderId }) {
+  const links = await modificationLinks(env, { token, slug, lang, orderId });
+  const altUrl = links.alt ? modifyLangUrl(env, token, links.alt.lang) : '';
+  return { url: links.url, alt: altUrl ? { url: altUrl, lang: links.alt.lang } : null };
+}
+
+async function bestModificationUrl(env, opts) {
+  return (await modificationLinks(env, opts)).url;
+}
+
+// GET /modify?t=<token>&lang=es|en — lleva al cliente a SU formulario de
+// modificación en el idioma que elija, con las respuestas ya cargadas. Es lo que
+// enlaza el correo bajo "¿Prefieres hacerlo en inglés/español?": el correo no
+// guarda un enlace por idioma, el token (secreto, 32 chars) basta para armarlo.
+async function handleModifyRedirect(url, env) {
+  const token = (url.searchParams.get('t') || '').trim();
+  const lang = (url.searchParams.get('lang') || '').trim().toLowerCase();
+  const plain = (status, text) => new Response(text, {
+    status,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' }
+  });
+  if (!token || token.length > 64 || (lang !== 'es' && lang !== 'en')) {
+    return plain(400, 'Enlace no válido / Invalid link');
+  }
+  const record = await env.SERVICE_MENU_KV.get(kvKey(env, 'correction', token), { type: 'json' }).catch(() => null);
+  if (!record || !record.slug) return plain(404, 'Enlace no válido / Invalid link');
+  if (record.used_at) return plain(410, 'Este enlace ya se usó / This link was already used');
+  const links = await modificationLinks(env, {
+    token, slug: record.slug, lang, orderId: record.order_id, forceLang: lang
+  });
+  return new Response(null, {
+    status: 302,
+    headers: { Location: links.url, 'Cache-Control': 'no-store' }
+  });
 }
 
 // La compra de corrección adicional pasa por el worker (crea el Checkout
@@ -1903,14 +2003,16 @@ async function handleCorrectionNotify(body, env) {
   const buyUrl = buyCorrectionUrl(env, record.slug);
   // Si al cliente le quedaban modificaciones incluidas, /correct ya acuñó el
   // siguiente enlace: va en este mismo correo para que no tenga que pedirlo.
-  const nextCorrectionUrl = record.next_correction_token
-    ? await bestModificationUrl(env, {
+  const nextLinks = record.next_correction_token
+    ? await modificationEmailLinks(env, {
         token: record.next_correction_token,
         slug: record.slug,
         lang,
         orderId: record.order_id
       })
-    : '';
+    : { url: '', alt: null };
+  const nextCorrectionUrl = nextLinks.url;
+  const nextAlt = nextLinks.alt;
 
   if (customerEmail) {
     try {
@@ -1921,8 +2023,8 @@ async function handleCorrectionNotify(body, env) {
           subject: lang === 'es'
             ? `✅ Tu página ${brandName(env)} fue actualizada`
             : `✅ Your ${brandName(env)} page was updated`,
-          html: buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl, env }),
-          text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, env })
+          html: buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl, alt: nextAlt, env }),
+          text: buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, alt: nextAlt, env })
         });
       } else {
         await sendEmail({
@@ -3186,7 +3288,7 @@ function modificationCopy(env, es) {
 
 // La corrección gratuita se pide con el botón (flujo automatizado /correct/)
 // o respondiendo al correo (reply_to va al buzón real) — ambas vías valen.
-function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, hasQr, hasLinterFlags, env }) {
+function buildDeliveryEmail({ pageUrl, slug, lang, correctionUrl, alt, hasQr, hasLinterFlags, env }) {
   const es = lang !== 'en';
   // Aviso del linter de copy (`legal.copy_linter`). Solo aparece si la vertical
   // tiene lista Y el intake disparó alguna frase, así que el correo de una
@@ -3305,7 +3407,7 @@ ${linterBlock}${qrBlock}
       <p style="margin: 0 0 15px 0; color: #333; font-weight: 500;">${t.correctionTitle}</p>
       <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${t.correctionBody}</p>
       <a href="${correctionUrl}" style="display: inline-block; background: #ffa934; color: #4a2c00; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">${t.correctionBtn}</a>
-      <p style="margin: 15px 0 0 0; color: #888; font-size: 12px;">${t.correctionAlt}</p>
+      <p style="margin: 15px 0 0 0; color: #888; font-size: 12px;">${t.correctionAlt}</p>${altLanguageHtml(alt)}
     </div>
 
     <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
@@ -3317,7 +3419,7 @@ ${linterBlock}${qrBlock}
 }
 
 // Versión text/plain del correo de entrega.
-function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
+function buildDeliveryText({ pageUrl, lang, correctionUrl, alt, hasQr, env }) {
   const es = lang !== 'en';
   const free = freeChanges(env);
   // El mismo enlace de respaldo que el HTML (ver `qrUrl` en buildDeliveryEmail):
@@ -3341,6 +3443,7 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
       '',
       `Incluido: ${free === 1 ? 'una modificación' : `${free} modificaciones`} sin costo. ${modificationCopy(env, true).openHere}`,
       correctionUrl,
+      ...altLanguageText(alt),
       'También puedes responder a este correo con los cambios (fotos o logo: adjúntalos en tu respuesta).',
       '',
       emailFooterText(env)
@@ -3362,6 +3465,7 @@ function buildDeliveryText({ pageUrl, lang, correctionUrl, hasQr, env }) {
     '',
     `Included: ${free === 1 ? 'one free modification' : `${free} free modifications`}. ${modificationCopy(env, false).openHere}`,
     correctionUrl,
+    ...altLanguageText(alt),
     'You can also reply to this email with the changes (photos or logo: attach the files in your reply).',
     '',
     emailFooterText(env)
@@ -3392,7 +3496,7 @@ function correctionEmailShell(innerHtml, env) {
 
 // Corrección aplicada: confirma y ofrece la corrección adicional de pago
 // (precio de la sección 3 de los Términos).
-function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl, env }) {
+function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl, alt, env }) {
   const es = lang !== 'en';
   const priceLabel = es ? CORRECTION_PRICE.mxn.label : CORRECTION_PRICE.usd.label;
   const t = es
@@ -3425,7 +3529,7 @@ function buildCorrectionAppliedEmail({ pageUrl, lang, buyUrl, nextCorrectionUrl,
     <div style="margin: 30px 0; padding: 20px; background: #fff9e6; border-left: 4px solid #ffa934; border-radius: 4px;">
       <p style="margin: 0 0 10px 0; color: #333; font-weight: 500;">${t.nextTitle}</p>
       <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">${t.nextBody}</p>
-      <a href="${nextCorrectionUrl}" style="display: inline-block; background: #ffa934; color: #4a2c00; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">${t.nextBtn}</a>
+      <a href="${nextCorrectionUrl}" style="display: inline-block; background: #ffa934; color: #4a2c00; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;">${t.nextBtn}</a>${altLanguageHtml(alt)}
     </div>`
     : '';
   const buyBlock = (!nextCorrectionUrl && buyUrl)
@@ -3514,7 +3618,7 @@ function buildResubmissionText({ pageUrl, lang, modificationUrl, env }) {
   return lines.join('\n');
 }
 
-function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, env }) {
+function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, alt, env }) {
   const es = lang !== 'en';
   const priceLabel = es ? CORRECTION_PRICE.mxn.label : CORRECTION_PRICE.usd.label;
   const lines = es
@@ -3524,7 +3628,7 @@ function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, 
         `Revisa tu página (puede tardar unos minutos en reflejarse): ${pageUrl}`,
         '',
         ...(nextCorrectionUrl
-          ? [`Todavía te queda una modificación incluida. ${modificationCopy(env, true).openHere} ${nextCorrectionUrl}`, '']
+          ? [`Todavía te queda una modificación incluida. ${modificationCopy(env, true).openHere} ${nextCorrectionUrl}`, '', ...altLanguageText(alt)]
           : buyUrl ? [`¿Necesitas otro cambio? Compra una corrección adicional por ${priceLabel}: ${buyUrl}`, ''] : []),
         'Si algo no quedó como esperabas, responde a este correo y lo revisamos sin costo.',
         '',
@@ -3536,7 +3640,7 @@ function buildCorrectionAppliedText({ pageUrl, lang, buyUrl, nextCorrectionUrl, 
         `Check your page (it may take a few minutes to refresh): ${pageUrl}`,
         '',
         ...(nextCorrectionUrl
-          ? [`You still have one included modification. ${modificationCopy(env, false).openHere} ${nextCorrectionUrl}`, '']
+          ? [`You still have one included modification. ${modificationCopy(env, false).openHere} ${nextCorrectionUrl}`, '', ...altLanguageText(alt)]
           : buyUrl ? [`Need another change? Buy an extra correction for ${priceLabel}: ${buyUrl}`, ''] : []),
         'If something didn\'t come out as expected, reply to this email and we\'ll review it at no cost.',
         '',

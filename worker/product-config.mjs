@@ -414,14 +414,20 @@ export function prospectSlug(session) {
 //   rompería el link, así que es mejor prellenar de más a de menos sin pasarse.
 //   El orden de inserción del objeto define la prioridad (lo más útil primero).
 // Nunca lanza: ante cualquier entrada rara devuelve "".
-export function buildPrefillQuery(prefill, maxLen = 1500) {
+// `dropped` (opcional): arreglo donde se anotan los NOMBRES de los campos que no
+// cupieron, para que quien llama pueda avisar en vez de dejar un campo vacío en
+// silencio.
+export function buildPrefillQuery(prefill, maxLen = 1500, dropped = null) {
   if (!prefill || typeof prefill !== 'object') return '';
   let out = '';
   for (const [name, value] of Object.entries(prefill)) {
     if (typeof value !== 'string' || value === '') continue;
     if (typeof name !== 'string' || name === '') continue;
     const pair = `&${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
-    if (out.length + pair.length > maxLen) continue;
+    if (out.length + pair.length > maxLen) {
+      if (Array.isArray(dropped)) dropped.push(name);
+      continue;
+    }
     out += pair;
   }
   return out;

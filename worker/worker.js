@@ -277,7 +277,7 @@ export {
   // notas de Vero de la Fase 2 (el idioma por moneda y la imagen del correo).
   buildDeliveryEmail, buildDeliveryText, DELIVERY_QR_CID,
   // El enlace de MODIFICACIÓN (qué formulario abre y con qué prellenado).
-  bestModificationUrl, modificationLinks, handleModifyRedirect,
+  bestModificationUrl, modificationLinks, modificationEmailLinks, handleModifyRedirect,
   // Los correos que el cliente tiene que ENCONTRAR en su bandeja.
   buildPostPaymentEmail, buildPostPaymentText
 };
@@ -1347,10 +1347,12 @@ function correctionFormUrl(env, token, lang) {
 // MODIFICATION_FORM_PREFILL de arriba (hallazgo del 2026-07-21).
 const MIN_PREFILL_FIELDS_FOR_FORM_EDIT = 3;
 
-// Tope del fragmento de prefill: un intake completo es mucho más largo que el
-// de un prospecto (1500). 6000 deja la URL dentro de lo que navegadores y
-// proxies manejan sin truncar.
-const MODIFICATION_PREFILL_MAX = 6000;
+// Tope del fragmento de prefill. Tally rechaza el enlace con 431 a partir de ~16000
+// caracteres (medido el 2026-10-16: 15000 abre, 16000 no); las cookies del
+// navegador comparten ese presupuesto, así que 9000 deja margen de sobra. El de
+// Vero —con textos largos— usa 4277. Lo que aun así no cupiera NO se descarta en
+// silencio: modificationLinks avisa a Vero con los nombres de los campos.
+const MODIFICATION_PREFILL_MAX = 9000;
 
 /**
  * Enlace de MODIFICACIÓN: el formulario de intake del cliente, prellenado con
@@ -1359,7 +1361,7 @@ const MODIFICATION_PREFILL_MAX = 6000;
  * nueva. Devuelve '' si no hay con qué prellenar — quien llama cae a
  * `correctionFormUrl`.
  */
-function modificationFormUrl(env, { token, slug, lang, orderId, customerEmail, prefill }) {
+function modificationFormUrl(env, { token, slug, lang, orderId, customerEmail, prefill, dropped = null }) {
   // Interruptor explícito por vertical: sin el cableado de hidden fields +
   // "default answer" en Tally, el formulario llega VACÍO y enviarlo borraría lo
   // que el cliente no reescriba. Apagado = `/correct/` de texto libre, que
@@ -1375,7 +1377,7 @@ function modificationFormUrl(env, { token, slug, lang, orderId, customerEmail, p
   url += `&customer_email=${encodeURIComponent(customerEmail || '')}`;
   url += `&client_slug=${encodeURIComponent(slug)}`;
   url += `&correction_token=${encodeURIComponent(token)}`;
-  url += buildPrefillQuery(prefill, MODIFICATION_PREFILL_MAX);
+  url += buildPrefillQuery(prefill, MODIFICATION_PREFILL_MAX, dropped);
   return url;
 }
 
@@ -1420,7 +1422,7 @@ async function guideResubmissionBackToModification(env, { order, orderId, submis
       const record = await env.SERVICE_MENU_KV
         .get(kvKey(env, 'correction', token), { type: 'json' }).catch(() => null);
       if (record && !record.used_at) {
-        modificationUrl = await bestModificationUrl(env, { token, slug, lang, orderId });
+        modificationUrl = (await modificationEmailLinks(env, { token, slug, lang, orderId })).url;
       }
     }
 
@@ -1583,7 +1585,8 @@ async function modificationLinks(env, { token, slug, lang, orderId, forceLang = 
     const fromLang = tallyFormLang(env, submission?.form_id)
       || inferPrefillLang(submission?.prefill, FORM_CROSSWALK);
     const primary = forceLang || fromLang || lang;
-    const construir = (target) => modificationFormUrl(env, {
+    const omitidos = [];
+    const construir = (target, dropped = null) => modificationFormUrl(env, {
       token,
       slug,
       lang: target,
@@ -1591,9 +1594,21 @@ async function modificationLinks(env, { token, slug, lang, orderId, forceLang = 
       customerEmail: order?.customer_email || '',
       prefill: fromLang
         ? translatePrefill(submission?.prefill, fromLang, target, FORM_CROSSWALK)
-        : submission?.prefill
+        : submission?.prefill,
+      dropped
     });
-    const url = construir(primary);
+    const url = construir(primary, omitidos);
+    if (omitidos.length) {
+      await alertOnce(env, `prefill_truncated:${slug}`, 86400,
+        `${marca(env)}: el formulario de modificación de ${slug} no pudo precargar ${omitidos.length} campo(s)`, [
+          `Cliente: ${slug}`,
+          'El enlace de modificación llegaría a su tope de largo y estos campos saldrían VACÍOS en el formulario:',
+          omitidos.join(', '),
+          '',
+          'Una respuesta vacía NO borra lo que ya está publicado (la fusión conserva), pero el cliente no verá su texto.',
+          'Si pasa seguido, hay que subir MODIFICATION_PREFILL_MAX (Tally aguanta ~15000 caracteres de URL).'
+        ]);
+    }
     if (url) {
       const otro = primary === 'es' ? 'en' : 'es';
       const altUrl = fromLang ? construir(otro) : '';
@@ -1638,7 +1653,11 @@ function altLanguageText(alt) {
 async function modificationEmailLinks(env, { token, slug, lang, orderId }) {
   const links = await modificationLinks(env, { token, slug, lang, orderId });
   const altUrl = links.alt ? modifyLangUrl(env, token, links.alt.lang) : '';
-  return { url: links.url, alt: altUrl ? { url: altUrl, lang: links.alt.lang } : null };
+  // El enlace del correo es SIEMPRE el corto (/modify): el prellenado largo (hasta
+  // ~9000 caracteres) se queda en el servidor y el cliente lo recibe por redirección.
+  // Algunos clientes de correo (Outlook) cortan enlaces de más de ~2000 caracteres.
+  const shortUrl = modifyLangUrl(env, token, links.lang);
+  return { url: shortUrl || links.url, alt: altUrl ? { url: altUrl, lang: links.alt.lang } : null };
 }
 
 async function bestModificationUrl(env, opts) {

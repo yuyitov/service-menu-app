@@ -2,7 +2,7 @@
   "public_slug": "veronica-perez-arroyo-casinos-manager-laxlpao",
   "default_language": "es",
   "brand_style": "clarity-editorial",
-  "business_type": "general",
+  "business_type": "person",
   "business_name": "Verónica Pérez Arroyo * Casinos Manager",
   "logo_url": "https://www.hmulink.com/links/veronica-perez-arroyo-casinos-manager-laxlpao/assets/logo.jpg",
   "primary_image_url": "https://www.hmulink.com/links/veronica-perez-arroyo-casinos-manager-laxlpao/assets/gallery-1.jpg",
@@ -11,6 +11,7 @@
       "url": "https://www.hmulink.com/links/veronica-perez-arroyo-casinos-manager-laxlpao/assets/gallery-1.jpg"
     }
   ],
+  "gallery_aspect": "4/3",
   "whatsapp": "+523221553952",
   "phone": "+523221553952",
   "public_email": "casinosmanager.mx@gmail.com",
@@ -31,7 +32,7 @@
       "address": "",
       "opening_hours_text": "Lunes a Domingo 10am - 10pm",
       "service_area_text": "En línea. Visitas a casinos bajo acuerdo.",
-      "client_care_text": "By appointment only",
+      "client_care_text": "",
       "reservations_text": "",
       "class_schedule_text": "",
       "tour_details_text": "",
@@ -75,11 +76,11 @@
       }
     },
     "en": {
-      "short_description": "Smart platform for the management, control, and auditing of casinos. It combines artificial intelligence, data analysis, and automation to transform operational and financial information into more accurate decisions. Designed from real experience and adaptable to each operation.",
+      "short_description": "Intelligent platform for the management, control, and auditing of casinos. It combines artificial intelligence, data analysis, and automation to transform operational and financial information into more accurate decisions. Designed from real experience and adaptable to each operation.",
       "address": "",
       "opening_hours_text": "Monday to Sunday 10am - 10pm",
       "service_area_text": "Online. Visits to casinos by agreement.",
-      "client_care_text": "By appointment only",
+      "client_care_text": "",
       "reservations_text": "",
       "class_schedule_text": "",
       "tour_details_text": "",

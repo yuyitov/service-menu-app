@@ -59,7 +59,7 @@
  */
 
 import { classifyStripeEvent } from './stripe-filter.mjs';
-import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fotosEnOrdenDeSubida, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, tallyFormLang, translatePrefill, inferPrefillLang, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
+import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fotosEnOrdenDeSubida, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, tallyFormLang, translatePrefill, inferPrefillLang, localizeOptionAnswer, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
 // Mapa campo-público -> alias de título del intake de Tally, única fuente de
 // verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
@@ -2934,8 +2934,9 @@ function buildPublicPayload(normalized, orderId, env) {
     address: answerAny(a, fieldAliases('address')),
     location_1_notes: answerAny(a, fieldAliases('location_1_notes')),
     service_area_text: answerAny(a, fieldAliases('service_area_text')),
-    client_care_text: answerAny(a, fieldAliases('client_care_text')),
-    reservations_text: answerAny(a, fieldAliases('reservations_text')),
+    // Respuestas de opción: se llevan al idioma de la página (ver localizeOptionAnswer).
+    client_care_text: localizeOptionAnswer(answerAny(a, fieldAliases('client_care_text')), defaultLanguage, FORM_CROSSWALK),
+    reservations_text: localizeOptionAnswer(answerAny(a, fieldAliases('reservations_text')), defaultLanguage, FORM_CROSSWALK),
     class_schedule_text: answerAny(a, fieldAliases('class_schedule_text'))
       || answerContains(a, [['class', 'schedule'], ['class', 'timetable'], ['horario', 'clase']]),
     tour_details_text: answerAny(a, fieldAliases('tour_details_text'))

@@ -488,6 +488,32 @@ export function translatePrefill(prefill, from, to, crosswalk) {
   return out;
 }
 
+// Las preguntas de OPCIONES cuya respuesta se PUBLICA tal cual en la página
+// (`client_care_text`, `reservations_text`): el generador la trata como texto
+// escrito en el idioma de la página y de ahí la traduce al otro. Pero el cliente
+// la contesta en el idioma de SU formulario, que no tiene por qué ser el de su
+// página: Vero llenó el formulario en inglés con página en español y su página
+// decía "Forma de trabajo: Both" (2026-10-16). Aquí la opción se lleva al idioma
+// de la página con la tabla ES↔EN. Un texto que no es opción pasa tal cual.
+export const OPTION_ANSWER_FIELDS = [
+  'client_care_text',
+  'reservations_text',
+  'q_do_you_work_with_clients_online_in_person_or_both',
+];
+
+export function localizeOptionAnswer(value, lang, crosswalk, enNames = OPTION_ANSWER_FIELDS) {
+  if (typeof value !== 'string') return value;
+  const v = value.trim();
+  if (!v || (lang !== 'es' && lang !== 'en')) return value;
+  const n = normOpcion(v);
+  for (const par of (crosswalk && Array.isArray(crosswalk.questions) ? crosswalk.questions : [])) {
+    if (!par || !Array.isArray(par.options) || !enNames.includes(par.en)) continue;
+    const op = par.options.find((o) => normOpcion(o.en) === n || normOpcion(o.es) === n);
+    if (op && op[lang]) return op[lang];
+  }
+  return value;
+}
+
 // ¿Esta vertical puede mandar al cliente a SU formulario de Tally prellenado
 // para pedir una modificación (Ola 1c), o cae al `/correct/` de texto libre?
 //

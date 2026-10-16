@@ -59,7 +59,7 @@
  */
 
 import { classifyStripeEvent } from './stripe-filter.mjs';
-import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fotosEnOrdenDeSubida, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
+import { kvKey, brandName, brandTagline, brandDomain, emailFooterHtml, emailFooterText, corsOrigin, validBrandStyles, brandStyleAliases, fotosEnOrdenDeSubida, fallbackBrandStyle, prospectPrefillBase, prospectSlug, buildPrefillQuery, workerName, normalizeKey, languageQuestionAliases, resolveDefaultLanguage, tallyFormLang, correctionMetadataKey, emailLangFromCurrency, sanitizeBase64Image, freeChanges, modificationFormPrefillEnabled, expandProspectPrefill, pageTemplate, normalizeSaleKind, normalizeSaleValue, runtimeConfigErrors, SALE_BUTTON_KINDS } from './product-config.mjs';
 // Mapa campo-público -> alias de título del intake de Tally, única fuente de
 // verdad compartida con create_tally_forms.py --check-mapping (ver el archivo).
 // Es config por vertical: export_vertical.py copia este JSON a cada repo, así
@@ -274,7 +274,9 @@ export {
   // El correo de ENTREGA: lo que recibe el cliente que pagó. No estaba
   // exportado, así que ni una prueba lo miraba — y es donde vivían las dos
   // notas de Vero de la Fase 2 (el idioma por moneda y la imagen del correo).
-  buildDeliveryEmail, buildDeliveryText, DELIVERY_QR_CID
+  buildDeliveryEmail, buildDeliveryText, DELIVERY_QR_CID,
+  // El enlace de MODIFICACIÓN (qué formulario abre y con qué prellenado).
+  bestModificationUrl
 };
 
 export default {
@@ -807,6 +809,10 @@ async function handleTallyWebhook(request, env) {
   try {
     await env.SERVICE_MENU_KV.put(submissionKey, JSON.stringify({
       submission_id: normalized.submission_id,
+      // Formulario (ES/EN) en que se llenó: la modificación debe abrir ESE mismo,
+      // porque los nombres de pregunta `q_...` y el texto de las opciones cambian
+      // con el idioma y un prellenado de otro idioma llega a medias (2026-10-16).
+      form_id: normalized.form_id,
       order_id: incomingOrderId,
       customer_email: orderEmail,
       slug,
@@ -1543,10 +1549,15 @@ async function bestModificationUrl(env, { token, slug, lang, orderId }) {
     const submission = submissionId
       ? await env.SERVICE_MENU_KV.get(kvKey(env, 'submission', submissionId), { type: 'json' })
       : null;
+    // El prellenado guarda texto de opciones y nombres `q_...` en el idioma del
+    // formulario donde se llenó; si el enlace abriera el otro, casi nada cargaría
+    // (pasó el 2026-10-16: compra en USD, formulario llenado en ES, enlace en EN).
+    // Los envíos viejos sin form_id conservan el idioma que ya traía `lang`.
+    const formLang = tallyFormLang(env, submission?.form_id) || lang;
     const url = modificationFormUrl(env, {
       token,
       slug,
-      lang,
+      lang: formLang,
       orderId,
       customerEmail: order?.customer_email || '',
       prefill: submission?.prefill

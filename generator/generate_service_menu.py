@@ -852,6 +852,10 @@ def _gallery_images(payload: dict) -> list[str]:
 # en build_client_from_intake: lo que no este aqui no se escribe en el HTML.
 ASPECTOS_VALIDOS = {"3/4", "1/1", "4/3"}
 
+# Estilo de la leyenda de imagen ilustrativa (ver build_hero_image). En línea a
+# propósito: la plantilla base no se toca.
+CAPTION_STYLE = "margin:12px 0 0;color:var(--soft);font-size:12px;line-height:1.45;text-align:center"
+
 
 
 def page_strings(view: dict, lang: str) -> dict:
@@ -868,7 +872,17 @@ def build_hero_image(payload: dict, s: dict) -> str:
     images = _gallery_images(payload)
     if not images:
         return ""
-    alt = esc(payload.get("business_name"))
+    # `image_alt` / `image_note` (opcionales): rotulan imagen ILUSTRATIVA en los demos
+    # (p. ej. el de Dr Link: la foto es de stock, no del consultorio). Los pone Cory en
+    # el payload del demo; un cliente real no los trae y su pagina no cambia un byte.
+    # El estilo va EN LA LEYENDA, no en la plantilla base: asi las paginas sin leyenda
+    # siguen byte a byte igual (con CSS en base.html cambiaria la de TODOS los productos).
+    alt = esc(payload.get("image_alt") or payload.get("business_name"))
+    image_note = str(payload.get("image_note") or "").strip()
+    caption = (
+        f'<p class="figure__caption" style="{CAPTION_STYLE}">{esc(image_note)}</p>'
+        if image_note else ""
+    )
     # El marco toma la forma de las fotos que el negocio subio. Lo mide
     # build_client_from_intake (donde los archivos estan en disco) y lo deja en
     # `gallery_aspect`. Sin ese dato, el 4/3 de siempre: asi ninguna pagina ya
@@ -880,7 +894,7 @@ def build_hero_image(payload: dict, s: dict) -> str:
             f'<div class="shell figure" data-reveal{marco}>'
             '<div class="figure__viewport">'
             f'<img class="figure__media" src="{images[0]}" alt="{alt}" loading="lazy">'
-            '</div></div>'
+            f'</div>{caption}</div>'
         )
 
     slides = []
@@ -907,7 +921,7 @@ def build_hero_image(payload: dict, s: dict) -> str:
         f'<button class="gallery-btn gallery-btn--next" type="button" aria-label="{esc(s["gallery_next"])}">›</button>'
         '</div>'
         f'<div class="gallery-dots">{"".join(dots)}</div>'
-        '</div>'
+        f'{caption}</div>'
     )
 
 
@@ -2010,6 +2024,88 @@ def without_motion_runtime(rendered: str) -> str:
         raise ValidationError("motion=none dejo una referencia al runtime de animacion.")
     return rendered
 
+
+# --------------------------------------------------------------------------- #
+# Movimiento SOLO CSS (Vero, 2026-09-19, HB-M2/HB-D1a del barrido)
+# --------------------------------------------------------------------------- #
+# Dr Link tenia `motion: none` (desvio B3) porque el unico movimiento del motor
+# era GSAP, y GSAP es un tercero que C1 prohibe en la pagina del paciente. Vero
+# pidio las mismas transiciones de entrada que HMU y la banda de categorias
+# deslizandose. Este modo las da SIN ninguna libreria: telon, entrada del hero,
+# revelado al hacer scroll y la banda, todo con CSS + un IntersectionObserver.
+# Se usa cuando la vertical tiene `motion` encendido y `third_party_assets`
+# APAGADO; con terceros encendidos (HMU, PawContact, ModaLink) sigue el camino
+# GSAP de siempre, byte a byte igual.
+CSS_MOTION_COMMENT = "Movimiento solo con CSS: cero librerias de terceros."
+CSS_MOTION_INTRO = (
+    ".intro{animation:introUp .9s cubic-bezier(.76,0,.24,1) 1.9s forwards}\n"
+    ".intro__brand span{animation:cssRise .8s cubic-bezier(.2,.8,.2,1) both}\n"
+    ".intro__brand span:nth-child(2){animation-delay:.09s}\n"
+    ".intro__brand span:nth-child(3){animation-delay:.18s}\n"
+    ".intro__brand span:nth-child(4){animation-delay:.27s}\n"
+    ".intro__sub{animation:cssFade .7s ease .5s both}\n"
+)
+CSS_MOTION_REVEALS = (
+    ".anim-on [data-reveal]{opacity:0;transform:translateY(36px);"
+    "transition:opacity .9s cubic-bezier(.2,.8,.2,1),transform .9s cubic-bezier(.2,.8,.2,1)}\n"
+    ".anim-on [data-reveal].is-in{opacity:1;transform:none}\n"
+    ".anim-on #ht .line>span{animation:cssLine 1.1s cubic-bezier(.2,.9,.2,1) 2.3s both}\n"
+    ".anim-on #ht .line:nth-child(2)>span{animation-delay:2.42s}\n"
+    ".anim-on #ht .line:nth-child(3)>span{animation-delay:2.54s}\n"
+    ".anim-on #hk,.anim-on #hl,.anim-on #hc,.anim-on .topbar,.anim-on .hero__scroll"
+    "{animation:cssRise .8s cubic-bezier(.2,.8,.2,1) 2.7s both}\n"
+    "@keyframes cssRise{from{opacity:0;transform:translateY(24px)}}\n"
+    "@keyframes cssFade{from{opacity:0}}\n"
+    "@keyframes cssLine{from{transform:translateY(110%)}}\n"
+)
+CSS_MOTION_SCRIPT = """<script>
+(function(){
+  var doc=document;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(!('IntersectionObserver' in window))return;
+  doc.documentElement.classList.add('anim-on');
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target)}
+    });
+  },{rootMargin:'0px 0px -14% 0px'});
+  doc.querySelectorAll('[data-reveal]').forEach(function(el){io.observe(el)});
+})();
+</script>"""
+
+
+def css_motion_runtime(rendered: str) -> str:
+    """El camino de movimiento SIN terceros.
+
+    Parte de la salida con movimiento (telon incluido y sin MOTION_OFF_CSS, asi
+    la banda de categorias se desliza) y cambia cada gancho de GSAP por su
+    equivalente en CSS. Revienta si queda una sola mencion de gsap: es
+    exactamente lo que mide C1 en Dr Link (scripts/verificar_t7.py).
+    """
+    pares = (
+        ("html:not(.gsap-on) .intro{animation:introUp .9s "
+         "cubic-bezier(.76,0,.24,1) 1.9s forwards}\n", CSS_MOTION_INTRO),
+        ("/* ---------- reveals (fallback CSS si no hay GSAP) ---------- */",
+         "/* ---------- reveals (solo CSS) ---------- */"),
+        (".gsap-on [data-reveal]{opacity:0;transform:translateY(36px)}\n", CSS_MOTION_REVEALS),
+        ("  html.gsap-on [data-reveal]{opacity:1;transform:none}\n",
+         "  html.anim-on [data-reveal]{opacity:1;transform:none}\n"),
+        (MOTION_COMMENT, CSS_MOTION_COMMENT),
+    )
+    for viejo, nuevo in pares:
+        if viejo not in rendered:
+            raise ValidationError(f"movimiento CSS: la plantilla cambio, no encontre {viejo[:40]!r}")
+        rendered = rendered.replace(viejo, nuevo)
+    start = rendered.rfind("<script>\n(function(){")
+    end = rendered.find("</script>", start)
+    if start < 0 or end < 0:
+        raise ValidationError("No se encontro el runtime de la plantilla para el movimiento CSS.")
+    rendered = (rendered[:start] + STATIC_RUNTIME_SCRIPT + "\n" + CSS_MOTION_SCRIPT
+                + rendered[end + len("</script>"):])
+    if re.search(r"gsap", rendered, flags=re.IGNORECASE):
+        raise ValidationError("el movimiento CSS dejo una referencia a GSAP (rompe C1).")
+    return rendered
+
 NOTICE_BOX_STYLE = (
     "border:1px solid var(--hair);border-radius:18px;padding:22px;"
     "background:var(--bg)"
@@ -2258,7 +2354,11 @@ def render_view(
     # Una sola pasada (hallazgo #17): un dato del negocio que contenga
     # literalmente otro token ya no se re-expande.
     rendered = fill_tokens(template, tokens)
-    return rendered if motion_on else without_motion_runtime(rendered)
+    if not motion_on:
+        return without_motion_runtime(rendered)
+    if not third_party_on:
+        return css_motion_runtime(rendered)
+    return rendered
 
 
 # --------------------------------------------------------------------------- #

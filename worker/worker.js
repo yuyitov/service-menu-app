@@ -1611,7 +1611,10 @@ async function modificationLinks(env, { token, slug, lang, orderId, forceLang = 
     }
     if (url) {
       const otro = primary === 'es' ? 'en' : 'es';
-      const altUrl = fromLang ? construir(otro) : '';
+      // Sin tabla ES<->EN (la del motor viaja vacía; la de cada vertical es suya) no
+      // hay con qué traducir el prellenado: ofrecer el otro formulario sería mandar
+      // al cliente a uno casi vacío, así que solo hay enlace principal.
+      const altUrl = fromLang && FORM_CROSSWALK.questions?.length ? construir(otro) : '';
       return { url, lang: primary, alt: altUrl ? { url: altUrl, lang: otro } : null };
     }
   } catch (err) {

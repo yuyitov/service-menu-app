@@ -444,7 +444,7 @@ export function buildPrefillQuery(prefill, maxLen = 1500, dropped = null) {
 // los textos libres, que quedan como los escribió) con la tabla que genera
 // test/generar_crosswalk.mjs. Funciones puras: la tabla entra por parámetro.
 // ─────────────────────────────────────────────────────────────────────────────
-const normOpcion = (v) => String(v ?? '').trim().replace(/s+/g, ' ').toLowerCase();
+const normOpcion = (v) => String(v ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
 
 function indicePorIdioma(crosswalk, lang) {
   const idx = new Map();

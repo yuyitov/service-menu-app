@@ -627,8 +627,18 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 .phone--mock .screen { margin-top: 0; }
 .thumb--mock { border: 0; display: flex; align-items: center; justify-content: center; padding: 6% 0 2%; }
 .thumb--mock::before { display: none; }
-.thumb--mock img { width: 100%; height: 100%; min-width: 0; object-fit: contain; }
 .scene .b2 { right: -16%; }
+
+/* Galería: carrusel por tarjeta (A → C → D → E), desliza a la izquierda */
+.thumb--mock { position: relative; overflow: hidden; }
+.thumb--mock .mslide { position: absolute; left: 0; right: 0; top: 6%; height: 90%; width: 100%; object-fit: contain;
+  transform: translateX(105%); transition: transform 0.8s var(--ease-spring); }
+.thumb--mock .mslide.is-on { transform: none; }
+.thumb--mock .mslide.is-out { transform: translateX(-105%); }
+.no-js .thumb--mock .mslide:first-child { transform: none; }
+.mdots { position: absolute; left: 0; right: 0; bottom: 2.5%; display: flex; justify-content: center; gap: 6px; }
+.mdots i { width: 6px; height: 6px; border-radius: 50%; background: var(--th-a, #fff); opacity: 0.35; transition: opacity 0.3s ease, width 0.3s ease; }
+.mdots i.is-on { opacity: 1; width: 16px; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -792,7 +802,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <div class="grid grid--3" id="style-grid" data-stagger>
       <a class="card style-card" data-category="beauty" href="../demos/bella-spa/" style="--th-b:#17171a; --th-a:#c9a24b;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/black-gold-a.webp" alt="Tarjeta real de la demo Bella Spa, estilo Black Gold" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/black-gold-a.webp" alt="Tarjeta real de la demo Bella Spa, estilo Black Gold" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/black-gold-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/black-gold-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/black-gold-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Black Gold</h3>
         <p>Elegancia oscura con acentos dorados. Presencia premium y sofisticada.</p>
@@ -801,7 +815,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/studio-blush/" style="--th-b:#fdf3f4; --th-a:#c96f7d;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/soft-blush-a.webp" alt="Tarjeta real de la demo Studio Blush, estilo Soft Blush" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/soft-blush-a.webp" alt="Tarjeta real de la demo Studio Blush, estilo Soft Blush" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/soft-blush-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/soft-blush-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/soft-blush-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Soft Blush</h3>
         <p>Tonos rosados suaves y delicados. Cálido, acogedor y femenino.</p>
@@ -810,7 +828,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/north-barber/" style="--th-b:#33373d; --th-a:#9fb2bd;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/charcoal-clean-a.webp" alt="Tarjeta real de la demo North Barber, estilo Charcoal Clean" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/charcoal-clean-a.webp" alt="Tarjeta real de la demo North Barber, estilo Charcoal Clean" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/charcoal-clean-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/charcoal-clean-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/charcoal-clean-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Charcoal Clean</h3>
         <p>Gris carbón, sobrio y directo. Estética masculina y contemporánea.</p>
@@ -819,7 +841,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/glow-nails/" style="--th-b:#f3f0e7; --th-a:#2a2529;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/warm-sand-a.webp" alt="Tarjeta real de la demo Glow Nails, estilo Ink & Ivory" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/warm-sand-a.webp" alt="Tarjeta real de la demo Glow Nails, estilo Ink & Ivory" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/warm-sand-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/warm-sand-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/warm-sand-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Ink & Ivory</h3>
         <p>Carbón y marfil. Mínimo, editorial y atemporal.</p>
@@ -828,7 +854,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/aqua-wellness/" style="--th-b:#eaf7f8; --th-a:#2f8f96;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/aqua-clean-a.webp" alt="Tarjeta real de la demo Aqua Wellness, estilo Aqua Clean" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/aqua-clean-a.webp" alt="Tarjeta real de la demo Aqua Wellness, estilo Aqua Clean" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/aqua-clean-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/aqua-clean-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/aqua-clean-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Aqua Clean</h3>
         <p>Azules aqua frescos y limpios. Transmite higiene, agua y calma.</p>
@@ -837,7 +867,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/sage-studio/" style="--th-b:#eef2ea; --th-a:#6d8a63;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/sage-calm-a.webp" alt="Tarjeta real de la demo Sage Studio, estilo Sage Calm" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/sage-calm-a.webp" alt="Tarjeta real de la demo Sage Studio, estilo Sage Calm" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/sage-calm-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/sage-calm-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/sage-calm-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Sage Calm</h3>
         <p>Verde salvia sereno y equilibrado. Minimalista y orgánico.</p>
@@ -846,7 +880,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/pawsome-grooming/" style="--th-b:#b44656; --th-a:#eacc83;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/sunny-paws-a.webp" alt="Tarjeta real de la demo Pawsome Grooming, estilo Pink Grapefruit" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/sunny-paws-a.webp" alt="Tarjeta real de la demo Pawsome Grooming, estilo Pink Grapefruit" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/sunny-paws-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/sunny-paws-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/sunny-paws-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Pink Grapefruit</h3>
         <p>Rosa pomelo con amarillo. Jugoso, fresco y con energía.</p>
@@ -855,7 +893,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="fitness" href="../demos/pulse-fitness/" style="--th-b:#101214; --th-a:#c6ff3d;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/electric-slate-a.webp" alt="Tarjeta real de la demo Pulse Fitness Studio, estilo Electric Slate" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/electric-slate-a.webp" alt="Tarjeta real de la demo Pulse Fitness Studio, estilo Electric Slate" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/electric-slate-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/electric-slate-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/electric-slate-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Electric Slate</h3>
         <p>Carbón audaz con acentos verde lima eléctrico. Alto rendimiento y motivador.</p>
@@ -864,7 +906,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="fitness" href="../demos/horizon-tours/" style="--th-b:#d1eefe; --th-a:#432e1b;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/horizon-teal-a.webp" alt="Tarjeta real de la demo Horizon City Tours, estilo Blue Chocolate" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/horizon-teal-a.webp" alt="Tarjeta real de la demo Horizon City Tours, estilo Blue Chocolate" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/horizon-teal-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/horizon-teal-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/horizon-teal-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Blue Chocolate</h3>
         <p>Azul cielo con chocolate. Moderno, claro y con carácter.</p>
@@ -873,7 +919,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="food" href="../demos/cafe-terra/" style="--th-b:#fbf1e6; --th-a:#b5502f;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/terracotta-warm-a.webp" alt="Tarjeta real de la demo Café Terra, estilo Terracotta Warm" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/terracotta-warm-a.webp" alt="Tarjeta real de la demo Café Terra, estilo Terracotta Warm" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/terracotta-warm-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/terracotta-warm-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/terracotta-warm-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Terracotta Warm</h3>
         <p>Terracota profundo y crema cálido. Acogedor, artesanal y apetitoso.</p>
@@ -882,7 +932,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="creative" href="../demos/iron-ink-tattoo/" style="--th-b:#0c0c0e; --th-a:#c0203a;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/midnight-ink-a.webp" alt="Tarjeta real de la demo Iron &amp; Ink Tattoo, estilo Midnight Ink" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/midnight-ink-a.webp" alt="Tarjeta real de la demo Iron &amp; Ink Tattoo, estilo Midnight Ink" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/midnight-ink-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/midnight-ink-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/midnight-ink-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Midnight Ink</h3>
         <p>Negro profundo con acentos carmesí. Audaz y artístico.</p>
@@ -891,7 +945,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="creative" href="../demos/clarity-coaching/" style="--th-b:#f7f6f2; --th-a:#1f3a5f;">
         <div class="thumb thumb--mock">
-          <img src="../assets/mockups/es/clarity-editorial-a.webp" alt="Tarjeta real de la demo Clarity Coaching Co., estilo Clarity Editorial" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="../assets/mockups/es/clarity-editorial-a.webp" alt="Tarjeta real de la demo Clarity Coaching Co., estilo Clarity Editorial" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="../assets/mockups/es/clarity-editorial-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/clarity-editorial-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="../assets/mockups/es/clarity-editorial-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Clarity Editorial</h3>
         <p>Azul marino y crema, minimalista y profesional.</p>
@@ -1140,6 +1198,33 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       shots[shotIdx].classList.add('is-active');
       setTimeout(function () { prevShot.classList.remove('is-prev'); }, 950);
     }, 3200);
+  }
+
+  /* Galería: cada tarjeta muestra 4 vistas de su celular, solo mientras está en pantalla */
+  var decks = doc.querySelectorAll('.thumb--mock');
+  if (!reduced && decks.length && 'IntersectionObserver' in window) {
+    decks.forEach(function (deck, n) {
+      var slides = deck.querySelectorAll('.mslide'), dots = deck.querySelectorAll('.mdots i');
+      if (slides.length < 2) return;
+      var idx = 0, timer = null;
+      function step() {
+        var cur = slides[idx];
+        cur.classList.remove('is-on'); cur.classList.add('is-out');
+        if (dots[idx]) dots[idx].classList.remove('is-on');
+        idx = (idx + 1) % slides.length;
+        var nxt = slides[idx];
+        nxt.style.transition = 'none'; nxt.classList.remove('is-out'); void nxt.offsetWidth; nxt.style.transition = '';
+        nxt.classList.add('is-on');
+        if (dots[idx]) dots[idx].classList.add('is-on');
+        setTimeout(function () { cur.classList.remove('is-out'); }, 850);
+      }
+      new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting && !timer) { setTimeout(function () { if (!timer) timer = setInterval(step, 3000); }, (n % 3) * 700); }
+          else if (!e.isIntersecting && timer) { clearInterval(timer); timer = null; }
+        });
+      }, { threshold: 0.4 }).observe(deck);
+    });
   }
 
   /* Style filter pills */

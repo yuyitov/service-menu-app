@@ -633,8 +633,18 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 .phone--mock .screen { margin-top: 0; }
 .thumb--mock { border: 0; display: flex; align-items: center; justify-content: center; padding: 6% 0 2%; }
 .thumb--mock::before { display: none; }
-.thumb--mock img { width: 100%; height: 100%; min-width: 0; object-fit: contain; }
 .scene .b2 { right: -16%; }
+
+/* Galería: carrusel por tarjeta (A → C → D → E), desliza a la izquierda */
+.thumb--mock { position: relative; overflow: hidden; }
+.thumb--mock .mslide { position: absolute; left: 0; right: 0; top: 6%; height: 90%; width: 100%; object-fit: contain;
+  transform: translateX(105%); transition: transform 0.8s var(--ease-spring); }
+.thumb--mock .mslide.is-on { transform: none; }
+.thumb--mock .mslide.is-out { transform: translateX(-105%); }
+.no-js .thumb--mock .mslide:first-child { transform: none; }
+.mdots { position: absolute; left: 0; right: 0; bottom: 2.5%; display: flex; justify-content: center; gap: 6px; }
+.mdots i { width: 6px; height: 6px; border-radius: 50%; background: var(--th-a, #fff); opacity: 0.35; transition: opacity 0.3s ease, width 0.3s ease; }
+.mdots i.is-on { opacity: 1; width: 16px; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -799,7 +809,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     <div class="grid grid--3" id="style-grid" data-stagger>
       <a class="card style-card" data-category="beauty" href="demos/bella-spa/en/" style="--th-b:#17171a; --th-a:#c9a24b;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/black-gold-a.webp" alt="Real card from the Bella Spa demo, Black Gold style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/black-gold-a.webp" alt="Real card from the Bella Spa demo, Black Gold style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/black-gold-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/black-gold-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/black-gold-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Black Gold</h3>
         <p>Dark elegance with gold accents. Premium, sophisticated presence.</p>
@@ -808,7 +822,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/studio-blush/en/" style="--th-b:#fdf3f4; --th-a:#c96f7d;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/soft-blush-a.webp" alt="Real card from the Studio Blush demo, Soft Blush style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/soft-blush-a.webp" alt="Real card from the Studio Blush demo, Soft Blush style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/soft-blush-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/soft-blush-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/soft-blush-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Soft Blush</h3>
         <p>Soft, delicate pink tones. Warm, welcoming, and feminine.</p>
@@ -817,7 +835,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/north-barber/en/" style="--th-b:#33373d; --th-a:#9fb2bd;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/charcoal-clean-a.webp" alt="Real card from the North Barber demo, Charcoal Clean style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/charcoal-clean-a.webp" alt="Real card from the North Barber demo, Charcoal Clean style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/charcoal-clean-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/charcoal-clean-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/charcoal-clean-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Charcoal Clean</h3>
         <p>Charcoal gray, understated and direct. Masculine, contemporary look.</p>
@@ -826,7 +848,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/glow-nails/en/" style="--th-b:#f3f0e7; --th-a:#2a2529;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/warm-sand-a.webp" alt="Real card from the Glow Nails demo, Ink & Ivory style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/warm-sand-a.webp" alt="Real card from the Glow Nails demo, Ink & Ivory style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/warm-sand-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/warm-sand-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/warm-sand-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Ink & Ivory</h3>
         <p>Charcoal and ivory. Minimal, editorial and timeless.</p>
@@ -835,7 +861,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/aqua-wellness/en/" style="--th-b:#eaf7f8; --th-a:#2f8f96;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/aqua-clean-a.webp" alt="Real card from the Aqua Wellness demo, Aqua Clean style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/aqua-clean-a.webp" alt="Real card from the Aqua Wellness demo, Aqua Clean style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/aqua-clean-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/aqua-clean-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/aqua-clean-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Aqua Clean</h3>
         <p>Fresh, clean aqua blues. Communicates hygiene, water, and calm.</p>
@@ -844,7 +874,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/sage-studio/en/" style="--th-b:#eef2ea; --th-a:#6d8a63;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/sage-calm-a.webp" alt="Real card from the Sage Studio demo, Sage Calm style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/sage-calm-a.webp" alt="Real card from the Sage Studio demo, Sage Calm style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/sage-calm-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/sage-calm-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/sage-calm-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Sage Calm</h3>
         <p>Serene, balanced sage green. Minimal and organic.</p>
@@ -853,7 +887,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="beauty" href="demos/pawsome-grooming/en/" style="--th-b:#b44656; --th-a:#eacc83;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/sunny-paws-a.webp" alt="Real card from the Pawsome Grooming demo, Pink Grapefruit style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/sunny-paws-a.webp" alt="Real card from the Pawsome Grooming demo, Pink Grapefruit style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/sunny-paws-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/sunny-paws-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/sunny-paws-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Pink Grapefruit</h3>
         <p>Grapefruit pink with yellow. Juicy, fresh and full of energy.</p>
@@ -862,7 +900,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="fitness" href="demos/pulse-fitness/en/" style="--th-b:#101214; --th-a:#c6ff3d;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/electric-slate-a.webp" alt="Real card from the Pulse Fitness Studio demo, Electric Slate style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/electric-slate-a.webp" alt="Real card from the Pulse Fitness Studio demo, Electric Slate style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/electric-slate-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/electric-slate-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/electric-slate-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Electric Slate</h3>
         <p>Bold charcoal with electric lime accents. High-performance and motivating.</p>
@@ -871,7 +913,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="fitness" href="demos/horizon-tours/en/" style="--th-b:#d1eefe; --th-a:#432e1b;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/horizon-teal-a.webp" alt="Real card from the Horizon City Tours demo, Blue Chocolate style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/horizon-teal-a.webp" alt="Real card from the Horizon City Tours demo, Blue Chocolate style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/horizon-teal-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/horizon-teal-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/horizon-teal-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Blue Chocolate</h3>
         <p>Sky blue with chocolate. Modern, bright and full of character.</p>
@@ -880,7 +926,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="food" href="demos/cafe-terra/en/" style="--th-b:#fbf1e6; --th-a:#b5502f;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/terracotta-warm-a.webp" alt="Real card from the Café Terra demo, Terracotta Warm style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/terracotta-warm-a.webp" alt="Real card from the Café Terra demo, Terracotta Warm style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/terracotta-warm-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/terracotta-warm-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/terracotta-warm-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Terracotta Warm</h3>
         <p>Deep terracotta and warm cream. Cozy, artisanal, and appetizing.</p>
@@ -889,7 +939,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="creative" href="demos/iron-ink-tattoo/en/" style="--th-b:#0c0c0e; --th-a:#c0203a;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/midnight-ink-a.webp" alt="Real card from the Iron &amp; Ink Tattoo demo, Midnight Ink style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/midnight-ink-a.webp" alt="Real card from the Iron &amp; Ink Tattoo demo, Midnight Ink style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/midnight-ink-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/midnight-ink-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/midnight-ink-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Midnight Ink</h3>
         <p>Deep black with crimson accents. Bold and artistic.</p>
@@ -898,7 +952,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       </a>
       <a class="card style-card" data-category="creative" href="demos/clarity-coaching/en/" style="--th-b:#f7f6f2; --th-a:#1f3a5f;">
         <div class="thumb thumb--mock">
-          <img src="assets/mockups/en/clarity-editorial-a.webp" alt="Real card from the Clarity Coaching Co. demo, Clarity Editorial style" width="640" height="1200" loading="lazy">
+          <img class="mslide is-on" src="assets/mockups/en/clarity-editorial-a.webp" alt="Real card from the Clarity Coaching Co. demo, Clarity Editorial style" width="640" height="1200" loading="lazy">
+          <img class="mslide" src="assets/mockups/en/clarity-editorial-c.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/clarity-editorial-d.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <img class="mslide" src="assets/mockups/en/clarity-editorial-e.webp" alt="" width="640" height="1200" loading="lazy" aria-hidden="true">
+          <span class="mdots" aria-hidden="true"><i class="is-on"></i><i></i><i></i><i></i></span>
         </div>
         <h3>Clarity Editorial</h3>
         <p>Navy and cream, minimal and professional.</p>
@@ -1147,6 +1205,33 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       shots[shotIdx].classList.add('is-active');
       setTimeout(function () { prevShot.classList.remove('is-prev'); }, 950);
     }, 3200);
+  }
+
+  /* Galería: cada tarjeta muestra 4 vistas de su celular, solo mientras está en pantalla */
+  var decks = doc.querySelectorAll('.thumb--mock');
+  if (!reduced && decks.length && 'IntersectionObserver' in window) {
+    decks.forEach(function (deck, n) {
+      var slides = deck.querySelectorAll('.mslide'), dots = deck.querySelectorAll('.mdots i');
+      if (slides.length < 2) return;
+      var idx = 0, timer = null;
+      function step() {
+        var cur = slides[idx];
+        cur.classList.remove('is-on'); cur.classList.add('is-out');
+        if (dots[idx]) dots[idx].classList.remove('is-on');
+        idx = (idx + 1) % slides.length;
+        var nxt = slides[idx];
+        nxt.style.transition = 'none'; nxt.classList.remove('is-out'); void nxt.offsetWidth; nxt.style.transition = '';
+        nxt.classList.add('is-on');
+        if (dots[idx]) dots[idx].classList.add('is-on');
+        setTimeout(function () { cur.classList.remove('is-out'); }, 850);
+      }
+      new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting && !timer) { setTimeout(function () { if (!timer) timer = setInterval(step, 3000); }, (n % 3) * 700); }
+          else if (!e.isIntersecting && timer) { clearInterval(timer); timer = null; }
+        });
+      }, { threshold: 0.4 }).observe(deck);
+    });
   }
 
   /* Style filter pills */

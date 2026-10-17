@@ -24,37 +24,37 @@
 <style>
 /* ------------------------------------------------------------------- */
 /* Landing México — identidad visual HMU Link, edición elevada.        */
-/* Paleta oficial: Bubblegum #f478b0 · Tangerine #ffa934 · Ocean Blue  */
-/* #00a0b5 · Banana #ffef5a · Avocado #98c54e · Bell Pepper #14704f.   */
+/* Paleta oficial: Bubblegum #f55995 · Tangerine #f8786b · Ocean Blue  */
+/* #20706f · Banana #ffd31a · Avocado #d5d717 · Bell Pepper #123b3a.   */
 /* Estática: sin backend, sin forms, sin tracking. JS mínimo inline    */
 /* solo para animaciones (reveal, ticker, tilt). Fonts: Google Fonts.  */
 /* ------------------------------------------------------------------- */
 :root {
-  --bubblegum: #f478b0;
-  --bubblegum-deep: #d9548f;
-  --bubblegum-ink: #57173a;
-  --bubblegum-soft: #fde3ef;
-  --tangerine: #ffa934;
-  --tangerine-deep: #e88a00;
-  --tangerine-ink: #6b3d00;
-  --tangerine-soft: #ffedd2;
-  --ocean: #00a0b5;
-  --ocean-deep: #007a8a;
-  --ocean-ink: #00434c;
-  --ocean-soft: #d9f3f6;
-  --banana: #ffef5a;
-  --banana-soft: #fffbd6;
-  --avocado: #98c54e;
-  --avocado-deep: #6f9834;
-  --avocado-soft: #eaf4d8;
-  --pepper: #14704f;
-  --pepper-deep: #0d5039;
-  --pepper-ink: #083626;
-  --pepper-soft: #d5e8df;
+  --bubblegum: #f55995;
+  --bubblegum-deep: #d63c7a;
+  --bubblegum-ink: #4f0f2c;
+  --bubblegum-soft: #fde1ec;
+  --tangerine: #f8786b;
+  --tangerine-deep: #d8503f;
+  --tangerine-ink: #5c1a12;
+  --tangerine-soft: #fee4e0;
+  --ocean: #20706f;
+  --ocean-deep: #185857;
+  --ocean-ink: #0f3a3a;
+  --ocean-soft: #dcefee;
+  --banana: #ffd31a;
+  --banana-soft: #fff4c2;
+  --avocado: #d5d717;
+  --avocado-deep: #6e7000;
+  --avocado-soft: #f6f7cc;
+  --pepper: #123b3a;
+  --pepper-deep: #0e2f2e;
+  --pepper-ink: #0a2322;
+  --pepper-soft: #d6e6e5;
   --paper: #fffdf6;
   --card: #ffffff;
-  --ink: #1f2d27;
-  --muted: #5c6a64;
+  --ink: #16302f;
+  --muted: #56696a;
   --line: #eee5d3;
   --radius: 22px;
   --maxw: 1120px;
@@ -104,13 +104,13 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 
 /* Brand logo: Linky mascot (PNG sticker) + wordmark matching the official logo */
 .logo { font-family: var(--font-display); font-weight: 800; font-size: 1.32rem; letter-spacing: 0; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; }
-.logo .logo-mascot { width: 40px; height: auto; margin-right: 7px; transition: transform 0.4s var(--ease-spring); filter: drop-shadow(0 2px 4px rgba(31, 45, 39, 0.18)); }
+.logo .logo-mascot { width: 40px; height: auto; margin-right: 7px; transition: transform 0.4s var(--ease-spring); filter: drop-shadow(0 2px 4px rgba(22, 48, 47, 0.18)); }
 .logo:hover .logo-mascot { transform: rotate(-8deg) scale(1.08); }
 .logo .hmu { color: var(--bubblegum-deep); }
 .logo .lnk { color: var(--avocado-deep); margin-left: 0.26em; }
 .logo .pin {
   display: inline-block; width: 0.42em; height: 0.42em; margin-left: 0.14em;
-  background: #ffd94d;
+  background: #ffd31a;
   border-radius: 50% 50% 50% 0;
   transform: rotate(-45deg) translateY(-0.08em);
   transition: transform 0.4s var(--ease-spring);
@@ -126,7 +126,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   border-bottom: 1px solid transparent;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-.top.scrolled { border-bottom-color: var(--line); box-shadow: 0 8px 30px -18px rgba(20, 112, 79, 0.25); }
+.top.scrolled { border-bottom-color: var(--line); box-shadow: 0 8px 30px -18px rgba(18, 59, 58, 0.25); }
 .top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .top nav { display: none; gap: 26px; }
 .top nav a { color: var(--ink); text-decoration: none; font-weight: 600; font-size: 0.92rem; position: relative; }
@@ -246,7 +246,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   box-shadow: 0 4px 0 var(--bubblegum-deep);
   position: relative;
 }
-.btn--primary:hover { background: #f68cbb; transform: translateY(-2px); box-shadow: 0 6px 0 var(--bubblegum-deep); }
+.btn--primary:hover { background: #f77aab; transform: translateY(-2px); box-shadow: 0 6px 0 var(--bubblegum-deep); }
 .btn--primary::before, .btn--primary::after {
   position: absolute; font-size: 0.9rem; opacity: 0;
   transition: opacity 0.3s ease, transform 0.4s var(--ease-spring);
@@ -275,7 +275,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .phone {
   border: 9px solid var(--ink); border-radius: 44px;
   background: var(--ink); overflow: hidden;
-  box-shadow: 0 40px 80px -30px rgba(20, 112, 79, 0.4), 0 12px 30px -12px rgba(31, 45, 39, 0.25);
+  box-shadow: 0 40px 80px -30px rgba(18, 59, 58, 0.4), 0 12px 30px -12px rgba(22, 48, 47, 0.25);
   transition: transform 0.35s ease; transform-style: preserve-3d; will-change: transform;
 }
 .phone::before {
@@ -297,7 +297,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   position: absolute; z-index: 5; max-width: 190px;
   background: #fff; border: 1.5px solid var(--line); border-radius: 16px;
   padding: 9px 13px; font-size: 0.78rem; font-weight: 600;
-  box-shadow: 0 14px 30px -14px rgba(31, 45, 39, 0.3);
+  box-shadow: 0 14px 30px -14px rgba(22, 48, 47, 0.3);
   opacity: 0; transform: scale(0.6) translateY(12px);
   animation: bubble-pop 0.6s var(--ease-spring) forwards;
 }
@@ -324,7 +324,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .mascot {
   position: absolute; z-index: 6; left: -22px; bottom: -16px; width: 158px; height: auto;
   pointer-events: none;
-  filter: drop-shadow(0 16px 26px rgba(31, 45, 39, 0.28));
+  filter: drop-shadow(0 16px 26px rgba(22, 48, 47, 0.28));
 }
 
 /* Marquee ticker */
@@ -333,7 +333,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   margin: 10px 0 4px;
   padding: 13px 0; font-weight: 800; text-transform: uppercase;
   font-size: 0.82rem; letter-spacing: 0.14em; white-space: nowrap;
-  box-shadow: 0 10px 30px -18px rgba(31, 45, 39, 0.4);
+  box-shadow: 0 10px 30px -18px rgba(22, 48, 47, 0.4);
 }
 .ticker-track { display: flex; width: max-content; animation: tick 38s linear infinite; }
 .ticker:hover .ticker-track { animation-play-state: paused; }
@@ -351,7 +351,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   padding: 26px; position: relative;
   transition: transform 0.35s var(--ease-spring), box-shadow 0.35s ease, border-color 0.35s ease;
 }
-.card:hover { transform: translateY(-6px); border-color: #e3d7bd; box-shadow: 0 24px 44px -24px rgba(20, 112, 79, 0.35); }
+.card:hover { transform: translateY(-6px); border-color: #e3d7bd; box-shadow: 0 24px 44px -24px rgba(18, 59, 58, 0.35); }
 .card h3 { font-size: 1.18rem; margin-bottom: 6px; }
 .card p { color: var(--muted); font-size: 0.95rem; }
 .icon {
@@ -361,12 +361,12 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   transition: transform 0.35s var(--ease-spring);
 }
 .card:hover .icon { transform: rotate(-6deg) scale(1.12); }
-.grid .card:nth-child(6n+1) .icon { background: var(--bubblegum-soft); border-color: #f7bcd7; }
-.grid .card:nth-child(6n+2) .icon { background: var(--tangerine-soft); border-color: #ffd695; }
-.grid .card:nth-child(6n+3) .icon { background: var(--ocean-soft); border-color: #9fdde5; }
-.grid .card:nth-child(6n+4) .icon { background: var(--avocado-soft); border-color: #cbe39d; }
-.grid .card:nth-child(6n+5) .icon { background: var(--banana-soft); border-color: #f4e77a; }
-.grid .card:nth-child(6n+6) .icon { background: var(--pepper-soft); border-color: #a9cdbc; }
+.grid .card:nth-child(6n+1) .icon { background: var(--bubblegum-soft); border-color: #fab3cf; }
+.grid .card:nth-child(6n+2) .icon { background: var(--tangerine-soft); border-color: #fcc2ba; }
+.grid .card:nth-child(6n+3) .icon { background: var(--ocean-soft); border-color: #a9d3d1; }
+.grid .card:nth-child(6n+4) .icon { background: var(--avocado-soft); border-color: #e8e98a; }
+.grid .card:nth-child(6n+5) .icon { background: var(--banana-soft); border-color: #ffe47a; }
+.grid .card:nth-child(6n+6) .icon { background: var(--pepper-soft); border-color: #a9c7c6; }
 .alt { background: #fdf8ec; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 
 /* Chips de qué incluye */
@@ -430,14 +430,14 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .pricing-shell { padding: 26px 14px; }
 .pricing {
   background: linear-gradient(155deg, var(--pepper) 0%, var(--pepper-deep) 70%, var(--pepper-ink) 100%);
-  color: #eaf6ef; border-radius: 44px; padding: 72px 0; overflow: hidden; position: relative;
+  color: #e8f4f3; border-radius: 44px; padding: 72px 0; overflow: hidden; position: relative;
 }
 .pricing .blob { filter: blur(60px); animation: none; }
 .pricing .blob--banana { width: 340px; height: 300px; top: -120px; right: -80px; opacity: 0.2; }
 .pricing .blob--pink { width: 280px; height: 260px; bottom: -120px; left: -100px; opacity: 0.16; }
 .pricing h2 { color: #ffffff; }
-.pricing .lead { color: #bfe0cd; }
-.pricing .kicker { color: var(--banana); background: rgba(255, 239, 90, 0.12); }
+.pricing .lead { color: #c4e3e1; }
+.pricing .kicker { color: var(--banana); background: rgba(255, 211, 26, 0.12); }
 .pricing .kicker::before { background: var(--banana); }
 .price-single { display: flex; justify-content: center; }
 .price-card {
@@ -450,14 +450,14 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 .price-card:hover { transform: translateY(-6px); background: rgba(255, 255, 255, 0.1); }
 .price-card h3 { color: #ffffff; font-size: 1.3rem; }
 .price-card .amount { font-family: var(--font-display); font-size: 2.8rem; font-weight: 700; color: var(--banana); line-height: 1; }
-.price-card .amount small { font-size: 0.95rem; font-weight: 600; color: #bfe0cd; font-family: var(--font-body); }
-.price-card .amount-note { margin: 8px 0 0; font-size: 0.85rem; color: #bfe0cd; }
-.price-card .amount-was { font-size: 1.5rem; font-weight: 600; color: #8fae9c; text-decoration: line-through; margin-right: 6px; opacity: 0.85; }
+.price-card .amount small { font-size: 0.95rem; font-weight: 600; color: #c4e3e1; font-family: var(--font-body); }
+.price-card .amount-note { margin: 8px 0 0; font-size: 0.85rem; color: #c4e3e1; }
+.price-card .amount-was { font-size: 1.5rem; font-weight: 600; color: #94b5b2; text-decoration: line-through; margin-right: 6px; opacity: 0.85; }
 .price-card ul { list-style: none; text-align: left; align-self: stretch; }
-.price-card li { padding: 7px 0 7px 26px; position: relative; font-size: 0.95rem; color: #cfe9da; }
+.price-card li { padding: 7px 0 7px 26px; position: relative; font-size: 0.95rem; color: #d3ecea; }
 .price-card li::before { content: "✓"; position: absolute; left: 0; color: var(--avocado); font-weight: 800; }
 .price-card .btn { margin-top: 8px; }
-.pricing .fine { margin-top: 30px; font-size: 0.88rem; color: #9fccb4; max-width: 70ch; }
+.pricing .fine { margin-top: 30px; font-size: 0.88rem; color: #a6d0cd; max-width: 70ch; }
 
 /* How it will work: timeline */
 .steps { counter-reset: step; list-style: none; display: grid; gap: 0; position: relative; max-width: 640px; }
@@ -489,7 +489,7 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
   margin-bottom: 12px; padding: 0 22px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-.faq details[open] { border-color: var(--bubblegum); box-shadow: 0 14px 30px -20px rgba(244, 120, 176, 0.5); }
+.faq details[open] { border-color: var(--bubblegum); box-shadow: 0 14px 30px -20px rgba(245, 89, 149, 0.5); }
 .faq summary {
   cursor: pointer; font-weight: 700; font-size: 1rem; color: var(--ink);
   padding: 17px 34px 17px 0; list-style: none; position: relative;
@@ -508,27 +508,27 @@ h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); line-height: 1.15; margin-bottom: 
 
 /* Footer */
 footer {
-  background: var(--pepper-ink); color: #bfe0cd;
+  background: var(--pepper-ink); color: #c4e3e1;
   border-radius: 44px 44px 0 0; margin-top: 20px;
   padding: 60px 0 34px; font-size: 0.92rem;
 }
 footer .cols { display: grid; gap: 34px; }
 footer .logo { font-size: 1.5rem; }
 footer .logo .hmu { color: var(--bubblegum); }
-footer .logo .lnk { color: #6fd6e2; }
+footer .logo .lnk { color: #d5d717; }
 footer h4 { color: #fff; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 12px; }
 footer ul { list-style: none; }
 footer li { margin-bottom: 8px; }
-footer a { color: #bfe0cd; text-decoration: none; }
+footer a { color: #c4e3e1; text-decoration: none; }
 footer a:hover { color: var(--banana); }
-footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, 0.12); color: #86ab97; font-size: 0.82rem; }
+footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, 0.12); color: #8db3b0; font-size: 0.82rem; }
 
 /* Founder pricing + guarantee */
-.founder-note { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 4px; padding: 6px 14px; border-radius: 999px; background: rgba(255, 224, 130, 0.14); border: 1px solid rgba(255, 224, 130, 0.45); color: var(--banana); font-size: 0.85rem; font-weight: 700; }
+.founder-note { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 4px; padding: 6px 14px; border-radius: 999px; background: rgba(255, 211, 26, 0.14); border: 1px solid rgba(255, 211, 26, 0.45); color: var(--banana); font-size: 0.85rem; font-weight: 700; }
 .price-card .price-badges { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 6px 0 2px; text-align: center; }
 .price-card .price-badges li { padding: 7px 13px; font-size: 0.82rem; font-weight: 800; color: var(--pepper-ink); background: var(--banana); border-radius: 999px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18); }
 .price-card .price-badges li::before { content: none; }
-.price-card .guarantee { margin: 12px 0 0; font-size: 0.88rem; color: #cfe9da; }
+.price-card .guarantee { margin: 12px 0 0; font-size: 0.88rem; color: #d3ecea; }
 .price-card .guarantee b { color: #ffffff; }
 
 /* WhatsApp floating button */

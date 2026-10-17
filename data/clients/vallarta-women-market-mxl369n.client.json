@@ -1,0 +1,165 @@
+{
+  "public_slug": "vallarta-women-market-mxl369n",
+  "default_language": "es",
+  "brand_style": "soft-blush",
+  "business_type": "general",
+  "business_name": "Vallarta Women Market",
+  "logo_url": "https://www.hmulink.com/links/vallarta-women-market-mxl369n/assets/logo.jpg",
+  "primary_image_url": "https://www.hmulink.com/links/vallarta-women-market-mxl369n/assets/portada.jpg",
+  "gallery_images": [
+    {
+      "url": "https://www.hmulink.com/links/vallarta-women-market-mxl369n/assets/cartel.jpg"
+    }
+  ],
+  "gallery_aspect": "3/4",
+  "whatsapp": "+523223680874",
+  "phone": "+523223680874",
+  "public_email": null,
+  "instagram": null,
+  "facebook": null,
+  "tiktok": null,
+  "website": null,
+  "booking_url": null,
+  "primary_cta": "whatsapp",
+  "google_maps_url": "https://maps.google.com/?q=Sal%C3%B3n+Rancho+Alegre%2C+16+de+Septiembre+283%2C+Bobadilla%2C+Puerto+Vallarta",
+  "google_reviews_url": null,
+  "other_public_link": null,
+  "delivery_pickup_links": [],
+  "portfolio_link": null,
+  "content": {
+    "es": {
+      "short_description": "Bazar de mujeres emprendedoras en Puerto Vallarta. Un espacio para mujeres que sueñan, crean y emprenden. 1ra edición: domingo 25 de octubre.",
+      "address": "Salón Rancho Alegre, C. 16 de Septiembre 283, Rancho Alegre, Bobadilla, Puerto Vallarta",
+      "opening_hours_text": "Domingo 25 de octubre de 2026, de 12:00 a 6:00 pm.",
+      "service_area_text": "",
+      "client_care_text": "",
+      "reservations_text": "Informes e inscripciones por WhatsApp: 322 368 0874 o 322 380 6920.",
+      "price_display": "show",
+      "service_categories": [
+        "Para expositoras",
+        "Lo que encontrarás",
+        "Para las familias"
+      ],
+      "services": [
+        {
+          "category": "Para expositoras",
+          "name": "Espacio de 3 x 3 m",
+          "description": "Máximo 2 personas por stand",
+          "price_label": "$500 MXN"
+        },
+        {
+          "category": "Para expositoras",
+          "name": "Anticipo para apartar tu espacio",
+          "description": "El resto se liquida antes del evento",
+          "price_label": "$250 MXN"
+        },
+        {
+          "category": "Para expositoras",
+          "name": "Mesa, sillas y mobiliario",
+          "description": "Si no cuentas con mobiliario, te apoyamos con la renta",
+          "price_label": "Consultar"
+        },
+        {
+          "category": "Lo que encontrarás",
+          "name": "Comida deliciosa, postres y bebidas"
+        },
+        {
+          "category": "Lo que encontrarás",
+          "name": "Artesanías y cosmética"
+        },
+        {
+          "category": "Lo que encontrarás",
+          "name": "Accesorios y ropa"
+        },
+        {
+          "category": "Para las familias",
+          "name": "Concurso de disfraces para niños",
+          "description": "4:00 pm · ¡Habrá premios sorpresa!"
+        },
+        {
+          "category": "Para las familias",
+          "name": "Renta de brincolín",
+          "description": "Con Diversiones El Güero"
+        }
+      ],
+      "featured_package": {
+        "name": "¡Aparta tu espacio!",
+        "description": "Pocos espacios disponibles. Stand de 3 x 3 m para tu emprendimiento.",
+        "price_label": "$500 MXN"
+      },
+      "policies": [
+        "Cada expositora lleva lo necesario para montar y decorar su stand.",
+        "Máximo 2 personas por stand.",
+        "Para apartar tu espacio se solicita un anticipo de $250; el resto se liquida antes del evento."
+      ],
+      "faq": []
+    },
+    "en": {
+      "short_description": "A market for women entrepreneurs in Puerto Vallarta. A space for women who dream, create and build. 1st edition: Sunday, October 25.",
+      "address": "Salón Rancho Alegre, C. 16 de Septiembre 283, Rancho Alegre, Bobadilla, Puerto Vallarta",
+      "opening_hours_text": "Sunday, October 25, 2026, 12:00 to 6:00 PM.",
+      "service_area_text": "",
+      "client_care_text": "",
+      "reservations_text": "Info and vendor sign-up on WhatsApp: 322 368 0874 or 322 380 6920.",
+      "price_display": "show",
+      "service_categories": [
+        "For vendors",
+        "What you'll find",
+        "For families"
+      ],
+      "services": [
+        {
+          "category": "For vendors",
+          "name": "3 x 3 m booth",
+          "description": "Up to 2 people per booth",
+          "price_label": "$500 MXN"
+        },
+        {
+          "category": "For vendors",
+          "name": "Deposit to save your spot",
+          "description": "Balance due before the event",
+          "price_label": "$250 MXN"
+        },
+        {
+          "category": "For vendors",
+          "name": "Table, chairs and furniture",
+          "description": "No furniture? We can help you rent it",
+          "price_label": "Ask us"
+        },
+        {
+          "category": "What you'll find",
+          "name": "Delicious food, desserts and drinks"
+        },
+        {
+          "category": "What you'll find",
+          "name": "Crafts and cosmetics"
+        },
+        {
+          "category": "What you'll find",
+          "name": "Accessories and clothing"
+        },
+        {
+          "category": "For families",
+          "name": "Kids' costume contest",
+          "description": "4:00 PM · Surprise prizes!"
+        },
+        {
+          "category": "For families",
+          "name": "Bounce house rental",
+          "description": "By Diversiones El Güero"
+        }
+      ],
+      "featured_package": {
+        "name": "Save your spot!",
+        "description": "Limited spaces. A 3 x 3 m booth for your business.",
+        "price_label": "$500 MXN"
+      },
+      "policies": [
+        "Each vendor brings everything needed to set up and decorate their booth.",
+        "Up to 2 people per booth.",
+        "A $250 deposit saves your spot; the balance is due before the event."
+      ],
+      "faq": []
+    }
+  }
+}

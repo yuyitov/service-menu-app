@@ -1,0 +1,19 @@
+{
+  "_comment": "Prellenado del formulario de MODIFICACION de esta pagina regalada (claves = tally-field-aliases.json). Lo manda el workflow 'Entregar regalo' (modo entrega). Solo datos ya publicos en la pagina (cartel de la convocatoria).",
+  "default_language": "Español primero",
+  "business_name": "Vallarta Women Market",
+  "business_type": "Otro negocio local de servicios",
+  "short_description": "Bazar de mujeres emprendedoras en Puerto Vallarta. Un espacio para mujeres que sueñan, crean y emprenden. 1ra edición: domingo 25 de octubre.",
+  "phone": "+523223680874",
+  "whatsapp": "+523223680874",
+  "address": "Salón Rancho Alegre, C. 16 de Septiembre 283, Rancho Alegre, Bobadilla, Puerto Vallarta",
+  "google_maps_url": "https://maps.google.com/?q=Sal%C3%B3n+Rancho+Alegre%2C+16+de+Septiembre+283%2C+Bobadilla%2C+Puerto+Vallarta",
+  "opening_hours_text": "Domingo 25 de octubre de 2026, de 12:00 a 6:00 pm.",
+  "reservations_text": "Sí — por teléfono o WhatsApp",
+  "service_categories_text": "Para expositoras, Lo que encontrarás, Para las familias",
+  "services_text": "Para expositoras:\nEspacio de 3 x 3 m — Máximo 2 personas por stand $500 MXN\nAnticipo para apartar tu espacio — El resto se liquida antes del evento $250 MXN\nMesa, sillas y mobiliario — Si no cuentas con mobiliario, te apoyamos con la renta\nLo que encontrarás:\nComida deliciosa, postres y bebidas\nArtesanías y cosmética\nAccesorios y ropa\nPara las familias:\nConcurso de disfraces para niños — 4:00 pm · ¡Habrá premios sorpresa!\nRenta de brincolín — Con Diversiones El Güero",
+  "featured_text": "¡Aparta tu espacio! — Pocos espacios disponibles. Stand de 3 x 3 m para tu emprendimiento. $500 MXN",
+  "policies_text": "Cada expositora lleva lo necesario para montar y decorar su stand.\nMáximo 2 personas por stand.\nPara apartar tu espacio se solicita un anticipo de $250; el resto se liquida antes del evento.",
+  "primary_cta": "WhatsApp",
+  "pick_your_style": "Soft Blush — suave y femenino"
+}

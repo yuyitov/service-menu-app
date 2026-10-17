@@ -616,6 +616,18 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 #como-funciona .kicker, #how .kicker { background: #fff; color: var(--bubblegum-deep); }
 #para-quien .kicker::before, #who .kicker::before, #incluye .kicker::before, #included .kicker::before,
 #como-funciona .kicker::before, #how .kicker::before { background: var(--bubblegum); }
+
+/* ------------------------------------------------------------------- */
+/* Mockups (2026-10): el celular ya viene dibujado en la imagen, así    */
+/* que el marco de CSS se apaga en la portada y en la galería.          */
+/* ------------------------------------------------------------------- */
+.phone-wrap--mock { width: 314px; }
+.phone--mock { border: 0; background: none; box-shadow: none; border-radius: 0; overflow: visible; }
+.phone--mock::before { display: none; }
+.phone--mock .screen { margin-top: 0; }
+.thumb--mock { border: 0; display: flex; align-items: center; justify-content: center; padding: 6% 0 2%; }
+.thumb--mock::before { display: none; }
+.thumb--mock img { width: auto; height: 100%; object-fit: contain; }
 </style>
 </head>
 <body>
@@ -669,13 +681,14 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <div class="bubble bubble--q b2">«¿Hasta qué hora abren hoy?»</div>
         <div class="bubble b3"><i></i><i></i><i></i></div>
         <div class="bubble b4">✨ 12 estilos para elegir</div>
-        <div class="phone-wrap">
-          <div class="phone">
+        <div class="phone-wrap phone-wrap--mock">
+          <div class="phone phone--mock">
             <div class="screen">
-              <img class="m-shot is-active" src="../assets/hero-carousel/es/black-gold.jpg" alt="Bella Spa — una tarjeta digital real de HMU Link" width="780" height="1688">
-              <img class="m-shot" src="../assets/hero-carousel/es/soft-blush.jpg" alt="Studio Blush — una tarjeta digital real de HMU Link" width="780" height="1688">
-              <img class="m-shot" src="../assets/hero-carousel/es/electric-slate.jpg" alt="Pulse Fitness Studio — una tarjeta digital real de HMU Link" width="780" height="1688">
-              <img class="m-shot" src="../assets/hero-carousel/es/terracotta-warm.jpg" alt="Café Terra — una tarjeta digital real de HMU Link" width="780" height="1688">
+              <img class="m-shot is-active" src="../assets/mockups/es/black-gold-a.webp" alt="Bella Spa — una tarjeta digital real de HMU Link" width="640" height="1200">
+              <img class="m-shot" src="../assets/mockups/es/soft-blush-b.webp" alt="Studio Blush — una tarjeta digital real de HMU Link" width="640" height="1200">
+              <img class="m-shot" src="../assets/mockups/es/terracotta-warm-c.webp" alt="Café Terra — una tarjeta digital real de HMU Link" width="640" height="1200">
+              <img class="m-shot" src="../assets/mockups/es/electric-slate-d.webp" alt="Pulse Fitness Studio — una tarjeta digital real de HMU Link" width="640" height="1200">
+              <img class="m-shot" src="../assets/mockups/es/aqua-clean-e.webp" alt="Aqua Wellness Spa — una tarjeta digital real de HMU Link" width="640" height="1200">
             </div>
           </div>
         </div>
@@ -777,8 +790,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     </div>
     <div class="grid grid--3" id="style-grid" data-stagger>
       <a class="card style-card" data-category="beauty" href="../demos/bella-spa/" style="--th-b:#17171a; --th-a:#c9a24b;">
-        <div class="thumb">
-          <img src="../assets/previews/black-gold.jpg" alt="Captura real de la demo Bella Spa, estilo Black Gold" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/black-gold-a.webp" alt="Tarjeta real de la demo Bella Spa, estilo Black Gold" width="640" height="1200" loading="lazy">
         </div>
         <h3>Black Gold</h3>
         <p>Elegancia oscura con acentos dorados. Presencia premium y sofisticada.</p>
@@ -786,8 +799,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Bella Spa <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/studio-blush/" style="--th-b:#fdf3f4; --th-a:#c96f7d;">
-        <div class="thumb">
-          <img src="../assets/previews/soft-blush.jpg" alt="Captura real de la demo Studio Blush, estilo Soft Blush" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/soft-blush-a.webp" alt="Tarjeta real de la demo Studio Blush, estilo Soft Blush" width="640" height="1200" loading="lazy">
         </div>
         <h3>Soft Blush</h3>
         <p>Tonos rosados suaves y delicados. Cálido, acogedor y femenino.</p>
@@ -795,8 +808,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Studio Blush <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/north-barber/" style="--th-b:#33373d; --th-a:#9fb2bd;">
-        <div class="thumb">
-          <img src="../assets/previews/charcoal-clean.jpg" alt="Captura real de la demo North Barber, estilo Charcoal Clean" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/charcoal-clean-a.webp" alt="Tarjeta real de la demo North Barber, estilo Charcoal Clean" width="640" height="1200" loading="lazy">
         </div>
         <h3>Charcoal Clean</h3>
         <p>Gris carbón, sobrio y directo. Estética masculina y contemporánea.</p>
@@ -804,8 +817,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: North Barber <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/glow-nails/" style="--th-b:#f3f0e7; --th-a:#2a2529;">
-        <div class="thumb">
-          <img src="../assets/previews/warm-sand.jpg" alt="Captura real de la demo Glow Nails, estilo Ink & Ivory" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/warm-sand-a.webp" alt="Tarjeta real de la demo Glow Nails, estilo Ink & Ivory" width="640" height="1200" loading="lazy">
         </div>
         <h3>Ink & Ivory</h3>
         <p>Carbón y marfil. Mínimo, editorial y atemporal.</p>
@@ -813,8 +826,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Glow Nails <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/aqua-wellness/" style="--th-b:#eaf7f8; --th-a:#2f8f96;">
-        <div class="thumb">
-          <img src="../assets/previews/aqua-clean.jpg" alt="Captura real de la demo Aqua Wellness, estilo Aqua Clean" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/aqua-clean-a.webp" alt="Tarjeta real de la demo Aqua Wellness, estilo Aqua Clean" width="640" height="1200" loading="lazy">
         </div>
         <h3>Aqua Clean</h3>
         <p>Azules aqua frescos y limpios. Transmite higiene, agua y calma.</p>
@@ -822,8 +835,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Aqua Wellness <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/sage-studio/" style="--th-b:#eef2ea; --th-a:#6d8a63;">
-        <div class="thumb">
-          <img src="../assets/previews/sage-calm.jpg" alt="Captura real de la demo Sage Studio, estilo Sage Calm" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/sage-calm-a.webp" alt="Tarjeta real de la demo Sage Studio, estilo Sage Calm" width="640" height="1200" loading="lazy">
         </div>
         <h3>Sage Calm</h3>
         <p>Verde salvia sereno y equilibrado. Minimalista y orgánico.</p>
@@ -831,8 +844,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Sage Studio <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="../demos/pawsome-grooming/" style="--th-b:#b44656; --th-a:#eacc83;">
-        <div class="thumb">
-          <img src="../assets/previews/sunny-paws.jpg" alt="Captura real de la demo Pawsome Grooming, estilo Pink Grapefruit" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/sunny-paws-a.webp" alt="Tarjeta real de la demo Pawsome Grooming, estilo Pink Grapefruit" width="640" height="1200" loading="lazy">
         </div>
         <h3>Pink Grapefruit</h3>
         <p>Rosa pomelo con amarillo. Jugoso, fresco y con energía.</p>
@@ -840,8 +853,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Pawsome Grooming <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="fitness" href="../demos/pulse-fitness/" style="--th-b:#101214; --th-a:#c6ff3d;">
-        <div class="thumb">
-          <img src="../assets/previews/electric-slate.jpg" alt="Captura real de la demo Pulse Fitness Studio, estilo Electric Slate" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/electric-slate-a.webp" alt="Tarjeta real de la demo Pulse Fitness Studio, estilo Electric Slate" width="640" height="1200" loading="lazy">
         </div>
         <h3>Electric Slate</h3>
         <p>Carbón audaz con acentos verde lima eléctrico. Alto rendimiento y motivador.</p>
@@ -849,8 +862,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Pulse Fitness Studio <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="fitness" href="../demos/horizon-tours/" style="--th-b:#d1eefe; --th-a:#432e1b;">
-        <div class="thumb">
-          <img src="../assets/previews/horizon-teal.jpg" alt="Captura real de la demo Horizon City Tours, estilo Blue Chocolate" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/horizon-teal-a.webp" alt="Tarjeta real de la demo Horizon City Tours, estilo Blue Chocolate" width="640" height="1200" loading="lazy">
         </div>
         <h3>Blue Chocolate</h3>
         <p>Azul cielo con chocolate. Moderno, claro y con carácter.</p>
@@ -858,8 +871,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Horizon City Tours <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="food" href="../demos/cafe-terra/" style="--th-b:#fbf1e6; --th-a:#b5502f;">
-        <div class="thumb">
-          <img src="../assets/previews/terracotta-warm.jpg" alt="Captura real de la demo Café Terra, estilo Terracotta Warm" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/terracotta-warm-a.webp" alt="Tarjeta real de la demo Café Terra, estilo Terracotta Warm" width="640" height="1200" loading="lazy">
         </div>
         <h3>Terracotta Warm</h3>
         <p>Terracota profundo y crema cálido. Acogedor, artesanal y apetitoso.</p>
@@ -867,8 +880,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Café Terra <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="creative" href="../demos/iron-ink-tattoo/" style="--th-b:#0c0c0e; --th-a:#c0203a;">
-        <div class="thumb">
-          <img src="../assets/previews/midnight-ink.jpg" alt="Captura real de la demo Iron &amp; Ink Tattoo, estilo Midnight Ink" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/midnight-ink-a.webp" alt="Tarjeta real de la demo Iron &amp; Ink Tattoo, estilo Midnight Ink" width="640" height="1200" loading="lazy">
         </div>
         <h3>Midnight Ink</h3>
         <p>Negro profundo con acentos carmesí. Audaz y artístico.</p>
@@ -876,8 +889,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">Ver demo: Iron &amp; Ink Tattoo <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="creative" href="../demos/clarity-coaching/" style="--th-b:#f7f6f2; --th-a:#1f3a5f;">
-        <div class="thumb">
-          <img src="../assets/previews/clarity-editorial.jpg" alt="Captura real de la demo Clarity Coaching Co., estilo Clarity Editorial" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="../assets/mockups/es/clarity-editorial-a.webp" alt="Tarjeta real de la demo Clarity Coaching Co., estilo Clarity Editorial" width="640" height="1200" loading="lazy">
         </div>
         <h3>Clarity Editorial</h3>
         <p>Azul marino y crema, minimalista y profesional.</p>

@@ -622,6 +622,18 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 #como-funciona .kicker, #how .kicker { background: #fff; color: var(--bubblegum-deep); }
 #para-quien .kicker::before, #who .kicker::before, #incluye .kicker::before, #included .kicker::before,
 #como-funciona .kicker::before, #how .kicker::before { background: var(--bubblegum); }
+
+/* ------------------------------------------------------------------- */
+/* Mockups (2026-10): el celular ya viene dibujado en la imagen, así    */
+/* que el marco de CSS se apaga en la portada y en la galería.          */
+/* ------------------------------------------------------------------- */
+.phone-wrap--mock { width: 314px; }
+.phone--mock { border: 0; background: none; box-shadow: none; border-radius: 0; overflow: visible; }
+.phone--mock::before { display: none; }
+.phone--mock .screen { margin-top: 0; }
+.thumb--mock { border: 0; display: flex; align-items: center; justify-content: center; padding: 6% 0 2%; }
+.thumb--mock::before { display: none; }
+.thumb--mock img { width: auto; height: 100%; object-fit: contain; }
 </style>
 </head>
 <body>
@@ -676,13 +688,14 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <div class="bubble bubble--q b2">“How late are you open today?”</div>
         <div class="bubble b3"><i></i><i></i><i></i></div>
         <div class="bubble b4">✨ 12 styles — pick yours</div>
-        <div class="phone-wrap">
-          <div class="phone">
+        <div class="phone-wrap phone-wrap--mock">
+          <div class="phone phone--mock">
             <div class="screen">
-              <img class="m-shot is-active" src="assets/hero-carousel/en/black-gold.jpg" alt="Bella Spa — a real HMU Link digital card" width="780" height="1688">
-              <img class="m-shot" src="assets/hero-carousel/en/soft-blush.jpg" alt="Studio Blush — a real HMU Link digital card" width="780" height="1688">
-              <img class="m-shot" src="assets/hero-carousel/en/electric-slate.jpg" alt="Pulse Fitness Studio — a real HMU Link digital card" width="780" height="1688">
-              <img class="m-shot" src="assets/hero-carousel/en/terracotta-warm.jpg" alt="Café Terra — a real HMU Link digital card" width="780" height="1688">
+              <img class="m-shot is-active" src="assets/mockups/en/black-gold-a.webp" alt="Bella Spa — a real HMU Link digital card" width="640" height="1200">
+              <img class="m-shot" src="assets/mockups/en/soft-blush-b.webp" alt="Studio Blush — a real HMU Link digital card" width="640" height="1200">
+              <img class="m-shot" src="assets/mockups/en/terracotta-warm-c.webp" alt="Café Terra — a real HMU Link digital card" width="640" height="1200">
+              <img class="m-shot" src="assets/mockups/en/electric-slate-d.webp" alt="Pulse Fitness Studio — a real HMU Link digital card" width="640" height="1200">
+              <img class="m-shot" src="assets/mockups/en/aqua-clean-e.webp" alt="Aqua Wellness Spa — a real HMU Link digital card" width="640" height="1200">
             </div>
           </div>
         </div>
@@ -784,8 +797,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     </div>
     <div class="grid grid--3" id="style-grid" data-stagger>
       <a class="card style-card" data-category="beauty" href="demos/bella-spa/en/" style="--th-b:#17171a; --th-a:#c9a24b;">
-        <div class="thumb">
-          <img src="assets/previews/en/black-gold.jpg" alt="Real screenshot of the Bella Spa demo, Black Gold style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/black-gold-a.webp" alt="Real card from the Bella Spa demo, Black Gold style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Black Gold</h3>
         <p>Dark elegance with gold accents. Premium, sophisticated presence.</p>
@@ -793,8 +806,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Bella Spa <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="demos/studio-blush/en/" style="--th-b:#fdf3f4; --th-a:#c96f7d;">
-        <div class="thumb">
-          <img src="assets/previews/en/soft-blush.jpg" alt="Real screenshot of the Studio Blush demo, Soft Blush style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/soft-blush-a.webp" alt="Real card from the Studio Blush demo, Soft Blush style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Soft Blush</h3>
         <p>Soft, delicate pink tones. Warm, welcoming, and feminine.</p>
@@ -802,8 +815,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Studio Blush <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="demos/north-barber/en/" style="--th-b:#33373d; --th-a:#9fb2bd;">
-        <div class="thumb">
-          <img src="assets/previews/en/charcoal-clean.jpg" alt="Real screenshot of the North Barber demo, Charcoal Clean style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/charcoal-clean-a.webp" alt="Real card from the North Barber demo, Charcoal Clean style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Charcoal Clean</h3>
         <p>Charcoal gray, understated and direct. Masculine, contemporary look.</p>
@@ -811,8 +824,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: North Barber <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="demos/glow-nails/en/" style="--th-b:#f3f0e7; --th-a:#2a2529;">
-        <div class="thumb">
-          <img src="assets/previews/en/warm-sand.jpg" alt="Real screenshot of the Glow Nails demo, Ink & Ivory style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/warm-sand-a.webp" alt="Real card from the Glow Nails demo, Ink & Ivory style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Ink & Ivory</h3>
         <p>Charcoal and ivory. Minimal, editorial and timeless.</p>
@@ -820,8 +833,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Glow Nails <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="demos/aqua-wellness/en/" style="--th-b:#eaf7f8; --th-a:#2f8f96;">
-        <div class="thumb">
-          <img src="assets/previews/en/aqua-clean.jpg" alt="Real screenshot of the Aqua Wellness demo, Aqua Clean style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/aqua-clean-a.webp" alt="Real card from the Aqua Wellness demo, Aqua Clean style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Aqua Clean</h3>
         <p>Fresh, clean aqua blues. Communicates hygiene, water, and calm.</p>
@@ -829,8 +842,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Aqua Wellness <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="demos/sage-studio/en/" style="--th-b:#eef2ea; --th-a:#6d8a63;">
-        <div class="thumb">
-          <img src="assets/previews/en/sage-calm.jpg" alt="Real screenshot of the Sage Studio demo, Sage Calm style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/sage-calm-a.webp" alt="Real card from the Sage Studio demo, Sage Calm style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Sage Calm</h3>
         <p>Serene, balanced sage green. Minimal and organic.</p>
@@ -838,8 +851,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Sage Studio <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="beauty" href="demos/pawsome-grooming/en/" style="--th-b:#b44656; --th-a:#eacc83;">
-        <div class="thumb">
-          <img src="assets/previews/en/sunny-paws.jpg" alt="Real screenshot of the Pawsome Grooming demo, Pink Grapefruit style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/sunny-paws-a.webp" alt="Real card from the Pawsome Grooming demo, Pink Grapefruit style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Pink Grapefruit</h3>
         <p>Grapefruit pink with yellow. Juicy, fresh and full of energy.</p>
@@ -847,8 +860,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Pawsome Grooming <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="fitness" href="demos/pulse-fitness/en/" style="--th-b:#101214; --th-a:#c6ff3d;">
-        <div class="thumb">
-          <img src="assets/previews/en/electric-slate.jpg" alt="Real screenshot of the Pulse Fitness Studio demo, Electric Slate style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/electric-slate-a.webp" alt="Real card from the Pulse Fitness Studio demo, Electric Slate style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Electric Slate</h3>
         <p>Bold charcoal with electric lime accents. High-performance and motivating.</p>
@@ -856,8 +869,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Pulse Fitness Studio <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="fitness" href="demos/horizon-tours/en/" style="--th-b:#d1eefe; --th-a:#432e1b;">
-        <div class="thumb">
-          <img src="assets/previews/en/horizon-teal.jpg" alt="Real screenshot of the Horizon City Tours demo, Blue Chocolate style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/horizon-teal-a.webp" alt="Real card from the Horizon City Tours demo, Blue Chocolate style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Blue Chocolate</h3>
         <p>Sky blue with chocolate. Modern, bright and full of character.</p>
@@ -865,8 +878,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Horizon City Tours <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="food" href="demos/cafe-terra/en/" style="--th-b:#fbf1e6; --th-a:#b5502f;">
-        <div class="thumb">
-          <img src="assets/previews/en/terracotta-warm.jpg" alt="Real screenshot of the Café Terra demo, Terracotta Warm style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/terracotta-warm-a.webp" alt="Real card from the Café Terra demo, Terracotta Warm style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Terracotta Warm</h3>
         <p>Deep terracotta and warm cream. Cozy, artisanal, and appetizing.</p>
@@ -874,8 +887,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Café Terra <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="creative" href="demos/iron-ink-tattoo/en/" style="--th-b:#0c0c0e; --th-a:#c0203a;">
-        <div class="thumb">
-          <img src="assets/previews/en/midnight-ink.jpg" alt="Real screenshot of the Iron &amp; Ink Tattoo demo, Midnight Ink style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/midnight-ink-a.webp" alt="Real card from the Iron &amp; Ink Tattoo demo, Midnight Ink style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Midnight Ink</h3>
         <p>Deep black with crimson accents. Bold and artistic.</p>
@@ -883,8 +896,8 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
         <span class="demo-link">View example: Iron &amp; Ink Tattoo <span class="arr" aria-hidden="true">→</span></span>
       </a>
       <a class="card style-card" data-category="creative" href="demos/clarity-coaching/en/" style="--th-b:#f7f6f2; --th-a:#1f3a5f;">
-        <div class="thumb">
-          <img src="assets/previews/en/clarity-editorial.jpg" alt="Real screenshot of the Clarity Coaching Co. demo, Clarity Editorial style" width="390" height="520" loading="lazy">
+        <div class="thumb thumb--mock">
+          <img src="assets/mockups/en/clarity-editorial-a.webp" alt="Real card from the Clarity Coaching Co. demo, Clarity Editorial style" width="640" height="1200" loading="lazy">
         </div>
         <h3>Clarity Editorial</h3>
         <p>Navy and cream, minimal and professional.</p>

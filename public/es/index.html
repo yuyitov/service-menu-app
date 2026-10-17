@@ -629,13 +629,11 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
 .thumb--mock::before { display: none; }
 .scene .b2 { right: -16%; }
 
-/* Galería: carrusel por tarjeta (A → C → D → E), desliza a la izquierda */
+/* Galería: carrusel por tarjeta (A → C → D → E), fundido como en la portada */
 .thumb--mock { position: relative; overflow: hidden; }
-.thumb--mock .mslide { position: absolute; left: 0; right: 0; top: 6%; height: 90%; width: 100%; object-fit: contain;
-  transform: translateX(105%); transition: transform 0.8s var(--ease-spring); }
-.thumb--mock .mslide.is-on { transform: none; }
-.thumb--mock .mslide.is-out { transform: translateX(-105%); }
-.no-js .thumb--mock .mslide:first-child { transform: none; }
+.thumb--mock .mslide { position: absolute; left: 0; right: 0; top: 6%; height: 90%; width: 100%; object-fit: contain; opacity: 0; }
+.thumb--mock .mslide.is-prev { opacity: 1; z-index: 1; }
+.thumb--mock .mslide.is-on { opacity: 1; z-index: 2; transition: opacity 0.9s ease; }
 .mdots { position: absolute; left: 0; right: 0; bottom: 2.5%; display: flex; justify-content: center; gap: 6px; }
 .mdots i { width: 6px; height: 6px; border-radius: 50%; background: var(--th-a, #fff); opacity: 0.35; transition: opacity 0.3s ease, width 0.3s ease; }
 .mdots i.is-on { opacity: 1; width: 16px; border-radius: 4px; }
@@ -1200,7 +1198,7 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
     }, 3200);
   }
 
-  /* Galería: cada tarjeta muestra 4 vistas de su celular, solo mientras está en pantalla */
+  /* Galería: cada tarjeta muestra 4 vistas de su celular (fundido), solo mientras está en pantalla */
   var decks = doc.querySelectorAll('.thumb--mock');
   if (!reduced && decks.length && 'IntersectionObserver' in window) {
     decks.forEach(function (deck, n) {
@@ -1209,14 +1207,12 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
       var idx = 0, timer = null;
       function step() {
         var cur = slides[idx];
-        cur.classList.remove('is-on'); cur.classList.add('is-out');
+        cur.classList.remove('is-on'); cur.classList.add('is-prev');
         if (dots[idx]) dots[idx].classList.remove('is-on');
         idx = (idx + 1) % slides.length;
-        var nxt = slides[idx];
-        nxt.style.transition = 'none'; nxt.classList.remove('is-out'); void nxt.offsetWidth; nxt.style.transition = '';
-        nxt.classList.add('is-on');
+        slides[idx].classList.add('is-on');
         if (dots[idx]) dots[idx].classList.add('is-on');
-        setTimeout(function () { cur.classList.remove('is-out'); }, 850);
+        setTimeout(function () { cur.classList.remove('is-prev'); }, 950);
       }
       new IntersectionObserver(function (es) {
         es.forEach(function (e) {

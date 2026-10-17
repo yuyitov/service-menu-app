@@ -5,7 +5,7 @@
   "business_type": "general",
   "business_name": "Vallarta Women Market",
   "logo_url": "https://www.hmulink.com/links/vallarta-women-market-mxl369n/assets/logo.jpg",
-  "primary_image_url": "https://www.hmulink.com/links/vallarta-women-market-mxl369n/assets/portada.jpg",
+  "primary_image_url": "https://www.hmulink.com/links/vallarta-women-market-mxl369n/assets/cartel.jpg",
   "gallery_images": [
     {
       "url": "https://www.hmulink.com/links/vallarta-women-market-mxl369n/assets/cartel.jpg"
@@ -36,50 +36,70 @@
       "reservations_text": "Informes e inscripciones por WhatsApp: 322 368 0874 o 322 380 6920.",
       "price_display": "show",
       "service_categories": [
-        "Para expositoras",
-        "Lo que encontrarás",
-        "Para las familias"
+        "Antojos y bebidas",
+        "Hecho a mano y belleza",
+        "Moda y accesorios",
+        "Diversión para niños",
+        "Renta tu stand"
       ],
       "services": [
         {
-          "category": "Para expositoras",
+          "category": "Antojos y bebidas",
+          "name": "Comida deliciosa",
+          "description": "Ven con hambre: hay de todo para probar"
+        },
+        {
+          "category": "Antojos y bebidas",
+          "name": "Postres y bebidas",
+          "description": "El antojo dulce y algo fresco para acompañar"
+        },
+        {
+          "category": "Hecho a mano y belleza",
+          "name": "Artesanías",
+          "description": "Piezas únicas hechas por emprendedoras locales"
+        },
+        {
+          "category": "Hecho a mano y belleza",
+          "name": "Cosmética",
+          "description": "Para consentirte o para regalar"
+        },
+        {
+          "category": "Moda y accesorios",
+          "name": "Ropa",
+          "description": "Encuentra tu estilo con marcas locales"
+        },
+        {
+          "category": "Moda y accesorios",
+          "name": "Accesorios",
+          "description": "El detalle que completa tu look"
+        },
+        {
+          "category": "Diversión para niños",
+          "name": "Concurso de disfraces",
+          "description": "4:00 pm · ¡Habrá premios sorpresa!"
+        },
+        {
+          "category": "Diversión para niños",
+          "name": "Renta de brincolín",
+          "description": "Con Diversiones El Güero"
+        },
+        {
+          "category": "Renta tu stand",
           "name": "Espacio de 3 x 3 m",
           "description": "Máximo 2 personas por stand",
           "price_label": "$500 MXN"
         },
         {
-          "category": "Para expositoras",
+          "category": "Renta tu stand",
           "name": "Anticipo para apartar tu espacio",
           "description": "El resto se liquida antes del evento",
           "price_label": "$250 MXN"
         },
         {
-          "category": "Para expositoras",
+          "category": "Renta tu stand",
           "name": "Mesa, sillas y mobiliario",
           "description": "Si no cuentas con mobiliario, te apoyamos con la renta",
           "price_label": "Consultar"
-        },
-        {
-          "category": "Lo que encontrarás",
-          "name": "Comida deliciosa, postres y bebidas"
-        },
-        {
-          "category": "Lo que encontrarás",
-          "name": "Artesanías y cosmética"
-        },
-        {
-          "category": "Lo que encontrarás",
-          "name": "Accesorios y ropa"
-        },
-        {
-          "category": "Para las familias",
-          "name": "Concurso de disfraces para niños",
-          "description": "4:00 pm · ¡Habrá premios sorpresa!"
-        },
-        {
-          "category": "Para las familias",
-          "name": "Renta de brincolín",
-          "description": "Con Diversiones El Güero"
         }
       ],
       "featured_package": {
@@ -103,50 +123,70 @@
       "reservations_text": "Info and vendor sign-up on WhatsApp: 322 368 0874 or 322 380 6920.",
       "price_display": "show",
       "service_categories": [
-        "For vendors",
-        "What you'll find",
-        "For families"
+        "Food and drinks",
+        "Handmade and beauty",
+        "Fashion and accessories",
+        "Fun for kids",
+        "Rent a booth"
       ],
       "services": [
         {
-          "category": "For vendors",
+          "category": "Food and drinks",
+          "name": "Delicious food",
+          "description": "Come hungry: there's plenty to try"
+        },
+        {
+          "category": "Food and drinks",
+          "name": "Desserts and drinks",
+          "description": "Something sweet and something cool to go with it"
+        },
+        {
+          "category": "Handmade and beauty",
+          "name": "Crafts",
+          "description": "One-of-a-kind pieces by local women entrepreneurs"
+        },
+        {
+          "category": "Handmade and beauty",
+          "name": "Cosmetics",
+          "description": "To treat yourself or as a gift"
+        },
+        {
+          "category": "Fashion and accessories",
+          "name": "Clothing",
+          "description": "Find your style with local brands"
+        },
+        {
+          "category": "Fashion and accessories",
+          "name": "Accessories",
+          "description": "The detail that completes your look"
+        },
+        {
+          "category": "Fun for kids",
+          "name": "Costume contest",
+          "description": "4:00 PM · Surprise prizes!"
+        },
+        {
+          "category": "Fun for kids",
+          "name": "Bounce house rental",
+          "description": "By Diversiones El Güero"
+        },
+        {
+          "category": "Rent a booth",
           "name": "3 x 3 m booth",
           "description": "Up to 2 people per booth",
           "price_label": "$500 MXN"
         },
         {
-          "category": "For vendors",
+          "category": "Rent a booth",
           "name": "Deposit to save your spot",
           "description": "Balance due before the event",
           "price_label": "$250 MXN"
         },
         {
-          "category": "For vendors",
+          "category": "Rent a booth",
           "name": "Table, chairs and furniture",
           "description": "No furniture? We can help you rent it",
           "price_label": "Ask us"
-        },
-        {
-          "category": "What you'll find",
-          "name": "Delicious food, desserts and drinks"
-        },
-        {
-          "category": "What you'll find",
-          "name": "Crafts and cosmetics"
-        },
-        {
-          "category": "What you'll find",
-          "name": "Accessories and clothing"
-        },
-        {
-          "category": "For families",
-          "name": "Kids' costume contest",
-          "description": "4:00 PM · Surprise prizes!"
-        },
-        {
-          "category": "For families",
-          "name": "Bounce house rental",
-          "description": "By Diversiones El Güero"
         }
       ],
       "featured_package": {

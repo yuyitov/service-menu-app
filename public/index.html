@@ -579,6 +579,49 @@ footer .note { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(2
   [data-reveal], .rise, .bubble, .hl, .kinetic .kw { opacity: 1 !important; transform: none !important; background-size: 100% 100%; }
   .ticker-track { animation: none; }
 }
+
+/* ------------------------------------------------------------------- */
+/* Secciones de color (2026-10): misma lógica que las publicaciones de */
+/* Facebook. Hero Tropical Teal · Para quién Dragonfruit · Qué incluye */
+/* Green Guava · Cómo funciona Pomelo. Contraste medido en cada par.   */
+/* ------------------------------------------------------------------- */
+.hero { background: linear-gradient(140deg, #174f4e 0%, var(--ocean) 58%, #2a8584 100%); color: #fff; }
+.hero .blob--banana { opacity: 0.32; }
+.hero .blob--pink { opacity: 0.28; }
+.hero h1 { color: #fff; }
+.hero .bubble { color: var(--ink); }
+.hero .b4 { color: var(--bubblegum-ink); }
+.hero .kw-a { color: var(--banana); }
+.hero .kw-b { color: var(--avocado); }
+.hero .kw-c { color: #ffb3cf; }
+.hero .hl { background-image: linear-gradient(transparent 58%, var(--bubblegum) 58%); }
+.hero .slogan { color: var(--banana); }
+.hero .sub { color: #e2f2f1; }
+.hero .btn--secondary { background: transparent; border-color: #fff; color: #fff; }
+.hero .btn--secondary:hover { background: rgba(255, 255, 255, 0.12); }
+.hero-chips li { background: #fff; border-color: var(--avocado); }
+
+#para-quien, #who { background: var(--bubblegum); }
+#para-quien h2, #who h2 { color: #fff; }
+#para-quien .lead, #who .lead { color: var(--bubblegum-ink); font-weight: 500; }
+#para-quien .blob, #who .blob { display: none; }
+
+#incluye, #included { background: var(--avocado); border-color: transparent; }
+#incluye h2, #included h2, #incluye .lead, #included .lead,
+#incluye .not-included, #included .not-included { color: var(--pepper); }
+#incluye .chip, #included .chip { background: #fff; border-color: var(--pepper); box-shadow: 0 3px 0 var(--pepper); }
+#incluye .chip-check path, #included .chip-check path { stroke: var(--ocean); }
+
+#como-funciona, #how { background: var(--tangerine); }
+#como-funciona h2, #how h2, #como-funciona .lead, #how .lead, #como-funciona .steps li, #how .steps li { color: var(--pepper); }
+#como-funciona .blob, #how .blob { display: none; }
+#como-funciona .steps::before, #how .steps::before { border-left-color: rgba(18, 59, 58, 0.35); }
+#como-funciona .steps li::before, #how .steps li::before { background: var(--pepper); color: var(--banana); border-color: var(--tangerine); box-shadow: none; }
+
+#para-quien .kicker, #who .kicker, #incluye .kicker, #included .kicker,
+#como-funciona .kicker, #how .kicker { background: #fff; color: var(--bubblegum-deep); }
+#para-quien .kicker::before, #who .kicker::before, #incluye .kicker::before, #included .kicker::before,
+#como-funciona .kicker::before, #how .kicker::before { background: var(--bubblegum); }
 </style>
 </head>
 <body>

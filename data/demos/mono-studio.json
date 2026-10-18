@@ -1,0 +1,114 @@
+{
+  "public_slug": "mono-studio",
+  "business_name": "Mono Studio",
+  "brand_style": "black-white",
+  "primary_image_url": null,
+  "logo_url": null,
+  "whatsapp": "+52 33 4455 6677",
+  "instagram": "https://instagram.com/monostudio.demo",
+  "google_maps_url": "https://maps.google.com/?q=Mono+Studio+Demo",
+  "google_reviews_url": "https://g.page/r/mono-studio-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Fotografía de retrato y producto en blanco y negro",
+      "address": "Calle Lerdo de Tejada 1850, Americana, Guadalajara",
+      "opening_hours_text": "Lun–Vie 10:00–19:00 · Sáb con cita",
+      "service_categories": [
+        "Retrato",
+        "Producto",
+        "Eventos"
+      ],
+      "services": [
+        {
+          "category": "Retrato",
+          "name": "Sesión de retrato",
+          "description": "1 hora, 15 fotos editadas",
+          "price_label": "$1,800 MXN"
+        },
+        {
+          "category": "Retrato",
+          "name": "Retrato corporativo",
+          "description": "Fondo liso, entrega en 48 h",
+          "price_label": "$1,500 MXN"
+        },
+        {
+          "category": "Producto",
+          "name": "Foto de producto (10 piezas)",
+          "description": "Fondo blanco o negro",
+          "price_label": "$2,500 MXN"
+        },
+        {
+          "category": "Producto",
+          "name": "Catálogo para tienda en línea",
+          "price_label": "$4,800 MXN"
+        },
+        {
+          "category": "Eventos",
+          "name": "Cobertura de evento (3 h)",
+          "description": "Galería digital en 5 días",
+          "price_label": "$3,900 MXN"
+        }
+      ],
+      "policies": [
+        "Se reserva con 50 % de anticipo.",
+        "Reagendamos sin costo con 48 h de aviso."
+      ],
+      "featured_package": {
+        "name": "Pack Marca Personal",
+        "description": "Retrato + 10 fotos de producto + 1 reel",
+        "price_label": "$4,200 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Black-and-white portrait and product photography",
+      "address": "Calle Lerdo de Tejada 1850, Americana, Guadalajara",
+      "opening_hours_text": "Mon–Fri 10:00–19:00 · Sat by appointment",
+      "service_categories": [
+        "Portraits",
+        "Product",
+        "Events"
+      ],
+      "services": [
+        {
+          "category": "Portraits",
+          "name": "Portrait session",
+          "description": "1 hour, 15 edited photos",
+          "price_label": "$1,800 MXN"
+        },
+        {
+          "category": "Portraits",
+          "name": "Corporate headshot",
+          "description": "Plain backdrop, delivered in 48 h",
+          "price_label": "$1,500 MXN"
+        },
+        {
+          "category": "Product",
+          "name": "Product photos (10 items)",
+          "description": "White or black background",
+          "price_label": "$2,500 MXN"
+        },
+        {
+          "category": "Product",
+          "name": "Online store catalog",
+          "price_label": "$4,800 MXN"
+        },
+        {
+          "category": "Events",
+          "name": "Event coverage (3 h)",
+          "description": "Digital gallery in 5 days",
+          "price_label": "$3,900 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Personal Brand Pack",
+        "description": "Portrait + 10 product photos + 1 reel",
+        "price_label": "$4,200 MXN"
+      },
+      "policies": [
+        "Booked with a 50% deposit.",
+        "Free rescheduling with 48 h notice."
+      ]
+    }
+  }
+}

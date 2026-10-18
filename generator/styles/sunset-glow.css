@@ -1,0 +1,15 @@
+/* sunset-glow - calido y vibrante, atardecer en el mar. Cafeterias, tours, estudios con energia.
+   Paleta (Vero, 2026-10-17): Pineapple #ecaf23 (el cuadro de la foto; su hex impreso 7a6b5e esta mal),
+   Apricot #e47a24, Dark Mango #d55123, Blood Orange #bf2c20, Candy Apple #951a21.
+   Base rojo Candy Apple con texto crema; alt crema con acentos Blood Orange. El Pineapple puro da
+   4.38 sobre Candy Apple, asi que para TEXTO se usa #f2b52b (4.67); el #ecaf23 queda en brillos. */
+:root{
+  --base-bg:#951a21; --base-ink:#fff4e0; --base-soft:rgba(255,244,224,.82);
+  --base-hair:rgba(236,175,35,.5); --base-accent:#f2b52b; --base-accent-ink:#3a0a0d;
+  --alt-bg:#fff1db; --alt-ink:#3b0d10; --alt-soft:rgba(59,13,16,.74);
+  --alt-hair:rgba(191,44,32,.38); --alt-accent:#bf2c20; --alt-accent-ink:#fff4e0;
+  --panel-bg:#bf2c20; --panel-ink:#fff4e0; --panel-soft:rgba(255,244,224,.84);
+  --panel-hair:rgba(236,175,35,.55); --panel-accent:#f6c041;
+  --blob-a:#e47a24; --blob-b:#d55123; --blob-c:#ecaf23; --blob-opacity:.5;
+  --dock-glow:rgba(236,175,35,.5); --dock-glow-strong:rgba(242,181,43,.72);
+}

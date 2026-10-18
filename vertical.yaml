@@ -24,6 +24,8 @@ styles:
     - midnight-ink
     - clarity-editorial
     - horizon-teal
+    - black-white
+    - sunset-glow
 
 # Per-language UI string overrides layered on the engine's base STRINGS
 # (engine/generator/strings_base.py). Empty for HMU: it uses the base

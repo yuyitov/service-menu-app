@@ -1,0 +1,13 @@
+/* black-white - minimalista y contundente. Cyberminimalismo en blanco y negro.
+   Paleta (Vero, 2026-10-17, "Dark Mode"): #000000, #0a0a0a, #141414, #383838, #f0f0f0.
+   Sin color de acento: el acento es el propio blanco. Base negra, alt blanco hueso. */
+:root{
+  --base-bg:#0a0a0a; --base-ink:#f0f0f0; --base-soft:rgba(240,240,240,.72);
+  --base-hair:rgba(240,240,240,.24); --base-accent:#f0f0f0; --base-accent-ink:#0a0a0a;
+  --alt-bg:#f0f0f0; --alt-ink:#0a0a0a; --alt-soft:rgba(10,10,10,.72);
+  --alt-hair:rgba(10,10,10,.24); --alt-accent:#383838; --alt-accent-ink:#f0f0f0;
+  --panel-bg:#141414; --panel-ink:#f0f0f0; --panel-soft:rgba(240,240,240,.74);
+  --panel-hair:rgba(240,240,240,.3); --panel-accent:#f0f0f0;
+  --blob-a:#383838; --blob-b:#141414; --blob-c:#000000; --blob-opacity:.55;
+  --dock-glow:rgba(240,240,240,.18); --dock-glow-strong:rgba(240,240,240,.34);
+}

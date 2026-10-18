@@ -1,0 +1,112 @@
+{
+  "public_slug": "sunset-surf",
+  "business_name": "Sunset Surf School",
+  "brand_style": "sunset-glow",
+  "primary_image_url": null,
+  "logo_url": null,
+  "whatsapp": "+52 329 123 4567",
+  "instagram": "https://instagram.com/sunsetsurf.demo",
+  "google_maps_url": "https://maps.google.com/?q=Sunset+Surf+School+Demo",
+  "google_reviews_url": "https://g.page/r/sunset-surf-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Clases de surf y paddle al atardecer",
+      "address": "Playa Sayulita, Nayarit",
+      "opening_hours_text": "Todos los días 7:00–19:00",
+      "service_categories": [
+        "Clases",
+        "Renta",
+        "Atardecer"
+      ],
+      "services": [
+        {
+          "category": "Clases",
+          "name": "Clase grupal (2 h)",
+          "description": "Tabla y licra incluidas",
+          "price_label": "$650 MXN"
+        },
+        {
+          "category": "Clases",
+          "name": "Clase privada (1.5 h)",
+          "description": "Atención 1 a 1",
+          "price_label": "$1,100 MXN"
+        },
+        {
+          "category": "Clases",
+          "name": "Paquete de 5 clases",
+          "price_label": "$2,800 MXN"
+        },
+        {
+          "category": "Renta",
+          "name": "Tabla por día",
+          "price_label": "$300 MXN"
+        },
+        {
+          "category": "Atardecer",
+          "name": "Surf al atardecer",
+          "description": "Última hora de luz, con fotos",
+          "price_label": "$950 MXN"
+        }
+      ],
+      "policies": [
+        "Llega 15 minutos antes de tu clase.",
+        "Si el mar no está apto, reagendamos sin costo."
+      ],
+      "featured_package": {
+        "name": "Pack Atardecer",
+        "description": "Clase + fotos + bebida en la playa",
+        "price_label": "$1,250 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Surf and paddle lessons at sunset",
+      "address": "Sayulita Beach, Nayarit",
+      "opening_hours_text": "Every day 7:00–19:00",
+      "service_categories": [
+        "Lessons",
+        "Rentals",
+        "Sunset"
+      ],
+      "services": [
+        {
+          "category": "Lessons",
+          "name": "Group lesson (2 h)",
+          "description": "Board and rash guard included",
+          "price_label": "$650 MXN"
+        },
+        {
+          "category": "Lessons",
+          "name": "Private lesson (1.5 h)",
+          "description": "One-on-one coaching",
+          "price_label": "$1,100 MXN"
+        },
+        {
+          "category": "Lessons",
+          "name": "5-lesson package",
+          "price_label": "$2,800 MXN"
+        },
+        {
+          "category": "Rentals",
+          "name": "Board per day",
+          "price_label": "$300 MXN"
+        },
+        {
+          "category": "Sunset",
+          "name": "Sunset surf",
+          "description": "Last hour of light, with photos",
+          "price_label": "$950 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Sunset Pack",
+        "description": "Lesson + photos + a drink on the beach",
+        "price_label": "$1,250 MXN"
+      },
+      "policies": [
+        "Arrive 15 minutes before your lesson.",
+        "If the sea isn't safe, we reschedule free of charge."
+      ]
+    }
+  }
+}

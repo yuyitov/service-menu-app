@@ -59,7 +59,7 @@ BRAND_TAGLINE        = "Service Menus for Small Businesses"
 TEMPLATE             = "service-menu"
 # Estilos válidos con los que el worker acepta el intake. Mismo orden y mismos
 # 12 de styles.catalog en vertical.yaml, que es la fuente de verdad.
-VALID_BRAND_STYLES   = "black-gold,soft-blush,charcoal-clean,warm-sand,aqua-clean,sage-calm,electric-slate,terracotta-warm,sunny-paws,midnight-ink,clarity-editorial,horizon-teal,black-white,sunset-glow,violet-bloom,chile-ochre,jungle-green,floral-cafe,deep-navy"
+VALID_BRAND_STYLES   = "black-gold,soft-blush,charcoal-clean,warm-sand,aqua-clean,sage-calm,electric-slate,terracotta-warm,sunny-paws,midnight-ink,clarity-editorial,horizon-teal,black-white,sunset-glow,violet-bloom,chile-ochre,jungle-green,floral-cafe,deep-navy,deep-lagoon"
 # Nombres COMERCIALES que apuntan a un slug del catalogo ("alias:slug,..."),
 # de styles.aliases del vertical.yaml. El estilo se resuelve haciendo slugify()
 # del nombre que la clienta LEE, asi que sin esto renombrar una paleta (Sunny

@@ -1,0 +1,15 @@
+/* deep-lagoon - fresco, limpio y profundo. Natacion, spas, bienestar, piscinas, clinicas, tecnologia.
+   Paleta (Vero, 2026-10-18): Deep Lagoon #0f2a2a, Teal Wave #00bfa6, Aqua Silk #d9faf4.
+   Base Deep Lagoon con tinta Aqua Silk (13.0) y acento Teal Wave (6.3). Secciones alt en Aqua Silk: el Teal
+   Wave puro da solo 2.2 sobre ellas, asi que su acento es el mismo teal OSCURECIDO #00796b (5.0). Panel en
+   Teal Wave con tinta Deep Lagoon (6.3). Es el estilo mas cercano a Aqua Clean (claro); este es oscuro. */
+:root{
+  --base-bg:#0f2a2a; --base-ink:#d9faf4; --base-soft:rgba(217,250,244,.78);
+  --base-hair:rgba(0,191,166,.42); --base-accent:#00bfa6; --base-accent-ink:#0f2a2a;
+  --alt-bg:#d9faf4; --alt-ink:#0f2a2a; --alt-soft:rgba(15,42,42,.8);
+  --alt-hair:rgba(0,121,107,.36); --alt-accent:#00796b; --alt-accent-ink:#d9faf4;
+  --panel-bg:#00bfa6; --panel-ink:#0f2a2a; --panel-soft:rgba(15,42,42,.94);
+  --panel-hair:rgba(15,42,42,.4); --panel-accent:#0f2a2a;
+  --blob-a:#00bfa6; --blob-b:#0f2a2a; --blob-c:#d9faf4; --blob-opacity:.4;
+  --dock-glow:rgba(0,191,166,.4); --dock-glow-strong:rgba(0,191,166,.65);
+}

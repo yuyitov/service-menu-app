@@ -1,0 +1,16 @@
+/* violet-bloom - elegante y sonador. Esteticas, lash bars, bienestar, bodas, tarot.
+   Paleta (Vero, 2026-10-18): Russian Violet #391b49, Dark Lavender #795690, Amethyst #9570c6,
+   Bright Lavender #c29ce4, Ceil #999ecf (azul cielito) y el BEIGE #dad2aa de los titulos de su foto.
+   Base violeta oscuro con acento beige; secciones claras en Ceil (azul cielito) con tinta violeta;
+   panel en Dark Lavender; lineas en Ceil; manchas en Amethyst/Bright Lavender/Ceil.
+   Contrastes: crema sobre base 12.7, beige sobre base 9.1, tinta sobre Ceil 6.8, Russian Violet sobre Ceil 5.6. */
+:root{
+  --base-bg:#391b49; --base-ink:#f3ecf8; --base-soft:rgba(243,236,248,.78);
+  --base-hair:rgba(153,158,207,.45); --base-accent:#dad2aa; --base-accent-ink:#2a1237;
+  --alt-bg:#999ecf; --alt-ink:#2a1237; --alt-soft:rgba(42,18,55,.82);
+  --alt-hair:rgba(57,27,73,.32); --alt-accent:#391b49; --alt-accent-ink:#f3ecf8;
+  --panel-bg:#795690; --panel-ink:#fbf7fe; --panel-soft:rgba(251,247,254,.86);
+  --panel-hair:rgba(218,210,170,.55); --panel-accent:#e8e0b8;
+  --blob-a:#9570c6; --blob-b:#999ecf; --blob-c:#c29ce4; --blob-opacity:.5;
+  --dock-glow:rgba(218,210,170,.4); --dock-glow-strong:rgba(218,210,170,.65);
+}

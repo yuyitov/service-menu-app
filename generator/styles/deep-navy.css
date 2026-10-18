@@ -1,0 +1,15 @@
+/* deep-navy - sobrio, confiable y elegante. Despachos, consultoria, finanzas, clinicas, inmobiliarias.
+   Paleta (Vero, 2026-10-18): Midnight Blue #1c2e4a, Dusty Blue #52677d, 'Ivory' #bdc4d4 (en la foto es un
+   azul grisaceo claro), Deep Navy #0f1a2b y Buttercream #d1cfc9. Base Deep Navy con tinta Buttercream (11.2) y
+   acento 'Ivory' (10.0); el Dusty Blue puro da 3.0 sobre el fondo, asi que queda en lineas y manchas.
+   Secciones alt en Buttercream con tinta Deep Navy (11.2) y acento Midnight Blue (8.8); panel Midnight Blue. */
+:root{
+  --base-bg:#0f1a2b; --base-ink:#d1cfc9; --base-soft:rgba(209,207,201,.78);
+  --base-hair:rgba(82,103,125,.6); --base-accent:#bdc4d4; --base-accent-ink:#0f1a2b;
+  --alt-bg:#d1cfc9; --alt-ink:#0f1a2b; --alt-soft:rgba(15,26,43,.78);
+  --alt-hair:rgba(28,46,74,.3); --alt-accent:#1c2e4a; --alt-accent-ink:#d1cfc9;
+  --panel-bg:#1c2e4a; --panel-ink:#d1cfc9; --panel-soft:rgba(209,207,201,.84);
+  --panel-hair:rgba(189,196,212,.4); --panel-accent:#bdc4d4;
+  --blob-a:#52677d; --blob-b:#1c2e4a; --blob-c:#bdc4d4; --blob-opacity:.45;
+  --dock-glow:rgba(189,196,212,.3); --dock-glow-strong:rgba(189,196,212,.55);
+}

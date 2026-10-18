@@ -26,6 +26,11 @@ styles:
     - horizon-teal
     - black-white
     - sunset-glow
+    - violet-bloom
+    - chile-ochre
+    - jungle-green
+    - floral-cafe
+    - deep-navy
 
 # Per-language UI string overrides layered on the engine's base STRINGS
 # (engine/generator/strings_base.py). Empty for HMU: it uses the base

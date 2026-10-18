@@ -1,0 +1,112 @@
+{
+  "public_slug": "marino-legal",
+  "business_name": "Marino Legal",
+  "brand_style": "deep-navy",
+  "primary_image_url": null,
+  "logo_url": null,
+  "whatsapp": "+52 81 4455 6677",
+  "instagram": "https://instagram.com/marinolegal.demo",
+  "google_maps_url": "https://maps.google.com/?q=Marino+Legal+Demo",
+  "google_reviews_url": "https://g.page/r/marino-legal-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Asesoría legal para emprendedores y pymes",
+      "address": "Av. Vasconcelos 150, San Pedro Garza García, Nuevo León",
+      "opening_hours_text": "Lun–Vie 9:00–18:00 · Con cita",
+      "service_categories": [
+        "Consultas",
+        "Empresas",
+        "Contratos"
+      ],
+      "services": [
+        {
+          "category": "Consultas",
+          "name": "Consulta inicial (45 min)",
+          "description": "Diagnóstico y ruta a seguir",
+          "price_label": "$800 MXN"
+        },
+        {
+          "category": "Empresas",
+          "name": "Constitución de empresa",
+          "description": "Acta, RFC y asesoría fiscal básica",
+          "price_label": "$6,500 MXN"
+        },
+        {
+          "category": "Empresas",
+          "name": "Registro de marca",
+          "price_label": "$4,200 MXN"
+        },
+        {
+          "category": "Contratos",
+          "name": "Contrato a la medida",
+          "description": "Revisión incluida",
+          "price_label": "$2,500 MXN"
+        },
+        {
+          "category": "Contratos",
+          "name": "Revisión de contrato",
+          "price_label": "$1,200 MXN"
+        }
+      ],
+      "policies": [
+        "Toda consulta es confidencial.",
+        "Se requiere cita previa; reagendamos con 24 h de aviso."
+      ],
+      "featured_package": {
+        "name": "Asesoría mensual para pymes",
+        "description": "Hasta 4 consultas y revisión de contratos",
+        "price_label": "$3,200 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Legal advice for entrepreneurs and small businesses",
+      "address": "Av. Vasconcelos 150, San Pedro Garza Garcia, Nuevo Leon",
+      "opening_hours_text": "Mon–Fri 9:00–18:00 · By appointment",
+      "service_categories": [
+        "Consultations",
+        "Companies",
+        "Contracts"
+      ],
+      "services": [
+        {
+          "category": "Consultations",
+          "name": "Initial consultation (45 min)",
+          "description": "Diagnosis and next steps",
+          "price_label": "$800 MXN"
+        },
+        {
+          "category": "Companies",
+          "name": "Company formation",
+          "description": "Articles, tax ID and basic tax advice",
+          "price_label": "$6,500 MXN"
+        },
+        {
+          "category": "Companies",
+          "name": "Trademark registration",
+          "price_label": "$4,200 MXN"
+        },
+        {
+          "category": "Contracts",
+          "name": "Custom contract",
+          "description": "Review included",
+          "price_label": "$2,500 MXN"
+        },
+        {
+          "category": "Contracts",
+          "name": "Contract review",
+          "price_label": "$1,200 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Monthly advisory for small businesses",
+        "description": "Up to 4 consultations and contract review",
+        "price_label": "$3,200 MXN"
+      },
+      "policies": [
+        "Every consultation is confidential.",
+        "Appointment required; reschedule with 24 h notice."
+      ]
+    }
+  }
+}

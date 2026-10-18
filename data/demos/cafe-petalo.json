@@ -1,0 +1,110 @@
+{
+  "public_slug": "cafe-petalo",
+  "business_name": "Café Pétalo",
+  "brand_style": "floral-cafe",
+  "primary_image_url": null,
+  "logo_url": null,
+  "whatsapp": "+52 33 2211 3344",
+  "instagram": "https://instagram.com/cafepetalo.demo",
+  "google_maps_url": "https://maps.google.com/?q=Café+Pétalo+Demo",
+  "google_reviews_url": "https://g.page/r/cafe-petalo-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Cafetería floral con repostería de la casa",
+      "address": "Av. Chapultepec 480, Americana, Guadalajara",
+      "opening_hours_text": "Lun–Dom 8:00–21:00",
+      "service_categories": [
+        "Café",
+        "Repostería",
+        "Brunch"
+      ],
+      "services": [
+        {
+          "category": "Café",
+          "name": "Latte de lavanda",
+          "description": "Con espresso doble",
+          "price_label": "$68 MXN"
+        },
+        {
+          "category": "Café",
+          "name": "Cold brew de la casa",
+          "price_label": "$65 MXN"
+        },
+        {
+          "category": "Repostería",
+          "name": "Croissant de almendra",
+          "price_label": "$55 MXN"
+        },
+        {
+          "category": "Repostería",
+          "name": "Pastel de rosas (rebanada)",
+          "description": "Betún de mantequilla",
+          "price_label": "$90 MXN"
+        },
+        {
+          "category": "Brunch",
+          "name": "Tostada de aguacate y flores",
+          "price_label": "$135 MXN"
+        }
+      ],
+      "policies": [
+        "Mesas en terraza por orden de llegada.",
+        "Pedidos de pasteles con 48 h de anticipación."
+      ],
+      "featured_package": {
+        "name": "Brunch para dos",
+        "description": "2 platos, 2 cafés y 1 pan dulce",
+        "price_label": "$320 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Floral cafe with house-made pastries",
+      "address": "Av. Chapultepec 480, Americana, Guadalajara",
+      "opening_hours_text": "Mon–Sun 8:00–21:00",
+      "service_categories": [
+        "Coffee",
+        "Pastry",
+        "Brunch"
+      ],
+      "services": [
+        {
+          "category": "Coffee",
+          "name": "Lavender latte",
+          "description": "With a double espresso",
+          "price_label": "$68 MXN"
+        },
+        {
+          "category": "Coffee",
+          "name": "House cold brew",
+          "price_label": "$65 MXN"
+        },
+        {
+          "category": "Pastry",
+          "name": "Almond croissant",
+          "price_label": "$55 MXN"
+        },
+        {
+          "category": "Pastry",
+          "name": "Rose cake (slice)",
+          "description": "Buttercream frosting",
+          "price_label": "$90 MXN"
+        },
+        {
+          "category": "Brunch",
+          "name": "Avocado and flower toast",
+          "price_label": "$135 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Brunch for two",
+        "description": "2 plates, 2 coffees and 1 sweet bread",
+        "price_label": "$320 MXN"
+      },
+      "policies": [
+        "Terrace tables are first come, first served.",
+        "Cake orders need 48 hours notice."
+      ]
+    }
+  }
+}

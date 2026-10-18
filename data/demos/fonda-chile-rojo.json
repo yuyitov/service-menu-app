@@ -1,0 +1,122 @@
+{
+  "public_slug": "fonda-chile-rojo",
+  "business_name": "Fonda Chile Rojo",
+  "brand_style": "chile-ochre",
+  "primary_image_url": null,
+  "logo_url": null,
+  "whatsapp": "+52 951 234 5678",
+  "instagram": "https://instagram.com/fondachilerojo.demo",
+  "google_maps_url": "https://maps.google.com/?q=Fonda+Chile+Rojo+Demo",
+  "google_reviews_url": "https://g.page/r/fonda-chile-rojo-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Cocina oaxaqueña de la casa, con sazón de abuela",
+      "address": "Calle Macedonio Alcalá 410, Centro, Oaxaca",
+      "opening_hours_text": "Mar–Dom 9:00–20:00 · Lun cerrado",
+      "service_categories": [
+        "Antojitos",
+        "Platos fuertes",
+        "Bebidas"
+      ],
+      "services": [
+        {
+          "category": "Antojitos",
+          "name": "Tlayuda con tasajo",
+          "description": "Asiento, quesillo y frijol",
+          "price_label": "$140 MXN"
+        },
+        {
+          "category": "Antojitos",
+          "name": "Sopes (3 piezas)",
+          "price_label": "$95 MXN"
+        },
+        {
+          "category": "Platos fuertes",
+          "name": "Enchiladas rojas",
+          "description": "Con pollo y ensalada",
+          "price_label": "$165 MXN"
+        },
+        {
+          "category": "Platos fuertes",
+          "name": "Mole poblano",
+          "description": "Receta de la casa",
+          "price_label": "$190 MXN"
+        },
+        {
+          "category": "Bebidas",
+          "name": "Agua de jamaica",
+          "price_label": "$45 MXN"
+        },
+        {
+          "category": "Bebidas",
+          "name": "Mezcal de la casa",
+          "price_label": "$110 MXN"
+        }
+      ],
+      "policies": [
+        "Aceptamos reservaciones para grupos de 6 o más.",
+        "Pedidos para llevar con 20 minutos de anticipación."
+      ],
+      "featured_package": {
+        "name": "Comida corrida",
+        "description": "Sopa, plato fuerte, agua y postre",
+        "price_label": "$160 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Oaxacan home cooking with a grandmother's touch",
+      "address": "Calle Macedonio Alcalá 410, Centro, Oaxaca",
+      "opening_hours_text": "Tue–Sun 9:00–20:00 · Mon closed",
+      "service_categories": [
+        "Appetizers",
+        "Main dishes",
+        "Drinks"
+      ],
+      "services": [
+        {
+          "category": "Appetizers",
+          "name": "Tlayuda with tasajo",
+          "description": "Asiento, quesillo and beans",
+          "price_label": "$140 MXN"
+        },
+        {
+          "category": "Appetizers",
+          "name": "Sopes (3 pieces)",
+          "price_label": "$95 MXN"
+        },
+        {
+          "category": "Main dishes",
+          "name": "Red enchiladas",
+          "description": "With chicken and salad",
+          "price_label": "$165 MXN"
+        },
+        {
+          "category": "Main dishes",
+          "name": "Mole poblano",
+          "description": "House recipe",
+          "price_label": "$190 MXN"
+        },
+        {
+          "category": "Drinks",
+          "name": "Hibiscus water",
+          "price_label": "$45 MXN"
+        },
+        {
+          "category": "Drinks",
+          "name": "House mezcal",
+          "price_label": "$110 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Set lunch",
+        "description": "Soup, main dish, drink and dessert",
+        "price_label": "$160 MXN"
+      },
+      "policies": [
+        "Reservations for groups of 6 or more.",
+        "Takeout orders need 20 minutes notice."
+      ]
+    }
+  }
+}

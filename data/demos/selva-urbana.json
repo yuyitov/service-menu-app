@@ -1,0 +1,110 @@
+{
+  "public_slug": "selva-urbana",
+  "business_name": "Selva Urbana",
+  "brand_style": "jungle-green",
+  "primary_image_url": null,
+  "logo_url": null,
+  "whatsapp": "+52 55 3344 5566",
+  "instagram": "https://instagram.com/selvaurbana.demo",
+  "google_maps_url": "https://maps.google.com/?q=Selva+Urbana+Demo",
+  "google_reviews_url": "https://g.page/r/selva-urbana-demo/review",
+  "default_language": "es",
+  "content": {
+    "es": {
+      "short_description": "Plantas de interior y jardines verticales",
+      "address": "Calle Colima 215, Roma Norte, CDMX",
+      "opening_hours_text": "Lun–Sáb 10:00–19:00 · Dom 11:00–16:00",
+      "service_categories": [
+        "Plantas",
+        "Servicios"
+      ],
+      "services": [
+        {
+          "category": "Plantas",
+          "name": "Monstera mediana",
+          "description": "Maceta incluida",
+          "price_label": "$380 MXN"
+        },
+        {
+          "category": "Plantas",
+          "name": "Set de 3 suculentas",
+          "price_label": "$220 MXN"
+        },
+        {
+          "category": "Plantas",
+          "name": "Helecho colgante",
+          "price_label": "$260 MXN"
+        },
+        {
+          "category": "Servicios",
+          "name": "Diseño de jardín vertical",
+          "description": "Visita y propuesta",
+          "price_label": "$2,800 MXN"
+        },
+        {
+          "category": "Servicios",
+          "name": "Mantenimiento mensual",
+          "description": "Riego, poda y revisión",
+          "price_label": "$650 MXN"
+        }
+      ],
+      "policies": [
+        "Garantía de 15 días en plantas de interior.",
+        "Entregamos en la CDMX con costo adicional."
+      ],
+      "featured_package": {
+        "name": "Pack Oficina Verde",
+        "description": "5 plantas + mantenimiento del primer mes",
+        "price_label": "$1,950 MXN"
+      }
+    },
+    "en": {
+      "short_description": "Indoor plants and vertical gardens",
+      "address": "Calle Colima 215, Roma Norte, Mexico City",
+      "opening_hours_text": "Mon–Sat 10:00–19:00 · Sun 11:00–16:00",
+      "service_categories": [
+        "Plants",
+        "Services"
+      ],
+      "services": [
+        {
+          "category": "Plants",
+          "name": "Medium monstera",
+          "description": "Pot included",
+          "price_label": "$380 MXN"
+        },
+        {
+          "category": "Plants",
+          "name": "Set of 3 succulents",
+          "price_label": "$220 MXN"
+        },
+        {
+          "category": "Plants",
+          "name": "Hanging fern",
+          "price_label": "$260 MXN"
+        },
+        {
+          "category": "Services",
+          "name": "Vertical garden design",
+          "description": "Visit and proposal",
+          "price_label": "$2,800 MXN"
+        },
+        {
+          "category": "Services",
+          "name": "Monthly maintenance",
+          "description": "Watering, pruning and check-up",
+          "price_label": "$650 MXN"
+        }
+      ],
+      "featured_package": {
+        "name": "Green Office Pack",
+        "description": "5 plants + first month of maintenance",
+        "price_label": "$1,950 MXN"
+      },
+      "policies": [
+        "15-day guarantee on indoor plants.",
+        "Delivery in Mexico City for an extra fee."
+      ]
+    }
+  }
+}

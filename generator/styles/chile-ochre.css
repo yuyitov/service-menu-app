@@ -1,0 +1,18 @@
+/* chile-ochre - calido, artesanal, mexicano. Fondas, cocinas, talleres, cafeterias, artesanias.
+   Paleta (Vero, 2026-10-18): Terracota #d06224, Chile Rojo #ae431e, Olive y Golden Ochre #daa520.
+   Protagonista: el CHILE ROJO (fondo de las secciones oscuras, tal cual #ae431e); el Terracota llena las
+   manchas de luz y el ocre las lineas. Vero descarto un fondo olivo (2026-10-18): el olive no entra.
+   Texto: crema #fff3dd (5.28 sobre el chile) y mantequilla #fce3a0 (4.59) para acentos, porque el ocre
+   puro #daa520 sobre chile da solo 2.59. Panel: un chile mas profundo #8f3516 (crema 7.4).
+   Los hex impresos de Terracota (#d06224) y Olive (#8a6635) no coinciden con sus cuadros; se uso el
+   Terracota impreso, que si coincide, y el Olive no se usa. */
+:root{
+  --base-bg:#ae431e; --base-ink:#fff3dd; --base-soft:rgba(255,243,221,.84);
+  --base-hair:rgba(218,165,32,.55); --base-accent:#fce3a0; --base-accent-ink:#6b2610;
+  --alt-bg:#fbf1e6; --alt-ink:#3a1d10; --alt-soft:rgba(58,29,16,.74);
+  --alt-hair:rgba(174,67,30,.38); --alt-accent:#ae431e; --alt-accent-ink:#fff3dd;
+  --panel-bg:#8f3516; --panel-ink:#fff3dd; --panel-soft:rgba(255,243,221,.86);
+  --panel-hair:rgba(250,219,138,.55); --panel-accent:#f2c14e;
+  --blob-a:#d06224; --blob-b:#daa520; --blob-c:#d06224; --blob-opacity:.55;
+  --dock-glow:rgba(218,165,32,.5); --dock-glow-strong:rgba(250,219,138,.72);
+}

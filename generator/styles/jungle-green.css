@@ -1,0 +1,15 @@
+/* jungle-green - fresco, natural, con presencia. Plantas, jardineria, spas, bienestar, ecologico.
+   Paleta (Vero, 2026-10-18): Dark Jungle Green #122b1d, William Hooker's Green #537e72, Pistachio #9cc97f,
+   Light Gray #cddecb, Pewter Blue #90b7bf. Base verde selva, alt gris verdoso claro.
+   El #537e72 sobre #cddecb da 3.24, asi que el acento del tema claro y el panel usan su version
+   oscurecida #3d6458 (4.71); el #537e72 original queda en las manchas de fondo. */
+:root{
+  --base-bg:#122b1d; --base-ink:#cddecb; --base-soft:rgba(205,222,203,.76);
+  --base-hair:rgba(156,201,127,.36); --base-accent:#9cc97f; --base-accent-ink:#122b1d;
+  --alt-bg:#cddecb; --alt-ink:#122b1d; --alt-soft:rgba(18,43,29,.76);
+  --alt-hair:rgba(61,100,88,.4); --alt-accent:#3d6458; --alt-accent-ink:#f4f8f3;
+  --panel-bg:#3d6458; --panel-ink:#f4f8f3; --panel-soft:rgba(244,248,243,.84);
+  --panel-hair:rgba(181,222,152,.5); --panel-accent:#b5de98;
+  --blob-a:#537e72; --blob-b:#90b7bf; --blob-c:#9cc97f; --blob-opacity:.42;
+  --dock-glow:rgba(156,201,127,.4); --dock-glow-strong:rgba(156,201,127,.65);
+}

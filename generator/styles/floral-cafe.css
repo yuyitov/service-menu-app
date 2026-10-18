@@ -1,0 +1,16 @@
+/* floral-cafe - romantico, fresco y florido. Cafes, florerias, pastelerias, bodas, boutiques.
+   Paleta (Vero, 2026-10-18): Heather #877499, Viridian #679f9f, Sandstone #e6d4bf, Candy #e18299 y un azul
+   pervinca sin nombre (hex estimado de la foto: #86a8da; solo en manchas y lineas).
+   Base CLARA (Sandstone) con tinta ciruela #3a2b45 (9.0); acento = Heather oscurecido #5f4f73 (5.1) porque el
+   #877499 puro da 2.9 sobre Sandstone. Secciones alt en VIRIDIAN puro con tinta casi negra (5.6); panel en CANDY
+   con tinta ciruela (4.9). Los textos claros #fbf4ec son un tinte de Sandstone. */
+:root{
+  --base-bg:#e6d4bf; --base-ink:#3a2b45; --base-soft:rgba(58,43,69,.84);
+  --base-hair:rgba(135,116,153,.42); --base-accent:#5f4f73; --base-accent-ink:#fbf4ec;
+  --alt-bg:#679f9f; --alt-ink:#14222a; --alt-soft:rgba(20,34,42,.92);
+  --alt-hair:rgba(47,35,64,.36); --alt-accent:#2f2340; --alt-accent-ink:#fbf4ec;
+  --panel-bg:#e18299; --panel-ink:#3a2b45; --panel-soft:rgba(58,43,69,.94);
+  --panel-hair:rgba(58,43,69,.4); --panel-accent:#3a2b45;
+  --blob-a:#e18299; --blob-b:#86a8da; --blob-c:#679f9f; --blob-opacity:.45;
+  --dock-glow:rgba(225,130,153,.45); --dock-glow-strong:rgba(225,130,153,.7);
+}

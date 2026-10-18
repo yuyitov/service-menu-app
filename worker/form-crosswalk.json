@@ -1,6 +1,6 @@
 {
   "_comment": "GENERADO por test/generar_crosswalk.mjs desde el inventario de los formularios vivos. No editar a mano.",
-  "snapshot_date": "2026-10-11",
+  "snapshot_date": "2026-10-18",
   "forms": {
     "en": "yPkN5X",
     "es": "MeyDpk"
@@ -349,6 +349,14 @@
         {
           "en": "Blue Chocolate — modern and full of character",
           "es": "Blue Chocolate — moderno y con carácter"
+        },
+        {
+          "en": "Black & White — minimal and bold",
+          "es": "Black & White — minimalista y contundente"
+        },
+        {
+          "en": "Sunset Glow — warm and vibrant",
+          "es": "Sunset Glow — cálido y vibrante"
         }
       ]
     },

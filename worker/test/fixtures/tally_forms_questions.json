@@ -1,6 +1,6 @@
 {
-  "_comment": "Inventario de los DOS formularios Tally VIVOS de HMU Link (EN y ES). Solo ids, tipos, titulos y el texto de las opciones: cero respuestas, cero datos de clientes. Lo genera worker/test/tomar_snapshot.mjs desde la API de Tally. NO sale de tally_form.yaml del repo: ese archivo es un BORRADOR que nunca creo estos formularios y su propio encabezado lo dice. Medir contra el yaml da falsos positivos.",
-  "snapshot_date": "2026-10-11",
+  "_comment": "Inventario de los DOS formularios Tally VIVOS de hmu (EN y ES). Solo ids, tipos, titulos y el texto de las opciones: cero respuestas, cero datos de clientes. Lo genera scripts/tomar_snapshot_tally.mjs desde la API de Tally. NO sale de tally_form.yaml: ese archivo es un BORRADOR que nunca creo estos formularios. Medir contra el yaml da falsos positivos.",
+  "snapshot_date": "2026-10-18",
   "forms": [
     {
       "lang": "en",
@@ -358,7 +358,9 @@
             "Pink Grapefruit — juicy and full of energy",
             "Midnight Ink — dark and artistic",
             "Clarity Editorial — professional and polished",
-            "Blue Chocolate — modern and full of character"
+            "Blue Chocolate — modern and full of character",
+            "Black & White — minimal and bold",
+            "Sunset Glow — warm and vibrant"
           ]
         },
         {
@@ -813,7 +815,9 @@
             "Pink Grapefruit — jugoso y con energía",
             "Midnight Ink — oscuro y artístico",
             "Clarity Editorial — profesional y confiable",
-            "Blue Chocolate — moderno y con carácter"
+            "Blue Chocolate — moderno y con carácter",
+            "Black & White — minimalista y contundente",
+            "Sunset Glow — cálido y vibrante"
           ]
         },
         {
